@@ -340,11 +340,11 @@ void Controller::run(){
 
     printf("wait.\n");
     
-    for(u_int16_t i=0; i<this->readers.size(); ++i){
-        if(this->dpdk->loadBPF(0, i, this->bpf_prog_name)){
-            printf("Controller error: load bpf fail at %u\n",i);
-        }
-    }
+    // for(u_int16_t i=0; i<this->readers.size(); ++i){
+    //     if(this->dpdk->loadBPF(0, i, this->bpf_prog_name)){
+    //         printf("Controller error: load bpf fail at %u\n",i);
+    //     }
+    // }
     // std::this_thread::sleep_for(std::chrono::seconds(4));
     // for(u_int16_t i=0; i<this->readers.size(); ++i){
     //     this->dpdk->unloadBPF(0, i);

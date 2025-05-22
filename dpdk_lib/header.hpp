@@ -14,17 +14,17 @@ struct pcap_header{
 };
 
 struct array_list_header{
-    u_int32_t flow_next_diff;
     u_int32_t ts_h;
     u_int32_t ts_l;
     u_int32_t caplen;
+    u_int32_t flow_next_diff;
 };
 
 struct compress_header{
-    u_int32_t flow_next_diff;
     u_int32_t ts_h;
     u_int32_t ts_l;
     u_int16_t caplen;
+    u_int32_t flow_next_diff;
     u_int16_t compress_flag;
 };
 

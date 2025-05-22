@@ -11,7 +11,7 @@
 #include "../dpdk_lib/header.hpp"
 // #include "../lib/shareBuffer.hpp"
 // #include "../lib/arrayList.hpp"
-#include "storage.hpp"
+// #include "storage.hpp"
 
 struct Answer{
     u_int32_t block_id;
@@ -74,7 +74,7 @@ class Querier{
     // ShareBuffer* packetBuffer;
     // ArrayList<u_int32_t>* packetPointer;
     // std::vector<SkipList*>* flowMetaIndexCaches;
-    std::vector<StorageMeta>* storageMetas;
+    // std::vector<StorageMeta>* storageMetas;
     
     QueryTree tree;
 

@@ -6,7 +6,8 @@ void IndexStorage::processSkipList(SkipList* list, u_int64_t ts, u_int32_t id){
     u_int32_t ts_l = ts & 0xffffffff;
     u_int32_t ts_h = ts >> sizeof(ts_h)*8;
 
-    std::string fileName = "./data/index/" + std::to_string(ts_h) + "." + std::to_string(ts_l) + "." + std::to_string(id) + "_idx";
+    // std::string fileName = "./data/index/" + std::to_string(ts_h) + "." + std::to_string(ts_l) + "." + std::to_string(id) + "_idx";
+    std::string fileName = "./data/index/test." + std::to_string(id) + "_idx";
     int fileFD = open(fileName.c_str(), O_WRONLY | O_CREAT, 0644);
     if (fileFD == -1) {
         printf("indexStorage error: failed to open file of zorder_list!\n");
