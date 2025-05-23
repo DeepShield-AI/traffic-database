@@ -13,15 +13,22 @@
 
 ## 2.Build & run
 ### Dependencies library install
-* libpcap-dev: `apt install libpcap-dev`
-* build-essential: `apt install build-essential`
-* meson: `apt install meson`
-* python3-pyelftools: `apt install python3-pyelftools`
-* pkg-config: `apt install pkg-config`
+* We provide the script for dependency installation `shell/depencdency_install.sh` 
+	* `sudo` is needed
+* You can also manually install dependencies as follows
+	* libpcap-dev: `apt install libpcap-dev`
+	* build-essential: `apt install build-essential`
+	* meson: `apt install meson`
+	* python3-pyelftools: `apt install python3-pyelftools`
+	* pkg-config: `apt install pkg-config`
 
 ### DPDK install (Reference: [https://doc.dpdk.org/guides/linux_gsg/index.html](https://doc.dpdk.org/guides/linux_gsg/index.html))
-* Download DPDK (version 21.11.6) from [https://core.dpdk.org/download/](https://core.dpdk.org/download/)
-* Compile & build DPDK
+* We provide DPDK installation package and the script `shell/depencdency_install.sh`
+	* This script needs to be run in the `shell` folder
+	* `sudo` is needed
+* You can also download and install DPDK as follows
+	* Download DPDK (version 21.11.6) from [https://core.dpdk.org/download/](https://core.dpdk.org/download/)
+	* Compile & build DPDK as following code:
 
 ```
 tar xJf dpdk-<version>.tar.xz
@@ -33,17 +40,38 @@ ninja
 (sudo) ldconfig
 ```
 
-* NIC bind (Reference: [https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html))
+### NIC bind
+
+* The network card used to capture data packets needs to be bound to DPDK according to the following steps(Reference: [https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html))
+* We provide the binding script `shell/dpdk_bind.sh`
+	* It should be running with NIC name as the input param, such as `./dpdk_bind.sh ens5f1`
+	* This script needs to be run in the `shell` folder
+	* `sudo` is needed
+	* !!! Warning: once the NIC is bound to DPDK, all its packets will not be received by the kernel protocol stack and applications. So do not bind any NICs currently being used by applications other than this project to the DPDK. Specifically, if you are using remote connection tools such as SSH, binding the NIC used for connection to DPDK will cause the connection to disconnect!
+* You can aslo bind NIC manually as the following code:
 
 ```
+cd dpdk-<version>
+# Default <version> is 21.11.6
+
 # To see the status of all network ports on the system
 ./usertools/dpdk-devbind.py --status
+# The output should be like this
+# Network devices using kernel driver
+# ===================================
+# 0000:86:00.1 'Ethernet Controller XL710 for 40GbE QSFP+ 1583' if=ens5f1 drv=i40e unused=vfio-pci *Active*
+# ...
 
-# [NIC] is the high speed NIC that needs to receive traffic
-./usertools/dpdk-devbind.py --bind=vfio-pci [NIC]
+
+# <NIC> is the NIC that needs to receive traffic, e.g.
+./usertools/dpdk-devbind.py --bind=vfio-pci <NIC>
+# LIKE: ./usertools/dpdk-devbind.py --bind=vfio-pci ens5f1
+# OR: ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:86:00.1
+# If you need to unbind NIC from DPDK: ./usertools/dpdk-devbind.py -u 0000:86:00.1
 ```
 
 ### System build & run
+* Create necessary folders (You can also run the script `shell/make_dir.sh` under `shell` folder)
 
 ```
 mkdir build
@@ -51,18 +79,27 @@ mkdir data
 mkdir data/source
 mkdir data/index
 mkdir data/output
+```
 
+* Make project
+
+```
 make
+```
+
+* Run
+
+```
 (sudo) ./build/dpdkControllerTest
 ```
 
 ### Parameter Description
 * Users can input parameters to set:
-	* whether binding to cores
+	* whether binding to cores (If there are no performance requirements, there is no need to bind cores)
 	* the number of DPDK packet capture threads (also the number of packet processing threads)
 	* the number of indexing threads in the thread pool
 	* the cores to bind (if needed)
-* Example 1 (without binding cores)
+* Example 1 (without binding cores, 2 DPDK packet capture threads and 4 indexing threads)
 
 ```
 Do you want to bind to cores? (y/n)
@@ -95,7 +132,44 @@ Enter the core number for each indexing threads (0 is remained)
 [Press any key to quit]
 ```
 
-## 4.The structure of codes
+## 4.Results Display
+* Use the packet sending tool to send packets to the DPDK bound NIC.
+* The data files are saved at `data/input`. 
+	* the naming convention is `[NIC]_[Capture thread number].pcap`, e.g. `0-0.pcap`
+	* compared to regular PCAP files, the format may be different and may not be readable using Wireshark
+* The index files are saved at `data/index`.
+* The data files can be checked by `readpcap.py`
+	* running `readpcap.py` as `python3 readpcap.py [NIC count] [packet count for each]`
+	* such as `python3 readpcap.py 2 10`
+	* the output should be like:
+
+```
+read pcap file: ./data/input/0-0.pcap
+133.218.212.225:389 --> 187.160.222.201:10161 (UDP)
+213.200.226.103:57689 --> 203.194.187.104:22 (TCP)
+133.199.122.42:3490 --> 5.245.200.8:34592 (TCP)
+133.218.212.225:0 --> 187.160.211.10:0 (UDP)
+133.218.212.225:0 --> 187.160.211.10:0 (UDP)
+133.218.212.225:0 --> 187.207.0.105:0 (UDP)
+133.218.212.225:0 --> 187.207.0.105:0 (UDP)
+133.218.212.225:0 --> 177.125.253.22:0 (UDP)
+133.218.212.225:0 --> 177.125.253.22:0 (UDP)
+133.199.122.42:3490 --> 5.245.200.8:34592 (TCP)
+
+read pcap file: ./data/input/0-1.pcap
+133.199.122.26:21 --> 202.229.236.107:7614 (TCP)
+185.6.43.253:8310 --> 133.199.122.47:8121 (TCP)
+185.6.43.253:8310 --> 133.199.122.47:8121 (TCP)
+163.189.42.216:50902 --> 52.83.47.45:443 (TCP)
+163.189.42.216:50902 --> 52.83.47.45:443 (TCP)
+218.225.224.244:51202 --> 203.194.184.81:873 (TCP)
+163.189.42.216:50902 --> 52.83.47.45:443 (TCP)
+185.6.43.253:8310 --> 133.199.122.47:8121 (TCP)
+163.189.42.216:50902 --> 52.83.47.45:443 (TCP)
+185.6.43.253:8310 --> 133.199.122.47:8121 (TCP)
+```
+
+## 5.The structure of codes
 * **dpdk_lib**: the manually written dependency libraries required for the project, including indexed data structures, lock free read-write ring structures, etc
 * **dpdk_component**: the main code of project components
 * **bpf**: package tagging code in BPF format
