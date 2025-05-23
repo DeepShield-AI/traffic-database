@@ -19,7 +19,6 @@ def read_pcap(file_path):
         count = 0
         # 逐个读取数据包
         while True:
-            count += 1
             if count > int(sys.argv[2]):
                 break
             packet_header = f.read(16)
@@ -50,7 +49,8 @@ def read_pcap(file_path):
                     if len(trans_header) < 4:
                         continue
                     src_port, dst_port = struct.unpack('!HH', trans_header)
-                    print(f"{src_ip}:{src_port} --> {dst_ip}:{dst_port} ({'TCP' if protocol == 6 else 'UDP'})")
+                    print(f"{src_ip}:{src_port} --> {dst_ip}:{dst_port} ({protocol})")
+                    count += 1
 
             elif version == 6:
                 # IPv6
@@ -65,7 +65,8 @@ def read_pcap(file_path):
                     if len(trans_header) < 4:
                         continue
                     src_port, dst_port = struct.unpack('!HH', trans_header)
-                    print(f"{src_ip}:{src_port} --> {dst_ip}:{dst_port} ({'TCP' if next_header == 6 else 'UDP'})")
+                    print(f"{src_ip}:{src_port} --> {dst_ip}:{dst_port} ({protocol})")
+                    count += 1
 
             else:
                 # 其他 IP 协议暂不支持
