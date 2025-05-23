@@ -139,7 +139,7 @@ Enter the core number for each indexing threads (0 is remained)
 	* compared to regular PCAP files, the format may be different and may not be readable using Wireshark
 * The index files are saved at `data/index`.
 * The data files can be checked by `readpcap.py`
-	* running `readpcap.py` as `python3 readpcap.py [NIC count] [packet count for each]`
+	* running `readpcap.py` as `python3 readpcap.py [DPDK_Thread_Count] [Displayed_Packet_Count_For_Each_File]`
 	* such as `python3 readpcap.py 2 10`
 	* the output should be like:
 
