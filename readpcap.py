@@ -1,5 +1,6 @@
 import struct
 import socket
+import sys
 
 def read_pcap(file_path):
     with open(file_path, 'rb') as f:
@@ -19,7 +20,7 @@ def read_pcap(file_path):
         # 逐个读取数据包
         while True:
             count += 1
-            if count > 100:
+            if count > int(sys.argv[2]):
                 break
             packet_header = f.read(16)
             if len(packet_header) < 16:
@@ -71,6 +72,7 @@ def read_pcap(file_path):
                 continue
 
 if __name__ == "__main__":
-    read_pcap("./data/input/0-0.pcap")  # 将这里替换为你的 pcap 文件路径
-    print()
-    read_pcap("./data/input/0-1.pcap") 
+    for id in range(int(sys.argv[1])):
+        print(f"read pcap file: ./data/input/0-{id}.pcap")
+        read_pcap(f"./data/input/0-{id}.pcap")
+        print()
