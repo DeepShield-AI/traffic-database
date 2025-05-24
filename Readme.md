@@ -1,18 +1,19 @@
 # Traffic database (CraftIndex)
 
 ## 1.Background
-### goals
+### 1.1.Goals
 * Real time capture of high-speed traffic
 * High parallelism index construction
 * Index storage compression
 * Index key customization
 
-### Technology Dependencies
+### 1.2.Technology Dependencies
+* OS: Ubuntu 20.04.1, Linux kernel 5.15.0-136-generic
 * Programming Language: C++, version 17
 * DPDK, version 21.11.6
 
-## 2.Build & run
-### Dependencies library install
+## 2.Environmental establishment
+### 2.1.Dependencies library install
 * We provide the script for dependency installation `shell/depencdency_install.sh` 
 	* `sudo` is needed
 * You can also manually install dependencies as follows
@@ -22,7 +23,7 @@
 	* python3-pyelftools: `apt install python3-pyelftools`
 	* pkg-config: `apt install pkg-config`
 
-### DPDK install (Reference: [https://doc.dpdk.org/guides/linux_gsg/index.html](https://doc.dpdk.org/guides/linux_gsg/index.html))
+### 2.2.DPDK install (Reference: [https://doc.dpdk.org/guides/linux_gsg/index.html](https://doc.dpdk.org/guides/linux_gsg/index.html))
 * We provide DPDK installation package and the script `shell/depencdency_install.sh`
 	* This script needs to be run in the `shell` folder
 	* `sudo` is needed
@@ -40,7 +41,7 @@ ninja
 (sudo) ldconfig
 ```
 
-### NIC bind
+### 2.3.NIC bind
 
 * The network card used to capture data packets needs to be bound to DPDK according to the following steps(Reference: [https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html](https://doc.dpdk.org/guides/linux_gsg/linux_drivers.html))
 * We provide the binding script `shell/dpdk_bind.sh`
@@ -70,7 +71,7 @@ cd dpdk-<version>
 # If you need to unbind NIC from DPDK: ./usertools/dpdk-devbind.py -u 0000:86:00.1
 ```
 
-### System build & run
+### 2.4.System build
 * Create necessary folders (You can also run the script `shell/make_dir.sh` under `shell` folder)
 
 ```
@@ -87,13 +88,43 @@ mkdir data/output
 make
 ```
 
-* Run
+### 2.5.Transmitter build
+* The transmitter needs to set on another server. You can use TCPReplay (low speed) or Pktgen-DPDK (high speed) as the packet generator for replaying pcap files.
+* The network card used by the transmitter should be directly connected to the network card bound to the DPDK of this system (using Ethernet cable or virtual bridge), as shown in the following figure.
+
+![](./Transmitter.png)
+
+* TCPreplay
+	* Install by `apt install tcpreplay`
+* Pktgen-DPDK
+	* Install DPDK (as 2.2)
+	* DPDK NIC bind (as 2.3)
+	* Build Pktgen-DPDK as following code:
+
+```
+git clone https://github.com/pktgen/Pktgen-DPDK.git
+# We also provide the zip of pktgen-DPDK as pktgen-dpdk-pktgen-22.04.1.tar
+
+cd Pktgen-DPDK
+make
+```
+
+## 3.Run
+### 3.1.Run transmitter
+* TCPreplay
+	* `(sudo) tcpreplay -i <NIC> -t -K -l <Replay_Times> <PCAP_File>`
+* Pktgen-DPDK (running in folder `Pktgen-DPDK`)
+	* `(sudo) ./Builddir/app/pktgen -l <Cores> -n <Channel_Count> -- -P -m "[<TxCore>:<RxCore>].<PortID>" -s <PortID>:<PCAP_File>`
+	* e.g. `(sudo) ./Builddir/app/pktgen -l 12-20 -n 8 -- -P -m "[18:20].0" -s 0:../filled1M_wide10Mp.pcap`
+	* "PortID" is the serial number of the bound network card, which can be used `./usertools/dpdk-devbind.py --status` in folder `dpdk-21.11.6` to view.
+
+### 3.2.Run system
 
 ```
 (sudo) ./build/dpdkControllerTest
 ```
 
-### Parameter Description
+### 3.3.Parameter Description
 * Users can input parameters to set:
 	* whether binding to cores (If there are no performance requirements, there is no need to bind cores)
 	* the number of DPDK packet capture threads (also the number of packet processing threads)

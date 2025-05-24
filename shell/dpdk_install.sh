@@ -7,4 +7,5 @@ cd build
 ninja
 meson install
 ldconfig
+./usertools/dpdk-hugepages.py -p 2M --setup 1G
 cd ../../shell
