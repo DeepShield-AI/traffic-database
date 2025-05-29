@@ -17,6 +17,14 @@
 #define MBUF_CACHE_SIZE 512
 #define BURST_SIZE 32
 
+static uint8_t symmetric_rss_key[40] = {
+    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+};
+
 static const struct rte_bpf_xsym bpf_xsym[] = {
 	{
 		.name = RTE_STR(stdout),
@@ -63,7 +71,8 @@ static struct rte_eth_conf port_conf = {
 	},
     .rx_adv_conf = {
         .rss_conf = {
-            .rss_key = NULL,  // Use default RSS key
+            .rss_key = symmetric_rss_key,  // Use symmetric RSS key
+            .rss_key_len = sizeof(symmetric_rss_key),
             .rss_hf = ETH_RSS_IP | ETH_RSS_TCP | ETH_RSS_UDP,  // Hash on IP, TCP, and UDP
         },
     },
