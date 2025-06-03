@@ -152,14 +152,12 @@ Enter the controller core number (0 is remained)
 20
 Enter number of DPDK packet capture threads
 2
-Enter the core number for each DPDK packet capture threads (0 is remained)
-2 4
 Enter the core number for each packet processing threads (0 is remained)
-6 8
+2 4
 Enter number of indexing thread
 4
 Enter the core number for each indexing threads (0 is remained)
-10 12 14 16
+6 8 10 12
 ...
 [Press any key to quit]
 ```
