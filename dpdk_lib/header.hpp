@@ -3,6 +3,7 @@
 #include <pcap.h>
 
 #define IPV6_HEADER_LEN 40
+#define UDP_HEADER_LEN 8
 
 /*从字符串直接转换为header时，为大端序*/
 

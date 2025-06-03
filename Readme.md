@@ -117,6 +117,7 @@ make
 	* `(sudo) ./Builddir/app/pktgen -l <Cores> -n <Channel_Count> -- -P -m "[<TxCore>:<RxCore>].<PortID>" -s <PortID>:<PCAP_File>`
 	* e.g. `(sudo) ./Builddir/app/pktgen -l 12-20 -n 8 -- -P -m "[18:20].0" -s 0:../filled1M_wide10Mp.pcap`
 	* "PortID" is the serial number of the bound network card, which can be used `./usertools/dpdk-devbind.py --status` in folder `dpdk-21.11.6` to view.
+	* (In Pktgen-DPDK CLI) `start 0`.
 
 ### 3.2.Run system
 

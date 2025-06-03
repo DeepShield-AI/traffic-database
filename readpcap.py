@@ -60,6 +60,7 @@ def read_pcap(file_path):
                 next_header = packet_data[6]
                 src_ip = socket.inet_ntop(socket.AF_INET6, packet_data[8:24])
                 dst_ip = socket.inet_ntop(socket.AF_INET6, packet_data[24:40])
+                protocol = next_header
 
                 if next_header in (6, 17):  # TCP or UDP
                     trans_header = packet_data[40:44]

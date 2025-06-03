@@ -44,16 +44,17 @@ int main(){
    init_data.nb_rx = nb_rx;
 
    if(init_data.bind_core){
-      std::cout << "Enter the core number for each DPDK packet capture threads (0 is remained)" << std::endl;
-      for(int i=0;i<nb_rx;++i){
-         u_int32_t core_id;
-         std::cin >> core_id;
-         init_data.dpdk_core_id_list.push_back(core_id);
-      }
+      // std::cout << "Enter the core number for each DPDK packet capture threads (0 is remained)" << std::endl;
+      // for(int i=0;i<nb_rx;++i){
+      //    u_int32_t core_id;
+      //    std::cin >> core_id;
+      //    init_data.dpdk_core_id_list.push_back(core_id);
+      // }
       std::cout << "Enter the core number for each packet processing threads (0 is remained)" << std::endl;
       for(int i=0;i<nb_rx;++i){
          u_int32_t core_id;
          std::cin >> core_id;
+         init_data.dpdk_core_id_list.push_back(core_id);
          init_data.packet_core_id_list.push_back(core_id);
       }
    }
