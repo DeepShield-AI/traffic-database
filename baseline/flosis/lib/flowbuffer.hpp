@@ -165,6 +165,8 @@ struct ParsedPacket {
     const uint8_t* header;
     u_int16_t header_length;
     u_int64_t timestamp;
+    bool is_fin;
+    bool is_rst;
 };
 
 class FlowBuffer {
@@ -177,6 +179,9 @@ private:
     AggBuffer header_buffer;
     AggBuffer upstream_data_buffer;
     AggBuffer downstream_data_buffer;
+    bool fin_seen;
+    bool rst_seen;
+    u_int32_t count_after_fin;
 public:
     FlowBuffer(LockFreeChunkPool* pool) 
         : pool(pool), 
@@ -185,7 +190,10 @@ public:
           header_buffer(pool), 
           upstream_data_buffer(pool), 
           downstream_data_buffer(pool),
-          packet_count(0) {}
+          packet_count(0),
+          fin_seen(false),
+          rst_seen(false),
+          count_after_fin(0) {}
     ~FlowBuffer() = default;
 
     bool append_packet(struct ParsedPacket* packet){
@@ -204,7 +212,30 @@ public:
 
         this->packet_count++;
         this->last_update_time = packet->timestamp;
+        this->fin_seen = this->fin_seen || packet->is_fin;
+        this->rst_seen = this->rst_seen || packet->is_rst;
+        if (this->fin_seen) {
+            this->count_after_fin++;
+        }
         return true;
+    }
+
+    bool is_finished() const {
+        return (this->fin_seen && this->count_after_fin >= 4) || this-> rst_seen;
+    }
+    void set_flags(bool _fin_seen, bool _rst_seen, u_int32_t _count_after_fin){
+        this->fin_seen = _fin_seen;
+        this->rst_seen = _rst_seen;
+        this->count_after_fin = _count_after_fin;
+    }
+    bool get_fin_seen() const {
+        return fin_seen;
+    }
+    bool get_rst_seen() const {
+        return rst_seen;
+    }
+    u_int32_t get_count_after_fin() const {
+        return count_after_fin;
     }
 
     u_int32_t get_packet_count() const {

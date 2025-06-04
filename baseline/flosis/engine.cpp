@@ -10,7 +10,8 @@ void FlowEngine::readPacket(struct rte_mbuf *buf,u_int64_t ts,ParsedPacket* pack
     if(version == 4){
         const struct ip_header* ip_protocol = (const struct ip_header *)(packet->header + this->eth_header_len);
 
-        if (ip_protocol->ip_protocol != IPPROTO_TCP && ip_protocol->ip_protocol != IPPROTO_UDP){
+        // if (ip_protocol->ip_protocol != IPPROTO_TCP && ip_protocol->ip_protocol != IPPROTO_UDP){
+        if (ip_protocol->ip_protocol != IPPROTO_TCP){
             packet = nullptr;
             flow_meta = nullptr;
             return;
@@ -30,14 +31,16 @@ void FlowEngine::readPacket(struct rte_mbuf *buf,u_int64_t ts,ParsedPacket* pack
         u_int8_t l4_length = 0;
         if (ip_protocol->ip_protocol == IPPROTO_TCP) {
             l4_length = ((packet->header + this->eth_header_len + ip_protocol->ip_header_length * 4)[12] >> 4) * 4;
-        } else if (ip_protocol->ip_protocol == IPPROTO_UDP) {
-            l4_length = UDP_HEADER_LEN;
         }
+        // } else if (ip_protocol->ip_protocol == IPPROTO_UDP) {
+        //     l4_length = UDP_HEADER_LEN;
+        // }
         packet->header_length = this->eth_header_len + ip_protocol->ip_header_length * 4 + l4_length;
     }else if(version == 6){
         u_int8_t l4_protocol = (packet->header + this->eth_header_len)[6];
 
-        if (l4_protocol != IPPROTO_TCP && l4_protocol != IPPROTO_UDP) {
+        // if (l4_protocol != IPPROTO_TCP && l4_protocol != IPPROTO_UDP) {
+        if (l4_protocol != IPPROTO_TCP) {
             packet = nullptr;
             flow_meta = nullptr;
             return;
@@ -63,9 +66,10 @@ void FlowEngine::readPacket(struct rte_mbuf *buf,u_int64_t ts,ParsedPacket* pack
         u_int8_t l4_length = 0;
         if (l4_protocol == IPPROTO_TCP) {
             l4_length = ((packet->header + this->eth_header_len + IPV6_HEADER_LEN)[12] >> 4) * 4;
-        } else if (l4_protocol == IPPROTO_UDP) {
-            l4_length = UDP_HEADER_LEN;
         }
+        // } else if (l4_protocol == IPPROTO_UDP) {
+        //     l4_length = UDP_HEADER_LEN;
+        // }
         packet->header_length = this->eth_header_len + IPV6_HEADER_LEN + l4_length;
     }else{
         packet = nullptr;
@@ -108,15 +112,21 @@ FlowBuffer* FlowEngine::writePacketToMap(ParsedPacket& packet, FlowMetadata& flo
         flow_map[flow_meta] = buffer;
         return nullptr;
     }
-    if (buffer-> get_totol_length() + packet.data_length + packet.header_length < this->flow_buffer_len_threshold &&
-        packet.timestamp - buffer->get_last_update_time() < this->flow_buffer_time_threshold){
+    if (buffer->get_totol_length() + packet.data_length + packet.header_length < this->flow_buffer_len_threshold && buffer->is_finished()){
         if (!buffer->append_packet(&packet)){
-            printf("Failed to append packet to new flow buffer\n");
+            printf("Failed to append packet to exist flow buffer\n");
+        }
+        if (buffer->is_finished()){
+            this->flow_map.erase(it->first);
+            return buffer;
         }
         return nullptr;
     }
     FlowBuffer* new_buffer = new FlowBuffer(this->pool);
     packet.is_upstream = true;
+    if (!buffer->is_finished()){
+        new_buffer->set_flags(buffer->get_fin_seen(), buffer->get_rst_seen(), buffer->get_count_after_fin());
+    }
     if (!new_buffer->append_packet(&packet)){
         printf("Failed to append packet to new flow buffer\n");
         delete new_buffer;
