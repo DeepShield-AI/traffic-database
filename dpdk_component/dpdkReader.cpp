@@ -321,6 +321,14 @@ int DPDKReader::run(){
         .data = nullptr,
         .len = 0,
     };
+
+    u_int64_t read_time = 0;
+    u_int64_t analysis_time = 0;
+    u_int64_t write_time = 0;
+    u_int64_t aggregate_time = 0;
+    u_int64_t index_time = 0;
+    u_int64_t delete_time = 0;
+    u_int64_t total_time = 0;
     
     while(true){
         ts = rte_rdtsc();
@@ -336,27 +344,33 @@ int DPDKReader::run(){
         int err = 0;
         for(int i=0;i<nb_rx;++i){
             pkt_count ++;
-            
+            auto total_start = std::chrono::high_resolution_clock::now();
+
+            auto read_start = std::chrono::high_resolution_clock::now();
             this->readPacket(bufs[i],ts,&meta);
-            
             if(meta.data == nullptr){
                 std::cout << "DPDK Reader log: read over." << std::endl;
                 err = 1;
                 break;
             }
+            auto read_end = std::chrono::high_resolution_clock::now();
+            read_time += std::chrono::duration_cast<std::chrono::microseconds>(read_end - read_start).count();
 
             // for(u_int8_t i = 0; i< meta.tag_num; ++i){
                 
             // }
-            // printf("\n");
-
+            // printfauto read_start = std::chrono::high_resolution_clock::now();("\n");
+            auto write_start = std::chrono::high_resolution_clock::now();
             u_int64_t _offset = this->writePacketToPacketBuffer(meta);
             if(_offset == std::numeric_limits<uint64_t>::max()){
                 std::cerr << "DPDK Reader error: packet buffer overflow!" << std::endl;
                 err = 1;
                 break;
             }
+            auto write_end = std::chrono::high_resolution_clock::now();
+            write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
 
+            auto analysis_start = std::chrono::high_resolution_clock::now();
             FlowMetadata flow_meta = this->getFlowMetaData(meta);
             if(flow_meta.sourceAddress.size() == 0){
                 printf("DPDK Reader error: Non-IP L3 protocol!\n");
@@ -364,7 +378,15 @@ int DPDKReader::run(){
                 rte_pktmbuf_free(bufs[i]);
                 continue;
             }
+            auto analysis_end = std::chrono::high_resolution_clock::now();
+            analysis_time += std::chrono::duration_cast<std::chrono::microseconds>(analysis_end - analysis_start).count();
+
+            auto aggregate_start = std::chrono::high_resolution_clock::now();
             u_int64_t last = this->packetAggregator->addPacket(flow_meta,_offset,ts);
+            auto aggregate_end = std::chrono::high_resolution_clock::now();
+            aggregate_time += std::chrono::duration_cast<std::chrono::microseconds>(aggregate_end - aggregate_start).count();
+
+            auto index_start = std::chrono::high_resolution_clock::now();
             if(last != std::numeric_limits<uint64_t>::max()){
                 // printf("%llu\n",last);
                 u_int32_t diff = (u_int32_t)(_offset - last);
@@ -377,15 +399,25 @@ int DPDKReader::run(){
                 }
                 index_count++;
             }
+            auto index_end = std::chrono::high_resolution_clock::now();
+            index_time += std::chrono::duration_cast<std::chrono::microseconds>(index_end - index_start).count();
+            
+            
 
-            if(!this->writeTagToRing(meta.data,meta.tags,meta.tag_num,flow_meta,ts,_offset,last)){
-                printf("DPDK Reader error: write tag to ring failed!\n");
-            }
+            // if(!this->writeTagToRing(meta.data,meta.tags,meta.tag_num,flow_meta,ts,_offset,last)){
+            //     printf("DPDK Reader error: write tag to ring failed!\n");
+            // }
 
             // printf("packet offset: %llu, l3 offset: %u, l4 offset: %u.\n",_offset,info->l3_offset,info->l4_offset);
             
+            auto delete_start = std::chrono::high_resolution_clock::now();
             meta.data = nullptr;
             rte_pktmbuf_free(bufs[i]);
+            auto delete_end = std::chrono::high_resolution_clock::now();
+            delete_time += std::chrono::duration_cast<std::chrono::microseconds>(delete_end - delete_start).count();
+
+            auto total_end = std::chrono::high_resolution_clock::now();
+            total_time += std::chrono::duration_cast<std::chrono::microseconds>(total_end - total_start).count();
         }
         nb_rx = 0;
         if(err){
@@ -403,6 +435,7 @@ int DPDKReader::run(){
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     printf("DPDK Reader log: thread quit, during %llu us with %llu packets, %llu Bytes, %llu indexes, and %llu tag indexes.\n",this->duration_time,pkt_count,this->byteLen,index_count,this->tagIndexCount);
+    printf("DPDK Reader log: read time %llu us, write time %llu us,analysis time %llu us ,aggregate time %llu us, index time %llu us, delete time %llu us, total time %llu us.\n",read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     return 0;
 }
 

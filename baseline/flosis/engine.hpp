@@ -19,6 +19,7 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 #include "lib/flowbuffer.hpp"
+#include "lib/wbuffer.hpp"
 #include "../../dpdk_lib/packetAggregator.hpp"
 #include "../../dpdk_lib/dpdk.hpp"
 #include "../../dpdk_lib/header.hpp"
@@ -48,15 +49,17 @@ private:
 
     LockFreeChunkPool* pool;
     std::unordered_map<FlowMetadata, FlowBuffer*, FlowMetadata::hash> flow_map;
-    PointerRingBuffer* flow_to_dump_list;
+    LockFreeChunkPool* dump_pool;
+    WBuffer wbuffer;
+    PointerRingBuffer* wbuffer_to_dump_list;
 
     void readPacket(struct rte_mbuf *buf,u_int64_t ts,ParsedPacket* packet, FlowMetadata* flow_meta);
     FlowBuffer* writePacketToMap(ParsedPacket& packet, FlowMetadata& flow_meta);
-    void writeBufferToList(FlowBuffer* buffer);
+    void writeFlowtoWBuffer(FlowBuffer* buffer);
 
 public:
-    FlowEngine(const u_int32_t eth_header_len, const u_int32_t flow_buffer_len_threshold, const u_int32_t flow_buffer_time_threshold, DPDK* dpdk, LockFreeChunkPool* pool, u_int16_t port_id, u_int16_t rx_id, PointerRingBuffer* flow_to_dump_list)
-        : eth_header_len(eth_header_len), flow_buffer_len_threshold(flow_buffer_len_threshold), flow_buffer_time_threshold(flow_buffer_time_threshold) ,dpdk(dpdk), pool(pool), port_id(port_id), rx_id(rx_id),flow_to_dump_list(flow_to_dump_list) {
+    FlowEngine(const u_int32_t eth_header_len, const u_int32_t flow_buffer_len_threshold, const u_int32_t flow_buffer_time_threshold, DPDK* dpdk, LockFreeChunkPool* pool, LockFreeChunkPool* dump_pool, u_int16_t port_id, u_int16_t rx_id, PointerRingBuffer* wbuffer_to_dump_list)
+        : eth_header_len(eth_header_len), flow_buffer_len_threshold(flow_buffer_len_threshold), flow_buffer_time_threshold(flow_buffer_time_threshold) ,dpdk(dpdk), pool(pool), dump_pool(dump_pool), wbuffer(WBuffer(dump_pool)), port_id(port_id), rx_id(rx_id),wbuffer_to_dump_list(wbuffer_to_dump_list) {
         this->flow_map = std::unordered_map<FlowMetadata, FlowBuffer*, FlowMetadata::hash>();
     }
     ~FlowEngine(){

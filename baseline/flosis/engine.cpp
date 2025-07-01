@@ -99,6 +99,7 @@ FlowBuffer* FlowEngine::writePacketToMap(ParsedPacket& packet, FlowMetadata& flo
         if (it != flow_map.end()){
             buffer = it->second;
             packet.is_upstream = false;
+            flow_meta = ob_flow_meta;
         }
     }
     if (buffer == nullptr){
@@ -136,9 +137,28 @@ FlowBuffer* FlowEngine::writePacketToMap(ParsedPacket& packet, FlowMetadata& flo
     return buffer;
 }
 
-void FlowEngine::writeBufferToList(FlowBuffer* buffer){
-    if(!this->flow_to_dump_list->put(buffer)){
-        printf("Failed to put flow buffer to dump list\n");
-        delete buffer;
+void FlowEngine::writeFlowtoWBuffer(FlowBuffer* buffer){
+    AggBuffer* timestamp_buffer = buffer->get_timestamp_buffer();
+    AggBuffer* length_buffer = buffer->get_length_buffer();
+    AggBuffer* header_buffer = buffer->get_header_buffer();
+    AggBuffer* upstream_data_buffer = buffer->get_upstream_data_buffer();
+    AggBuffer* downstream_data_buffer = buffer->get_downstream_data_buffer();
+
+    AggBuffer* agg_buffers[] = {timestamp_buffer, length_buffer, header_buffer, upstream_data_buffer, downstream_data_buffer};
+
+    for(auto buffer_ptr : agg_buffers){
+        auto current_chunk = buffer_ptr->get_head();
+        while (current_chunk){
+            u_int32_t write_len = this->wbuffer.put(current_chunk, 0, current_chunk->size);
+            if(write_len < current_chunk->size){
+                auto wbuffer_chunk = this->wbuffer.getChunk();
+                this->wbuffer.UpdateChunk();
+                if(!this->wbuffer_to_dump_list->put(wbuffer_chunk)){
+                    printf("Engine error: Failed to put flow buffer to dump list\n");
+                    delete wbuffer_chunk;
+                }
+                this->wbuffer.put(current_chunk, write_len, current_chunk->size - write_len);
+            }
+        }
     }
 }
