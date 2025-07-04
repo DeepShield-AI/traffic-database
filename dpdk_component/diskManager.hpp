@@ -6,28 +6,28 @@
 #include "../dpdk_lib/memoryBuffer.hpp"
 #include "../dpdk_lib/diskAgent.hpp"
 #include "../dpdk_lib/diskBuffer.hpp"
+#include "../dpdk_lib/pointerRingBuffer.hpp"
 
 class DiskManager {
 private:
-    std::vector<MemoryBuffer*> buffers;
-    std::vector<DiskAgent*> agents;
-    DiskBuffer* diskBuffer;
+    // std::vector<MemoryBuffer*> buffers;
+    PointerRingBuffer* block_ring;
+    DiskAgent* agent;
+    DiskBuffer* disk_buffer;
 
-    std::vector<u_int32_t> checkID;
+    // std::vector<u_int32_t> checkID;
     std::atomic_bool stop;
-    u_int32_t testID;
+    // u_int32_t testID;
     bool runUnit();
 public:
-    DiskManager(u_int32_t id, DiskBuffer* diskBuffer):diskBuffer(diskBuffer){
-        this->buffers = std::vector<MemoryBuffer*>();
-        this->agents = std::vector<DiskAgent*>();
-        this->checkID = std::vector<u_int32_t>();
+    DiskManager(u_int32_t id, PointerRingBuffer* block_ring, DiskAgent* agent, DiskBuffer* disk_buffer):
+        block_ring(block_ring), agent(agent), disk_buffer(disk_buffer){
         this->stop = false;
-        this->testID = id;
+        // this->testID = id;
     }
     ~DiskManager()=default;
-    void addBuffer(MemoryBuffer* buffer, DiskAgent* agent);
-    void setBuffer(u_int64_t buffer_id, MemoryBuffer* buffer);
+    void addBlock(DiskBlock* block);
+    void setMeta(u_int64_t buffer_id, DiskBlock* block);
     int run();
     void asynchronousStop();
 };

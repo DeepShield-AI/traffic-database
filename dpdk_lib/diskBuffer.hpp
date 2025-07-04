@@ -29,6 +29,7 @@
 
 struct DiskMeta{
     u_int32_t rss_id;
+    u_int32_t next_id;
     u_int64_t start_time;
     u_int64_t end_time;
     u_int32_t index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
@@ -61,6 +62,13 @@ public:
     void setRSSID(u_int64_t index, u_int32_t rss_id){
         if (index < block_num) {
             disk_metas[index].rss_id = rss_id;
+        } else {
+            printf("Disk buffer error: index %lu out of bounds!\n", index);
+        }
+    }
+    void setNextID(u_int64_t index, u_int32_t next_id){
+        if (index < block_num) {
+            disk_metas[index].next_id = next_id;
         } else {
             printf("Disk buffer error: index %lu out of bounds!\n", index);
         }

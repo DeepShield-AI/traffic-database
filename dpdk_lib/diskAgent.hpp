@@ -25,6 +25,11 @@
 //     }
 // };
 
+struct DiskBlock{
+    u_int32_t rss_id;
+    char* buffer;
+};
+
 class DiskAgent{
 private:
     const std::string disk_name;
