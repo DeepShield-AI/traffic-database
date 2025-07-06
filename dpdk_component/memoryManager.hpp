@@ -11,12 +11,15 @@ private:
     char* memoryPool;
 
     PointerRingBuffer* block_ring;
-    DiskAgent* disk_agent;
+    std::vector<DiskAgent*> disk_agents;
 
     std::atomic_bool stop;
+
+    bool bind_core;
+    u_int32_t core_id;
 public:
-    MemoryManager(u_int32_t block_size, u_int64_t pool_size, PointerRingBuffer* block_ring, DiskAgent* disk_agent):
-        block_size(block_size), pool_size(pool_size), block_ring(block_ring), disk_agent(disk_agent), stop(false) {
+    MemoryManager(u_int32_t block_size, u_int64_t pool_size, PointerRingBuffer* block_ring):
+        block_size(block_size), pool_size(pool_size), block_ring(block_ring) {
         if(this->pool_size % this->block_size != 0){
             printf("Memory manager error: pool size should be multiple of block size!");
             throw std::runtime_error("memory manager block size failed");
@@ -26,10 +29,16 @@ public:
             printf("Memory manager error: mmap failed for disk metas!\n");
             throw std::runtime_error("memory manager mmap failed");
         }
+        this->disk_agents = std::vector<DiskAgent*>();
+        this->stop = true;
     }
     ~MemoryManager(){
         munmap(this->memoryPool, this->pool_size);
     }
+    void addDiskAgent(DiskAgent* agent);
+    void bindCore(u_int32_t core_id);
+    int run();
+    void asynchronousStop();
 };
 
 

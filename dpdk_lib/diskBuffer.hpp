@@ -29,7 +29,9 @@
 
 struct DiskMeta{
     u_int32_t rss_id;
-    u_int32_t next_id;
+    u_int32_t next_id; 
+    u_int32_t bitmap_id;
+    u_int32_t padding;
     u_int64_t start_time;
     u_int64_t end_time;
     u_int32_t index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
@@ -59,6 +61,7 @@ public:
         }
         return nullptr;
     }
+    // disk manager thread
     void setRSSID(u_int64_t index, u_int32_t rss_id){
         if (index < block_num) {
             disk_metas[index].rss_id = rss_id;
@@ -66,6 +69,15 @@ public:
             printf("Disk buffer error: index %lu out of bounds!\n", index);
         }
     }
+    // disk manager thread
+    void setBitmapID(u_int64_t index, u_int32_t bitmap_id){
+        if (index < block_num) {
+            disk_metas[index].bitmap_id = bitmap_id;
+        } else {
+            printf("Disk buffer error: index %lu out of bounds!\n", index);
+        }
+    }
+    // disk manager thread
     void setNextID(u_int64_t index, u_int32_t next_id){
         if (index < block_num) {
             disk_metas[index].next_id = next_id;
@@ -73,6 +85,7 @@ public:
             printf("Disk buffer error: index %lu out of bounds!\n", index);
         }
     }
+    // index storage thread
     void setIndexID(u_int64_t index, IndexType index_type, u_int32_t index_start, u_int32_t index_end){
         if (index < block_num) {
             disk_metas[index].index_meta[index_type * 2] = index_start;
@@ -81,6 +94,7 @@ public:
             printf("Disk buffer error: index %lu out of bounds!\n", index);
         }
     }
+    // disk manager thread
     void setTime(u_int64_t index, u_int64_t start_time, u_int64_t end_time){
         if (index < block_num) {
             disk_metas[index].start_time = start_time;
