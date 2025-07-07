@@ -30,8 +30,8 @@
 struct DiskMeta{
     u_int32_t rss_id;
     u_int32_t next_id; 
-    u_int32_t bitmap_id;
-    u_int32_t padding;
+    // u_int32_t bitmap_id;
+    // u_int32_t padding;
     u_int64_t start_time;
     u_int64_t end_time;
     u_int32_t index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
@@ -70,13 +70,13 @@ public:
         }
     }
     // disk manager thread
-    void setBitmapID(u_int64_t index, u_int32_t bitmap_id){
-        if (index < block_num) {
-            disk_metas[index].bitmap_id = bitmap_id;
-        } else {
-            printf("Disk buffer error: index %lu out of bounds!\n", index);
-        }
-    }
+    // void setBitmapID(u_int64_t index, u_int32_t bitmap_id){
+    //     if (index < block_num) {
+    //         disk_metas[index].bitmap_id = bitmap_id;
+    //     } else {
+    //         printf("Disk buffer error: index %lu out of bounds!\n", index);
+    //     }
+    // }
     // disk manager thread
     void setNextID(u_int64_t index, u_int32_t next_id){
         if (index < block_num) {

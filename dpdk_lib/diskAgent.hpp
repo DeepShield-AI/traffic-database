@@ -26,11 +26,12 @@
 // };
 
 struct DiskBlock{
-    u_int32_t rss_id;
-    u_int32_t bitmap_id;
-    u_int64_t start_time;
-    u_int64_t end_time;
-    char* buffer;
+    u_int32_t rss_id; // RSS ID of the packet handling thread
+    u_int32_t block_id; // ID of the block in memory pool
+    u_int64_t write_pos; // Position in the disk to write
+    u_int64_t start_time; // Start time of packets in block
+    u_int64_t end_time; // End time of packets in block
+    char* buffer; // Data buffer of the block
 };
 
 class DiskAgent{
