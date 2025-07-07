@@ -10,6 +10,9 @@ private:
     const u_int64_t pool_size;
     char* memoryPool;
 
+    u_int64_t memory_offset;
+    u_int64_t memory_size;
+
     PointerRingBuffer* block_ring;
     std::vector<DiskAgent*> disk_agents;
 
@@ -17,26 +20,31 @@ private:
 
     bool bind_core;
     u_int32_t core_id;
+
+    void bindCore();
+    void allocate_blocks();
 public:
-    MemoryManager(u_int32_t block_size, u_int64_t pool_size, PointerRingBuffer* block_ring):
-        block_size(block_size), pool_size(pool_size), block_ring(block_ring) {
+    MemoryManager(u_int32_t block_size, u_int64_t pool_size, PointerRingBuffer* block_ring, char* memoryPool, u_int64_t memory_offset, u_int64_t memory_size):
+        block_size(block_size), pool_size(pool_size), block_ring(block_ring), memoryPool(memoryPool), memory_offset(memory_offset), memory_size(memory_size) {
         if(this->pool_size % this->block_size != 0){
             printf("Memory manager error: pool size should be multiple of block size!");
             throw std::runtime_error("memory manager block size failed");
         }
-        this->memoryPool = (char*)mmap(nullptr, this->pool_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-        if (this->memoryPool == MAP_FAILED){
-            printf("Memory manager error: mmap failed for disk metas!\n");
-            throw std::runtime_error("memory manager mmap failed");
-        }
+        // this->memoryPool = (char*)mmap(nullptr, this->pool_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        // if (this->memoryPool == MAP_FAILED){
+        //     printf("Memory manager error: mmap failed for disk metas!\n");
+        //     throw std::runtime_error("memory manager mmap failed");
+        // }
         this->disk_agents = std::vector<DiskAgent*>();
+        this->bind_core = false;
+        this->core_id = 0;
         this->stop = true;
     }
     ~MemoryManager(){
         munmap(this->memoryPool, this->pool_size);
     }
-    void addDiskAgent(DiskAgent* agent);
-    void bindCore(u_int32_t core_id);
+    void addAgent(DiskAgent* agent);
+    void setBindCore(u_int32_t core_id);
     int run();
     void asynchronousStop();
 };

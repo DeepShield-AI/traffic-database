@@ -64,13 +64,14 @@ int DiskManager::run(){
         this->bindCore();
     }
     this->stop = false;
-    while(!this->stop){
+    while(true){
         DiskBlock* block = (DiskBlock*)this->block_ring->get();
         if(block == nullptr){
             break;
         }
         this->addBlock(block);
         this->setMeta(block);
+        delete block;
     }
     printf("Disk manager log: thread quit.\n");
 }
