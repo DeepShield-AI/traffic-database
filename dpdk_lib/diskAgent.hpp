@@ -73,6 +73,7 @@ public:
     }
     ~DiskAgent() {
         if (this->ring != nullptr){
+            // while (io_uring_sq_ready(this->ring)>0);
             io_uring_queue_exit(this->ring);
         }
         close(this->disk_fd);
@@ -187,6 +188,9 @@ public:
 
         io_uring_cqe_seen(ring, cqe);
         return true;
+    }
+    bool jobFinished(){
+        return io_uring_sq_ready(this->ring) == 0 && io_uring_cq_ready(this->ring) == 0;
     }
 };
 

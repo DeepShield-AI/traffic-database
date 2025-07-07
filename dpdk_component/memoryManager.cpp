@@ -69,6 +69,13 @@ int MemoryManager::run(){
             this->block_ring->put((void*)buffer);
         }
     }
+    for(auto agent: this->disk_agents){
+        while(!agent->jobFinished()){
+            u_int32_t block_id = agent->processCompletions();
+        }
+    }
+    printf("Memory manager log: thread quit.\n");
+    return 0;
 }
 
 void MemoryManager::asynchronousStop(){
