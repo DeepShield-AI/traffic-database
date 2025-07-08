@@ -40,7 +40,7 @@ private:
     // const std::string disk_name;
     const u_int64_t disk_size;
     // const u_int64_t start_offset;
-    const u_int32_t block_size;
+    const u_int64_t block_size;
     const u_int64_t block_num;
     const u_int32_t ring_depth;
 
@@ -49,7 +49,7 @@ private:
     
     struct io_uring* ring;
 public:
-    DiskAgent(u_int64_t disk_size, u_int32_t block_size, int disk_fd, u_int32_t ring_depth, u_int32_t idle_time)
+    DiskAgent(u_int64_t disk_size, u_int64_t block_size, int disk_fd, u_int32_t ring_depth, u_int32_t idle_time)
         : disk_size(disk_size), block_size(block_size), block_num(disk_size / block_size), ring_depth(ring_depth), disk_fd(disk_fd){
         if (this->disk_size % this->block_size != 0){
             printf("Disk agent error: disk size %llu is not a multiple of block size %u!\n", this->disk_size, this->block_size);

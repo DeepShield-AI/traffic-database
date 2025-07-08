@@ -58,8 +58,6 @@ public:
         it->second.ts = ts;
         return last;
     }
-    /* TODO */
-    // void clearByTS();
 };
 
 #endif

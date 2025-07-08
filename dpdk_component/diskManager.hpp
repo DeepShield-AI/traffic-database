@@ -12,7 +12,7 @@ class DiskManager {
 private:
     // const std::string disk_name;
     const u_int64_t disk_size;
-    const u_int32_t block_size;
+    const u_int64_t block_size;
     const u_int64_t block_num;
     const u_int32_t total_manager_count;
     int disk_fd;
@@ -40,7 +40,7 @@ private:
     void addBlock(DiskBlock* block);
     void bindCore();
 public:
-    DiskManager(u_int64_t disk_size, u_int32_t block_size, u_int32_t total_manager_count,int disk_fd, PointerRingBuffer* block_ring, DiskBuffer* disk_buffer):
+    DiskManager(u_int64_t disk_size, u_int64_t block_size, u_int32_t total_manager_count,int disk_fd, PointerRingBuffer* block_ring, DiskBuffer* disk_buffer):
         disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),total_manager_count(total_manager_count), disk_fd(disk_fd),block_ring(block_ring), disk_buffer(disk_buffer){
         // this->disk_fd = open(this->disk_name.c_str(), O_DIRECT | O_RDWR);
         // if (this->disk_fd < 0) {

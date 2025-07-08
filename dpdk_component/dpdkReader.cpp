@@ -34,17 +34,53 @@ uint64_t swap_endianness(uint64_t value) {
            ((value << 56) & 0x00000000000000FFULL);   // byte 7
 }
 
-void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta){
-    meta->tag_num = 0;
-    for(u_int8_t i = 0; i< MAX_TAG_NUM; ++i){
-        Tag* tag = (Tag*)&(buf->dynfield1[i]);
-        if(tag->id == 0){
-            break;
-        }
-        meta->tag_num ++;
+void DPDKReader::replaceBlock(u_int64_t ts){
+    DiskBlock* new_block = (DiskBlock*)this->blockRecieveRing->get();
+    if(new_block == nullptr){
+        return;
     }
+    u_int64_t writePos = (*(this->diskWritePos))++;
+    writePos %= this->block_num;
+    new_block->start_time = ts;
+    new_block->write_pos = writePos;
+    new_block->rss_id = (this->port_id << 8) + this->rx_id;
+    new_block->last_write_pos = this->block_num;
 
-    meta->tags = (Tag*)(buf->dynfield1);
+    this->queue_head++;
+    this->queue_head %= this->queue_size;
+    DiskBlock* block = this->blockTmpQueue[this->queue_head];
+    if(block == nullptr){
+        block->end_time = ts;
+        new_block->last_write_pos = block->write_pos;
+        this->blockWriteRing->put((void*)block);
+    }
+    this->blockTmpQueue[this->queue_head] = new_block;
+}
+
+void DPDKReader::writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts){
+    if(this->write_offset + len > this->block_size){
+        u_int32_t tmp = this->block_size - this->write_offset;
+        memcpy(this->blockTmpQueue[this->queue_head] + this->write_offset, data, tmp);
+        this->replaceBlock(ts);
+        memcpy(this->blockTmpQueue[this->queue_head] + this->write_offset, data, len - tmp);
+        this->write_offset = len - tmp;
+        return;
+    }
+    memcpy(this->blockTmpQueue[this->queue_head] + this->write_offset, data, len);
+    this->write_offset += len;
+}
+
+void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta){
+    // meta->tag_num = 0;
+    // for(u_int8_t i = 0; i< MAX_TAG_NUM; ++i){
+    //     Tag* tag = (Tag*)&(buf->dynfield1[i]);
+    //     if(tag->id == 0){
+    //         break;
+    //     }
+    //     meta->tag_num ++;
+    // }
+
+    // meta->tags = (Tag*)(buf->dynfield1);
     
     meta->header->flow_next_diff = std::numeric_limits<uint32_t>::max();
     meta->header->caplen = rte_pktmbuf_data_len(buf) - this->eth_header_len;
@@ -55,10 +91,12 @@ void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta
     meta->data = rte_pktmbuf_mtod(buf, const char *);
 }
 
-u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta){
-    this->packetBuffer->writePointer((const char*)meta.header,sizeof(pcap_header));
-    this->packetBuffer->writePointer(meta.data + this->eth_header_len, meta.len);
-    return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
+u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
+    u_int64_t _offset = ((u_int64_t)(this->queue_head) << 32) + this->write_offset;
+    this->writePointerToBlock((const char*)meta.header,sizeof(pcap_header),ts);
+    this->writePointerToBlock(meta.data + this->eth_header_len, meta.len, ts);
+    // return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
+    return _offset;
 }
 
 FlowMetadata DPDKReader::getFlowMetaData(PacketMeta& meta){
@@ -200,76 +238,76 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     return true;
 }
 
-u_int64_t DPDKReader::getField(const char* data, u_int8_t offset, u_int8_t len){
-    u_int64_t value = 0;
-    switch (len)
-    {
-    case 0:
-        value = offset;
-        break;
-    case 8:
-        value = *(u_int8_t*)(data + offset/8);
-        break;
-    case 16:
-        value = *(u_int8_t*)(data + offset/8);
-        value <<= 8;
-        value |= *(u_int8_t*)(data + offset/8 + 1);
-        break;
-    default:
-        break;
-    }
+// u_int64_t DPDKReader::getField(const char* data, u_int8_t offset, u_int8_t len){
+//     u_int64_t value = 0;
+//     switch (len)
+//     {
+//     case 0:
+//         value = offset;
+//         break;
+//     case 8:
+//         value = *(u_int8_t*)(data + offset/8);
+//         break;
+//     case 16:
+//         value = *(u_int8_t*)(data + offset/8);
+//         value <<= 8;
+//         value |= *(u_int8_t*)(data + offset/8 + 1);
+//         break;
+//     default:
+//         break;
+//     }
 
-    return value;
-}
+//     return value;
+// }
 
-bool DPDKReader::writeTagToRing(const char* data, Tag* tags, u_int8_t tag_num, FlowMetadata meta, u_int64_t ts, u_int64_t offset,u_int64_t last){
-    for(u_int8_t i = 0; i< tag_num; ++i){
-        // printf("tag id: %u, offset: %u\n",tags[i].id,tags[i].offset);
-        Tag* tag = tags + i;
-        Index* index = new Index();
-        u_int64_t field = this->getField(data,tag->offset,tag->length);
-        // printf("field: %llu\n",field);
-        auto value_pair = this->tagAggregator->addTag(meta,tag->id,tag->agg,field,offset,last);
-        if(value_pair.first == std::numeric_limits<uint64_t>::max()){
-            continue;
-        }
+// bool DPDKReader::writeTagToRing(const char* data, Tag* tags, u_int8_t tag_num, FlowMetadata meta, u_int64_t ts, u_int64_t offset,u_int64_t last){
+//     for(u_int8_t i = 0; i< tag_num; ++i){
+//         // printf("tag id: %u, offset: %u\n",tags[i].id,tags[i].offset);
+//         Tag* tag = tags + i;
+//         Index* index = new Index();
+//         u_int64_t field = this->getField(data,tag->offset,tag->length);
+//         // printf("field: %llu\n",field);
+//         auto value_pair = this->tagAggregator->addTag(meta,tag->id,tag->agg,field,offset,last);
+//         if(value_pair.first == std::numeric_limits<uint64_t>::max()){
+//             continue;
+//         }
 
-        index->key = std::string((char*)&(value_pair.second),sizeof(value_pair.second));
-        u_int64_t value = this->calValue(value_pair.first);
-        index->value = value;
-        index->ts = ts;
-        index->id = tag->id + IndexType::TOTAL - 1;
-        index->len = sizeof(value_pair.second);
-        // printf("put before\n");
-        if(!(*(this->indexRings))[0]->put((void*)index)){
-            return false;
-        }
-        // printf("put after\n");
-        this->tagIndexCount++;
-    }
-    return true;
-}
+//         index->key = std::string((char*)&(value_pair.second),sizeof(value_pair.second));
+//         u_int64_t value = this->calValue(value_pair.first);
+//         index->value = value;
+//         index->ts = ts;
+//         index->id = tag->id + IndexType::TOTAL - 1;
+//         index->len = sizeof(value_pair.second);
+//         // printf("put before\n");
+//         if(!(*(this->indexRings))[0]->put((void*)index)){
+//             return false;
+//         }
+//         // printf("put after\n");
+//         this->tagIndexCount++;
+//     }
+//     return true;
+// }
 
-bool DPDKReader::writeAllTagsToRing(u_int64_t ts){
-    auto key_values = this->tagAggregator->getAll();
-    printf("tag count: %lu\n",key_values.size());
-    for(auto tur:key_values){
-        auto idx = tur.first;
-        auto k_v = tur.second;
-        Index* index = new Index();
-        index->key = std::string((char*)&(k_v.second),sizeof(k_v.second));
-        u_int64_t value = this->calValue(k_v.first);
-        index->value = value;
-        index->ts = ts;
-        index->id = idx + IndexType::TOTAL - 1;
-        index->len = sizeof(k_v.second);
-        if(!(*(this->indexRings))[0]->put((void*)index)){
-            return false;
-        }
-        this->tagIndexCount++;
-    }
-    return true;
-}
+// bool DPDKReader::writeAllTagsToRing(u_int64_t ts){
+//     auto key_values = this->tagAggregator->getAll();
+//     printf("tag count: %lu\n",key_values.size());
+//     for(auto tur:key_values){
+//         auto idx = tur.first;
+//         auto k_v = tur.second;
+//         Index* index = new Index();
+//         index->key = std::string((char*)&(k_v.second),sizeof(k_v.second));
+//         u_int64_t value = this->calValue(k_v.first);
+//         index->value = value;
+//         index->ts = ts;
+//         index->id = idx + IndexType::TOTAL - 1;
+//         index->len = sizeof(k_v.second);
+//         if(!(*(this->indexRings))[0]->put((void*)index)){
+//             return false;
+//         }
+//         this->tagIndexCount++;
+//     }
+//     return true;
+// }
 
 void DPDKReader::bindCore(u_int32_t cpu){
     cpu_set_t cpuset;
@@ -297,7 +335,7 @@ void DPDKReader::bindCore(u_int32_t cpu){
 int DPDKReader::run(){
     // pcap file header
     
-    this->packetBuffer->writePointer((char*)pcap_head,this->pcap_header_len);
+    // this->packetBuffer->writePointer((char*)pcap_head,this->pcap_header_len);
 
     if(this->bind_core){
         // this->bindCore(this->rx_id*2 + 72);
@@ -361,7 +399,8 @@ int DPDKReader::run(){
             // }
             // printfauto read_start = std::chrono::high_resolution_clock::now();("\n");
             auto write_start = std::chrono::high_resolution_clock::now();
-            u_int64_t _offset = this->writePacketToPacketBuffer(meta);
+            u_int64_t _offset = this->writePacketToPacketBuffer(meta, ts);
+            // TODO NOW
             if(_offset == std::numeric_limits<uint64_t>::max()){
                 std::cerr << "DPDK Reader error: packet buffer overflow!" << std::endl;
                 err = 1;
@@ -428,9 +467,9 @@ int DPDKReader::run(){
             break;
         }
     }
-    if(!this->writeAllTagsToRing(ts)){
-        printf("DPDK Reader error: write all tags to ring failed!\n");
-    }
+    // if(!this->writeAllTagsToRing(ts)){
+    //     printf("DPDK Reader error: write all tags to ring failed!\n");
+    // }
     auto end = std::chrono::high_resolution_clock::now();
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
