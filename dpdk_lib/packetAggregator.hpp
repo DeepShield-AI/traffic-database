@@ -37,7 +37,7 @@ public:
         this->aggMap = std::unordered_map<FlowMetadata, FlowAttr, FlowMetadata::hash>();
     }
     ~PacketAggregator()=default;
-    u_int64_t addPacket(FlowMetadata meta, u_int64_t offset, u_int64_t ts){
+    u_int64_t addPacket(FlowMetadata meta, u_int64_t offset, u_int64_t ts, DiskBlock** block_queue){
         u_int64_t last = std::numeric_limits<uint64_t>::max();
         auto it = this->aggMap.find(meta);
         if(it == this->aggMap.end()){
@@ -48,7 +48,17 @@ public:
             this->aggMap.insert(std::make_pair(meta,flow));
             return last;
         }
-        if(offset - it->second.lastOffset > this->offsetThreshold || ts - it->second.ts > this->tsThreshold){
+        u_int64_t last_queue_id = it->second.lastOffset >> 32;
+        // if(offset - it->second.lastOffset > this->offsetThreshold || ts - it->second.ts > this->tsThreshold){
+        //     it->second.lastOffset = offset;
+        //     it->second.ts = ts;
+        //     return last;
+        // }
+        u_int64_t last_start_time = block_queue[last_queue_id]->start_time;
+
+        // The data block is replaced or the interval time exceeds the threshold.
+        // The starting time of the new data block must be higher than any time of the old data block.
+        if(it->second.ts < last_start_time || ts - it->second.ts > this->tsThreshold){
             it->second.lastOffset = offset;
             it->second.ts = ts;
             return last;

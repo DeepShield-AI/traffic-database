@@ -75,6 +75,7 @@ class DPDKReader{
     std::vector<PointerRingBuffer*>* indexRings;
     PointerRingBuffer* blockWriteRing;
     DiskBlock** blockTmpQueue;
+    // Note that due to the current Diff being u_int32_t, the total size of the buffer queue should not exceed 4GB
     u_int32_t queue_size;
     u_int32_t queue_head;
     u_int64_t write_offset;
@@ -99,6 +100,7 @@ class DPDKReader{
 
     void replaceBlock(u_int64_t ts);
     void writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts);
+    void writeBefore(const char* data, u_int32_t len, u_int64_t last_offset);
 
     //read packet of offset from file;
     void readPacket(struct rte_mbuf *buf,u_int64_t ts,PacketMeta* meta);
@@ -107,6 +109,7 @@ class DPDKReader{
     FlowMetadata getFlowMetaData(PacketMeta& meta);
 
     u_int64_t calValue(u_int64_t _offset);
+    u_int64_t calDiff(u_int64_t offset, u_int64_t last_offset);
 
     // u_int64_t getField(const char* data, u_int8_t offset, u_int8_t len);
 

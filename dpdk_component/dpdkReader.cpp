@@ -60,14 +60,32 @@ void DPDKReader::replaceBlock(u_int64_t ts){
 void DPDKReader::writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts){
     if(this->write_offset + len > this->block_size){
         u_int32_t tmp = this->block_size - this->write_offset;
-        memcpy(this->blockTmpQueue[this->queue_head] + this->write_offset, data, tmp);
+        memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, tmp);
         this->replaceBlock(ts);
-        memcpy(this->blockTmpQueue[this->queue_head] + this->write_offset, data, len - tmp);
+        memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, len - tmp);
         this->write_offset = len - tmp;
         return;
     }
-    memcpy(this->blockTmpQueue[this->queue_head] + this->write_offset, data, len);
+    memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, len);
     this->write_offset += len;
+}
+
+void DPDKReader::writeBefore(const char* data, u_int32_t len, u_int64_t last_offset){
+    u_int64_t last_queue_id = last_offset >> 32;
+    u_int64_t offset = last_offset & 0xFFFFFFFF;
+    if (last_queue_id >= this->queue_size){
+        printf("DPDK reader error: last queue id %llu is out of range!\n", last_queue_id);
+        return;
+    }
+    if (offset + len > this->block_size){
+        u_int32_t tmp = this->block_size - offset;
+        memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, tmp);
+        last_queue_id++;
+        last_queue_id %= this->queue_size;
+        memcpy(this->blockTmpQueue[last_queue_id]->buffer, data + tmp, len - tmp);
+        return;
+    }
+    memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, len);
 }
 
 void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta){
@@ -146,13 +164,33 @@ FlowMetadata DPDKReader::getFlowMetaData(PacketMeta& meta){
 
 u_int64_t DPDKReader::calValue(u_int64_t _offset){
     u_int64_t value = 0;
-    value |= this->port_id & 0xff;
-    value <<= 8;
-    value |= this->rx_id & 0xff;
-    value <<= 48;
-    value |= _offset & 0xffffffffffff;
+    u_int64_t queue_id = _offset >> 32;
+    u_int64_t offset_in_block = _offset & 0xFFFFFFFF;
+    value |= this->blockTmpQueue[queue_id]->write_pos & 0xFFFFFFFF;
+    value <<= 32;
+    value |= offset_in_block;
+    // value |= this->port_id & 0xff;
+    // value <<= 8;
+    // value |= this->rx_id & 0xff;
+    // value <<= 48;
+    // value |= _offset & 0xffffffffffff;
     // printf("offset:%llu.\n",_offset);
     return value;
+}
+
+u_int64_t DPDKReader::calDiff(u_int64_t offset, u_int64_t last_offset){
+    u_int64_t diff = 0;
+    u_int64_t last_queue_id = last_offset >> 32;
+    u_int64_t last_offset_in_block = last_offset & 0xFFFFFFFF;
+    u_int64_t queue_id = offset >> 32;
+    u_int64_t offset_in_block = offset & 0xFFFFFFFF;
+
+    if (last_queue_id <= queue_id){
+        diff = (queue_id-last_queue_id) * this->block_size + offset_in_block - last_offset_in_block;
+        return diff;
+    }
+    diff = (queue_id + this->queue_size - last_queue_id) * this->block_size + offset_in_block - last_offset_in_block;
+    return diff;
 }
 
 bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
@@ -400,7 +438,6 @@ int DPDKReader::run(){
             // printfauto read_start = std::chrono::high_resolution_clock::now();("\n");
             auto write_start = std::chrono::high_resolution_clock::now();
             u_int64_t _offset = this->writePacketToPacketBuffer(meta, ts);
-            // TODO NOW
             if(_offset == std::numeric_limits<uint64_t>::max()){
                 std::cerr << "DPDK Reader error: packet buffer overflow!" << std::endl;
                 err = 1;
@@ -421,15 +458,15 @@ int DPDKReader::run(){
             analysis_time += std::chrono::duration_cast<std::chrono::microseconds>(analysis_end - analysis_start).count();
 
             auto aggregate_start = std::chrono::high_resolution_clock::now();
-            u_int64_t last = this->packetAggregator->addPacket(flow_meta,_offset,ts);
+            u_int64_t last = this->packetAggregator->addPacket(flow_meta,_offset,ts,this->blockTmpQueue);
             auto aggregate_end = std::chrono::high_resolution_clock::now();
             aggregate_time += std::chrono::duration_cast<std::chrono::microseconds>(aggregate_end - aggregate_start).count();
 
             auto index_start = std::chrono::high_resolution_clock::now();
             if(last != std::numeric_limits<uint64_t>::max()){
                 // printf("%llu\n",last);
-                u_int32_t diff = (u_int32_t)(_offset - last);
-                this->packetBuffer->writeBefore((const char*)(&diff),sizeof(diff),last);
+                u_int32_t diff = (u_int32_t)this->calDiff(_offset,last);
+                this->writeBefore((const char*)(&diff),sizeof(diff),last);
             }else{
                 /* with index */
                 u_int64_t value = this->calValue(_offset);
