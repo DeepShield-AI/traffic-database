@@ -69,8 +69,8 @@ int DiskManager::run(){
         if(block == nullptr){
             break;
         }
-        this->addBlock(block);
         this->setMeta(block);
+        this->addBlock(block);
         delete block;
     }
     printf("Disk manager log: thread quit.\n");

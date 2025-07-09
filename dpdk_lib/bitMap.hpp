@@ -40,7 +40,11 @@ private:
     u_int64_t getRealColRead(u_int64_t logic_col) const{
         u_int64_t real_col = logic_col + this->begin_col.load();
         u_int64_t tmp_col = (real_col + this->backup_col_count) % this->real_col_count;
-        if (tmp_col > this->cleaning_col.load()){
+        u_int64_t left_barrier = this->cleaning_col.load();
+        if (tmp_col >= left_barrier){
+            if (tmp_col < left_barrier + this->backup_col_count){ // Retrieve invalid area
+                return std::numeric_limits<u_int64_t>::max();
+            }
             return tmp_col;
         }
         return real_col % this->real_col_count;
@@ -72,10 +76,15 @@ private:
         return std::numeric_limits<u_int64_t>::max();
     }
 public:
+    // backup_col_count should be bigger than RSS_NUM*4
     BitMap(u_int64_t row_count, u_int64_t col_count, u_int64_t backup_col_count): 
         row_count(row_count), logic_col_count(col_count), real_col_count(col_count + backup_col_count), backup_col_count(backup_col_count) {
         if (this->logic_col_count % sizeof(u_int8_t) || this->real_col_count % sizeof(u_int8_t)){
-            printf("Bitmap error: col_count %llu or real_col_count %llu is not a multiple of u_int8_t size!\n", col_count, real_col_count);
+            printf("Bitmap error: logic_col_count %llu or real_col_count %llu is not a multiple of u_int8_t size!\n", col_count, real_col_count);
+            throw std::runtime_error("Invalid column count for bitmap");
+        }
+        if (this->backup_col_count * 4 > this->logic_col_count){
+            printf("Bitmap error: logic_col_count %llu is not bigger than four times of backup_col_count %llu!\n", col_count, backup_col_count);
             throw std::runtime_error("Invalid column count for bitmap");
         }
         this->size = this->row_count * this->real_col_count / 8;
@@ -101,6 +110,9 @@ public:
             return false;
         }
         u_int64_t real_col = this->getRealColRead(logic_col);
+        if(real_col == std::numeric_limits<u_int64_t>::max()){
+            return false;
+        }
         u_int64_t byte_index = this->getByteIndex(row, real_col);
         if (byte_index == std::numeric_limits<u_int64_t>::max()) return false;
         u_int64_t bit_index = this->getBitIndex(real_col);
@@ -109,7 +121,7 @@ public:
         return ret;
     }
     // only used by one cleaning thread
-    void prepareClean(){
+    void barrierMove(){
         u_int64_t col = this->cleaning_col.load();
         col = (col + 1) % this->real_col_count;
         this->cleaning_col.store(col);
@@ -139,7 +151,7 @@ public:
         }
         u_int64_t real_col = this->getRealColWrite(logic_col);
         if (real_col == std::numeric_limits<u_int64_t>::max()){
-            printf("Bitmap warning: logic_col %llu out of barrier.\n", logic_col);
+            printf("Bitmap warning: logic_col %llu out of cleaning_col.\n", logic_col);
         }
         u_int64_t byte_index = this->getByteIndex(row, real_col);
         if (byte_index == std::numeric_limits<u_int64_t>::max()) return;
