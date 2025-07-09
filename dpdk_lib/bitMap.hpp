@@ -1,89 +1,151 @@
 #ifndef BITMAP_HPP_
 #define BITMAP_HPP_
 #include <iostream>
-#include <unordered_map>
-#include <vector>
-#include <bitset>
+#include <sys/mman.h>
 #include <algorithm>
 #include <climits>
-#include <list>
+#include <atomic>
 
 // 使用位图来表示索引
-class BitmapIndex {
+
+class BitMap{
 private:
-    // 最大记录数，这可以是数据表的记录数
-    const int max_records = 1024*1024;
+    u_int8_t* bitmap;
+    u_int64_t row_count; // equal to index byte num (4+4+2+2+16+16+12+34=90) * 2^8
+    u_int64_t real_col_count; // equal to block_num + t (t is backup for clearing)
+    u_int64_t logic_col_count; // equal to block_num
+    u_int64_t backup_col_count;
+    u_int64_t size;
 
-    // 存储每个值的位图
-    // std::unordered_map<int, std::vector<bool>> bitmap_map;
+    std::atomic_uint64_t begin_col; // can be only changed by the cleaning thread
+    std::atomic_uint64_t cleaning_col; // the column being cleaned, used for multi-threading
+    // std::atomic_bool* col_dirty;
+    // std::atomic_bool* col_cleaning;
 
-    // 存储压缩后的位图
-    std::unordered_map<std::string, std::vector<std::pair<u_int32_t, u_int32_t>>> compressed_map;
+    u_int64_t getByteIndex(u_int64_t row, u_int64_t real_col) const{
+        if (row >= this->row_count || real_col >= this->real_col_count){
+            printf("Bitmap error: row %llu and col %llu out of range!\n",row,real_col);
+            return std::numeric_limits<u_int64_t>::max();
+        }
+        u_int64_t byte_col = real_col % (this->real_col_count/sizeof(u_int8_t));
+        return row * this->real_col_count + byte_col;
+    }
+    u_int64_t getBitIndex(u_int64_t real_col) const{
+        if (real_col >= this->real_col_count){
+            printf("Bitmap error: col %llu out of range!\n", real_col);
+            return std::numeric_limits<u_int64_t>::max();
+        }
+        return real_col / (this->real_col_count/sizeof(u_int8_t));
+    }
+    u_int64_t getRealColRead(u_int64_t logic_col) const{
+        u_int64_t real_col = logic_col + this->begin_col.load();
+        u_int64_t tmp_col = (real_col + this->backup_col_count) % this->real_col_count;
+        if (tmp_col > this->cleaning_col.load()){
+            return tmp_col;
+        }
+        return real_col % this->real_col_count;
+    }
+    u_int64_t getRealColWrite(u_int64_t logic_col) const{
+        u_int64_t real_col = logic_col + this->begin_col.load();
+        u_int64_t right_barrier = this->cleaning_col.load();
+        u_int64_t tmp_col = (real_col + this->backup_col_count) % this->real_col_count;
+        if (tmp_col > right_barrier){
+            real_col = tmp_col;
+        }
+        real_col %= this->real_col_count;
 
-    std::list<u_int64_t> values;
-
-    // 运行长度编码（RLE）实现
-    // std::vector<std::pair<int, int>> runLengthEncode(const std::vector<bool>& bitmap) {
-    //     std::vector<std::pair<int, int>> compressed;
-    //     int count = 1;
-    //     for (size_t i = 1; i < bitmap.size(); ++i) {
-    //         if (bitmap[i] == bitmap[i - 1]) {
-    //             ++count;
-    //         } else {
-    //             compressed.push_back({bitmap[i - 1] ? 1 : 0, count});
-    //             count = 1;
-    //         }
-    //     }
-    //     // 最后一段
-    //     compressed.push_back({bitmap[bitmap.size() - 1] ? 1 : 0, count});
-    //     return compressed;
-    // }
+        u_int64_t left_barrier = (right_barrier + this->real_col_count - 2 * this->backup_col_count) % this->real_col_count;
+        if (left_barrier < right_barrier && real_col >= left_barrier && real_col < right_barrier){
+            return real_col;
+        }
+        if (left_barrier >= right_barrier && (real_col >= left_barrier || real_col < right_barrier)){
+            return real_col;
+        }
+        // new block
+        real_col = (real_col + this->logic_col_count) % this->real_col_count;
+        if (left_barrier < right_barrier && real_col >= left_barrier && real_col < right_barrier){
+            return real_col;
+        }
+        if (left_barrier >= right_barrier && (real_col >= left_barrier || real_col < right_barrier)){
+            return real_col;
+        }
+        return std::numeric_limits<u_int64_t>::max();
+    }
 public:
-    BitmapIndex(){
-        this->compressed_map = std::unordered_map<std::string, std::vector<std::pair<u_int32_t, u_int32_t>>>();
-        this->values = std::list<u_int64_t>();
+    BitMap(u_int64_t row_count, u_int64_t col_count, u_int64_t backup_col_count): 
+        row_count(row_count), logic_col_count(col_count), real_col_count(col_count + backup_col_count), backup_col_count(backup_col_count) {
+        if (this->logic_col_count % sizeof(u_int8_t) || this->real_col_count % sizeof(u_int8_t)){
+            printf("Bitmap error: col_count %llu or real_col_count %llu is not a multiple of u_int8_t size!\n", col_count, real_col_count);
+            throw std::runtime_error("Invalid column count for bitmap");
+        }
+        this->size = this->row_count * this->real_col_count / 8;
+        this->bitmap = (u_int8_t*)mmap(nullptr, this->size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        if (this->bitmap == MAP_FAILED){
+            printf("Disk buffer error: mmap failed for disk metas!\n");
+            throw std::runtime_error("Disk buffer mmap failed");
+        }
+        for (u_int64_t i = 0; i < this->size; ++i) {
+            this->bitmap[i] = 0; // Initialize the bitmap to zero
+        }
+        this->begin_col = 0;
+        this->cleaning_col = this->backup_col_count;
+        // bitmap = new u_int8_t[size]();
+    }
+    ~BitMap() {
+        munmap((void*)this->bitmap, this->size);
     }
 
-    // 插入操作
-    void insert(int value, int recordId) {
-        if (bitmap_map.find(value) == bitmap_map.end()) {
-            // 如果没有该值的位图，则创建一个新的位图
-            bitmap_map[value] = std::vector<bool>(max_records, false);
+    bool get(u_int64_t row, u_int64_t logic_col) const{
+        if (logic_col >= this->logic_col_count){
+            printf("Bitmap error: logic_col %llu out of range!\n", logic_col);
+            return false;
         }
-        // 设置对应位图的位为1，表示该记录中该值存在
-        bitmap_map[value][recordId] = true;
+        u_int64_t real_col = this->getRealColRead(logic_col);
+        u_int64_t byte_index = this->getByteIndex(row, real_col);
+        if (byte_index == std::numeric_limits<u_int64_t>::max()) return false;
+        u_int64_t bit_index = this->getBitIndex(real_col);
+        bool ret = (bitmap[byte_index] & (1 << bit_index)) != 0;
+        if (real_col == this->cleaning_col.load()) return false;
+        return ret;
     }
-
-    // 压缩操作 - 使用简单的运行长度编码（RLE）
-    void compress() {
-        for (auto &entry : bitmap_map) {
-            std::vector<bool> &bitmap = entry.second;
-            compressed_map[entry.first] = runLengthEncode(bitmap);
-        }
-    }
-
-    // 打印未压缩的位图
-    void print() {
-        for (const auto &entry : bitmap_map) {
-            std::cout << "Value: " << entry.first << " -> ";
-            for (bool bit : entry.second) {
-                std::cout << bit;
-            }
-            std::cout << std::endl;
+    // only used by one cleaning thread
+    void prepareClean(){
+        u_int64_t col = this->cleaning_col.load();
+        col = (col + 1) % this->real_col_count;
+        this->cleaning_col.store(col);
+        u_int64_t begin = this->begin_col.load();
+        if (col == begin){
+            begin = (begin + this->logic_col_count) % this->real_col_count;
+            this->begin_col.store(begin);
         }
     }
-
-    // 打印压缩后的位图
-    void printCompressed() {
-        for (const auto &entry : compressed_map) {
-            std::cout << "Value: " << entry.first << " -> ";
-            for (auto &run : entry.second) {
-                std::cout << "[" << run.first << "," << run.second << "] ";
-            }
-            std::cout << std::endl;
+    void clearCol(u_int64_t row_begin, u_int64_t row_end) {
+        if (row_end > this->row_count){
+            printf("Bitmap error: row end %llu out of range!\n", row_end);
         }
+        u_int64_t col = this->cleaning_col.load();
+        u_int64_t bit_index = getBitIndex(col);
+        if (bit_index == std::numeric_limits<u_int64_t>::max()) return;
+        for (u_int64_t row = row_begin; row < row_end; ++row){
+            u_int64_t byte_index = getByteIndex(row, col);           
+            bitmap[byte_index] &= ~(1 << bit_index);
+        }
+    }
+    // set col should in the write field (cleaning - 2*backup, cleanning)
+    void set(u_int64_t row, u_int64_t logic_col) {
+        if (logic_col >= this->logic_col_count){
+            printf("Bitmap error: logic_col %llu out of range!\n", logic_col);
+            return;
+        }
+        u_int64_t real_col = this->getRealColWrite(logic_col);
+        if (real_col == std::numeric_limits<u_int64_t>::max()){
+            printf("Bitmap warning: logic_col %llu out of barrier.\n", logic_col);
+        }
+        u_int64_t byte_index = this->getByteIndex(row, real_col);
+        if (byte_index == std::numeric_limits<u_int64_t>::max()) return;
+        u_int64_t bit_index = this->getBitIndex(real_col);
+        bitmap[byte_index] |= (1 << bit_index);
     }
 };
-
 
 #endif
