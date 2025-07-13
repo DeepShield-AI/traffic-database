@@ -2,7 +2,7 @@ DiskAgent并行支持——不需要，一个DiskManager->多个DiskAgent，且�
 数据包处理线程竞争磁盘块——完成
 DiskManager修改：从DataBlock接收由数据包处理线程计算的数据块编号；磁盘需要按RSS队列交错分区(不需要！只要通过位置竞争保证每个数据块位置唯一！)——完成
 用于判断DiskAgent是否完成任务实现异步停止的接口——完成
-MemoryManager、DiskManager重新接入，使用DataBlockBuffer
+MemoryManager、DiskManager重新接入，使用DataBlockBuffer——完成
     DataBlock设计保证
         (i)位于不同磁盘块的数据不会写入同一缓冲数据块中（即便对应相同缓冲数据块）
         (ii)所有RSS线程写入区域可以被连续的total_block_num个数据块覆盖，且磁盘数据块数量至少为total_block_num的数（4？）倍
