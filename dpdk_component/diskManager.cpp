@@ -1,21 +1,21 @@
 #include "diskManager.hpp"
 
-void DiskManager::setMeta(DiskBlock* block){
-    // if(block->write_pos >= this->block_num || block->last_write_pos >= this->block_num){
-    //     printf("Disk manager error: position %llu or last position %llu out of bounds!\n", block->write_pos, block->last_write_pos);
-    //     return;
-    // }
-    this->disk_buffer->setRSSID(block->write_pos, block->rss_id);
-    this->disk_buffer->setNextID(block->last_write_pos, block->write_pos);
-    this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
-}
+// void DiskManager::setMeta(DiskBlock* block){
+//     // if(block->write_pos >= this->block_num || block->last_write_pos >= this->block_num){
+//     //     printf("Disk manager error: position %llu or last position %llu out of bounds!\n", block->write_pos, block->last_write_pos);
+//     //     return;
+//     // }
+//     this->disk_buffer->setRSSID(block->write_pos, block->rss_id);
+//     this->disk_buffer->setNextID(block->last_write_pos, block->write_pos);
+//     this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+// }
 
 void DiskManager::addBlock(DiskBlock* block){
     // if (block->rss_id >= this->rss_count) {
     //     printf("Disk manager error: rss_id %u out of bounds!\n", block->rss_id);
     //     return;
     // }
-    u_int32_t agent_id = block->rss_id % this->agents.size();
+    u_int32_t agent_id = block->block_id % this->agents.size();
     // if (block->write_pos >= this->block_num || block->last_write_pos >= this->block_num) {
     //     printf("Disk manager error: position %llu or last position %llu out of bounds!\n", block->write_pos, block->last_write_pos);
     //     return;
@@ -59,21 +59,49 @@ void DiskManager::setBindCore(u_int32_t core_id){
     this->bind_core = true;
 }
 
+void DiskManager::setThreadID(u_int64_t thread_id){
+    this->thread_id = thread_id;
+}
+
 int DiskManager::run(){
+    if (this->thread_id == std::numeric_limits<uint64_t>::max()){
+        printf("Disk manager error: run without thread id!\n");
+        return -1;
+    }
     if (this->bind_core){
         this->bindCore();
     }
     this->stop = false;
     while(true){
-        DiskBlock* block = (DiskBlock*)this->block_ring->get();
-        if(block == nullptr){
+        if(this->stop){
             break;
         }
-        this->setMeta(block);
+        u_int64_t block_id = this->block_buffer->checkBlock(this->thread_id);
+        // DiskBlock* block = (DiskBlock*)this->block_ring->get();
+        if(block_id == std::numeric_limits<uint64_t>::max()){
+            continue;
+        }
+        // u_int64_t disk_id = this->block_buffer->getDiskID(block_id);
+        DiskBlock* block = this->block_buffer->getBlock(this->thread_id);
+        
+        this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+        // this->setMeta(block);
         this->addBlock(block);
         delete block;
     }
+    while (true){
+        u_int64_t block_id = this->block_buffer->checkBlock(this->thread_id);
+        if(block_id == std::numeric_limits<uint64_t>::max()){
+            break;
+        }
+        DiskBlock* block = this->block_buffer->getBlock(this->thread_id);
+        this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+        this->addBlock(block);
+        delete block;
+    }
+    
     printf("Disk manager log: thread quit.\n");
+    return 0;
 }
 
 void DiskManager::asynchronousStop(){

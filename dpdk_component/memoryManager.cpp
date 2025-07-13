@@ -1,16 +1,16 @@
 #include "memoryManager.hpp"
 
-void MemoryManager::allocate_blocks(){
-    for(u_int64_t i = 0; i < this->memory_size; i+=this->block_size){
-        u_int64_t pos = i + this->memory_offset;
-        char* buffer = this->memoryPool + i;
-        struct DiskBlock* block = new DiskBlock();
-        block->block_id = (u_int32_t)(i / this->block_size);
-        if(!this->block_ring->put((void*)buffer)){
-            return;
-        }
-    }
-}
+// void MemoryManager::allocate_blocks(){
+//     for(u_int64_t i = 0; i < this->memory_size; i+=this->block_size){
+//         u_int64_t pos = i + this->memory_offset;
+//         char* buffer = this->memoryPool + i;
+//         struct DiskBlock* block = new DiskBlock();
+//         block->block_id = (u_int32_t)(i / this->block_size);
+//         if(!this->block_ring->put((void*)buffer)){
+//             return;
+//         }
+//     }
+// }
 
 void MemoryManager::addAgent(DiskAgent* agent){
     if (agent == nullptr) {
@@ -60,13 +60,15 @@ int MemoryManager::run(){
             if (block_id == std::numeric_limits<u_int32_t>::max()) {
                 continue;
             }
-            
-            u_int64_t pos = (u_int64_t)block_id * (u_int64_t)(this->block_size);
-            char* buffer = this->memoryPool + pos;
-            struct DiskBlock* block = new DiskBlock();
-            block->block_id = (u_int32_t)block_id;
 
-            this->block_ring->put((void*)buffer);
+            this->block_buffer->recycleBlock((u_int64_t)block_id);
+            
+            // u_int64_t pos = (u_int64_t)block_id * (u_int64_t)(this->block_size);
+            // char* buffer = this->memoryPool + pos;
+            // struct DiskBlock* block = new DiskBlock();
+            // block->block_id = (u_int32_t)block_id;
+
+            // this->block_ring->put((void*)buffer);
         }
     }
     for(auto agent: this->disk_agents){

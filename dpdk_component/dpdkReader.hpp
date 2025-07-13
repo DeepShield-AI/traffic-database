@@ -14,6 +14,7 @@
 #include "../dpdk_lib/packetAggregator.hpp"
 #include "../dpdk_lib/tagAggregator.hpp"
 #include "../dpdk_lib/diskAgent.hpp"
+#include "../dpdk_lib/dataBlockbuffer.hpp"
 
 #include <rte_eal.h>
 #include <rte_ethdev.h>
@@ -59,7 +60,7 @@ class DPDKReader{
 
     // std::string filename;
     // u_int64_t offset;
-    u_int64_t capacityUnit;
+    // u_int64_t capacityUnit;
 
     // write only
     // MemoryBuffer* packetBuffer;
@@ -73,19 +74,19 @@ class DPDKReader{
 
     // write only
     std::vector<PointerRingBuffer*>* indexRings;
-    PointerRingBuffer* blockWriteRing;
-    DiskBlock** blockTmpQueue;
+    // PointerRingBuffer* blockWriteRing;
+    // DiskBlock** blockTmpQueue;
     // Note that due to the current Diff being u_int32_t, the total size of the buffer queue should not exceed 4GB
-    u_int32_t queue_size;
-    u_int32_t queue_head;
-    u_int64_t write_offset;
+    // u_int32_t queue_size;
+    // u_int32_t queue_head;
+    // u_int64_t write_offset;
 
     // read only
-    PointerRingBuffer* blockRecieveRing;
-    std::atomic_uint_fast64_t* diskWritePos;
+    // PointerRingBuffer* blockRecieveRing;
     // PointerRingBuffer* indexRing;
 
-
+    DataBlockBuffer* block_buffer;
+    std::atomic_uint_fast64_t* diskWritePos;
 
     std::atomic_bool stop;
 
@@ -98,8 +99,10 @@ class DPDKReader{
     bool bind_core;
     u_int32_t core_id;
 
-    void replaceBlock(u_int64_t ts);
-    void writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts);
+    u_int64_t thread_id;
+
+    // void replaceBlock(u_int64_t ts);
+    // void writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts);
     void writeBefore(const char* data, u_int32_t len, u_int64_t last_offset);
 
     //read packet of offset from file;
@@ -119,8 +122,8 @@ class DPDKReader{
     void bindCore(u_int32_t cpu);
 
 public:
-    DPDKReader(u_int32_t pcap_header_len, u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, u_int32_t queue_size, DPDK* dpdk, std::vector<PointerRingBuffer*>* rings, PointerRingBuffer* blockWriteRing, PointerRingBuffer* blockRecieveRing, std::atomic_uint_fast64_t* diskWritePos, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core, u_int32_t core_id):
-    pcap_header_len(pcap_header_len),eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),queue_size(queue_size),dpdk(dpdk),indexRings(rings),blockWriteRing(blockWriteRing),blockRecieveRing(blockRecieveRing),diskWritePos(diskWritePos),port_id(port_id),rx_id(rx_id),capacityUnit(capacity){
+    DPDKReader(u_int32_t pcap_header_len, u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, DPDK* dpdk, std::vector<PointerRingBuffer*>* rings,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core, u_int32_t core_id):
+    pcap_header_len(pcap_header_len),eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),dpdk(dpdk),indexRings(rings),block_buffer(block_buffer),diskWritePos(diskWritePos),port_id(port_id),rx_id(rx_id){
         if(this->block_num & (this->block_size - 1)){
             printf("DPDK reader error: block size %u is not power of 2!\n",this->block_size);
             this->packetAggregator = nullptr;
@@ -134,22 +137,24 @@ public:
         this->byteLen = 0;
         // this->packetBuffer = buffer;
         // this->fileName = "./data/input/" + std::to_string(port_id) + "-" + std::to_string(rx_id) + ".pcap";
-        this->blockTmpQueue = new DiskBlock*[this->queue_size];
-        for(u_int32_t i =0; i<this->queue_size;++i){
-            this->blockTmpQueue[i] = nullptr;
-        }
-        this->queue_head = this->queue_size - 1;
-        this->write_offset = 0;
+        // this->blockTmpQueue = new DiskBlock*[this->queue_size];
+        // for(u_int32_t i =0; i<this->queue_size;++i){
+        //     this->blockTmpQueue[i] = nullptr;
+        // }
+        // this->queue_head = this->queue_size - 1;
+        // this->write_offset = 0;
         this->packetAggregator = new PacketAggregator(capacity, std::numeric_limits<uint64_t>::max());
         // this->tagAggregator = new TagAggregator(MAX_TAG_TYPE);
         this->bind_core = bind_core;
         this->core_id = core_id;
+        this->diskWritePos->store(0);
+        this->thread_id = std::numeric_limits<uint64_t>::max();
     }
     ~DPDKReader(){
         if (this->packetAggregator != nullptr) delete this->packetAggregator;
         // if (this->tagAggregator != nullptr) delete this->tagAggregator;
     }
-    
+    void setThreadID(u_int64_t threadID);
     int run();
     void asynchronousStop();
     static int launch(void *arg){

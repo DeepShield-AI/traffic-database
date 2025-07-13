@@ -34,58 +34,59 @@ uint64_t swap_endianness(uint64_t value) {
            ((value << 56) & 0x00000000000000FFULL);   // byte 7
 }
 
-void DPDKReader::replaceBlock(u_int64_t ts){
-    DiskBlock* new_block = (DiskBlock*)this->blockRecieveRing->get();
-    if(new_block == nullptr){
-        return;
-    }
-    u_int64_t writePos = (*(this->diskWritePos))++;
-    writePos %= this->block_num;
-    new_block->start_time = ts;
-    new_block->write_pos = writePos;
-    new_block->rss_id = (this->port_id << 8) + this->rx_id;
-    new_block->last_write_pos = this->block_num;
+// void DPDKReader::replaceBlock(u_int64_t ts){
+//     DiskBlock* new_block = (DiskBlock*)this->blockRecieveRing->get();
+//     if(new_block == nullptr){
+//         return;
+//     }
+//     u_int64_t writePos = (*(this->diskWritePos))++;
+//     writePos %= this->block_num;
+//     new_block->start_time = ts;
+//     new_block->write_pos = writePos;
+//     new_block->rss_id = (this->port_id << 8) + this->rx_id;
+//     new_block->last_write_pos = this->block_num;
 
-    this->queue_head++;
-    this->queue_head %= this->queue_size;
-    DiskBlock* block = this->blockTmpQueue[this->queue_head];
-    if(block == nullptr){
-        block->end_time = ts;
-        new_block->last_write_pos = block->write_pos;
-        this->blockWriteRing->put((void*)block);
-    }
-    this->blockTmpQueue[this->queue_head] = new_block;
-}
+//     this->queue_head++;
+//     this->queue_head %= this->queue_size;
+//     DiskBlock* block = this->blockTmpQueue[this->queue_head];
+//     if(block == nullptr){
+//         block->end_time = ts;
+//         new_block->last_write_pos = block->write_pos;
+//         this->blockWriteRing->put((void*)block);
+//     }
+//     this->blockTmpQueue[this->queue_head] = new_block;
+// }
 
-void DPDKReader::writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts){
-    if(this->write_offset + len > this->block_size){
-        u_int32_t tmp = this->block_size - this->write_offset;
-        memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, tmp);
-        this->replaceBlock(ts);
-        memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, len - tmp);
-        this->write_offset = len - tmp;
-        return;
-    }
-    memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, len);
-    this->write_offset += len;
-}
+// void DPDKReader::writePointerToBlock(const char* data, u_int32_t len, u_int64_t ts){
+//     if(this->write_offset + len > this->block_size){
+//         u_int32_t tmp = this->block_size - this->write_offset;
+//         memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, tmp);
+//         this->replaceBlock(ts);
+//         memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, len - tmp);
+//         this->write_offset = len - tmp;
+//         return;
+//     }
+//     memcpy(this->blockTmpQueue[this->queue_head]->buffer + this->write_offset, data, len);
+//     this->write_offset += len;
+// }
 
 void DPDKReader::writeBefore(const char* data, u_int32_t len, u_int64_t last_offset){
-    u_int64_t last_queue_id = last_offset >> 32;
-    u_int64_t offset = last_offset & 0xFFFFFFFF;
-    if (last_queue_id >= this->queue_size){
-        printf("DPDK reader error: last queue id %llu is out of range!\n", last_queue_id);
-        return;
-    }
-    if (offset + len > this->block_size){
-        u_int32_t tmp = this->block_size - offset;
-        memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, tmp);
-        last_queue_id++;
-        last_queue_id %= this->queue_size;
-        memcpy(this->blockTmpQueue[last_queue_id]->buffer, data + tmp, len - tmp);
-        return;
-    }
-    memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, len);
+    // u_int64_t last_queue_id = last_offset >> 32;
+    // u_int64_t offset = last_offset & 0xFFFFFFFF;
+    // if (last_queue_id >= this->queue_size){
+    //     printf("DPDK reader error: last queue id %llu is out of range!\n", last_queue_id);
+    //     return;
+    // }
+    // if (offset + len > this->block_size){
+    //     u_int32_t tmp = this->block_size - offset;
+    //     memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, tmp);
+    //     last_queue_id++;
+    //     last_queue_id %= this->queue_size;
+    //     memcpy(this->blockTmpQueue[last_queue_id]->buffer, data + tmp, len - tmp);
+    //     return;
+    // }
+    // memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, len);
+    this->block_buffer->writeBlock(data,len,last_offset,this->thread_id, false, 0);
 }
 
 void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta){
@@ -110,9 +111,18 @@ void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta
 }
 
 u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
-    u_int64_t _offset = ((u_int64_t)(this->queue_head) << 32) + this->write_offset;
-    this->writePointerToBlock((const char*)meta.header,sizeof(pcap_header),ts);
-    this->writePointerToBlock(meta.data + this->eth_header_len, meta.len, ts);
+    // u_int64_t _offset = ((u_int64_t)(this->queue_head) << 32) + this->write_offset;
+    u_int64_t total_len = sizeof(pcap_header) + meta.len;
+    u_int64_t _offset = this->diskWritePos->fetch_add(total_len);
+    _offset %= this->disk_size;
+    // this->writePointerToBlock((const char*)meta.header,sizeof(pcap_header),ts);
+    // this->writePointerToBlock(meta.data + this->eth_header_len, meta.len, ts);
+    if (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
+        return std::numeric_limits<uint64_t>::max();
+    }
+    if (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
+        return std::numeric_limits<uint64_t>::max();
+    }
     // return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
     return _offset;
 }
@@ -163,34 +173,35 @@ FlowMetadata DPDKReader::getFlowMetaData(PacketMeta& meta){
 }
 
 u_int64_t DPDKReader::calValue(u_int64_t _offset){
-    u_int64_t value = 0;
-    u_int64_t queue_id = _offset >> 32;
-    u_int64_t offset_in_block = _offset & 0xFFFFFFFF;
-    value |= this->blockTmpQueue[queue_id]->write_pos & 0xFFFFFFFF;
-    value <<= 32;
-    value |= offset_in_block;
+    // u_int64_t value = 0;
+    // u_int64_t queue_id = _offset >> 32;
+    // u_int64_t offset_in_block = _offset & 0xFFFFFFFF;
+    // value |= this->blockTmpQueue[queue_id]->write_pos & 0xFFFFFFFF;
+    // value <<= 32;
+    // value |= offset_in_block;
     // value |= this->port_id & 0xff;
     // value <<= 8;
     // value |= this->rx_id & 0xff;
     // value <<= 48;
     // value |= _offset & 0xffffffffffff;
     // printf("offset:%llu.\n",_offset);
-    return value;
+    return _offset;
 }
 
 u_int64_t DPDKReader::calDiff(u_int64_t offset, u_int64_t last_offset){
-    u_int64_t diff = 0;
-    u_int64_t last_queue_id = last_offset >> 32;
-    u_int64_t last_offset_in_block = last_offset & 0xFFFFFFFF;
-    u_int64_t queue_id = offset >> 32;
-    u_int64_t offset_in_block = offset & 0xFFFFFFFF;
+    // u_int64_t diff = 0;
+    // u_int64_t last_queue_id = last_offset >> 32;
+    // u_int64_t last_offset_in_block = last_offset & 0xFFFFFFFF;
+    // u_int64_t queue_id = offset >> 32;
+    // u_int64_t offset_in_block = offset & 0xFFFFFFFF;
 
-    if (last_queue_id <= queue_id){
-        diff = (queue_id-last_queue_id) * this->block_size + offset_in_block - last_offset_in_block;
-        return diff;
-    }
-    diff = (queue_id + this->queue_size - last_queue_id) * this->block_size + offset_in_block - last_offset_in_block;
-    return diff;
+    // if (last_queue_id <= queue_id){
+    //     diff = (queue_id-last_queue_id) * this->block_size + offset_in_block - last_offset_in_block;
+    //     return diff;
+    // }
+    // diff = (queue_id + this->queue_size - last_queue_id) * this->block_size + offset_in_block - last_offset_in_block;
+
+    return (offset + this->disk_size - last_offset) % this->disk_size;
 }
 
 bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
@@ -370,10 +381,19 @@ void DPDKReader::bindCore(u_int32_t cpu){
     }
 }
 
+void DPDKReader::setThreadID(u_int64_t threadID){
+    this->thread_id = threadID;
+}
+
 int DPDKReader::run(){
     // pcap file header
     
     // this->packetBuffer->writePointer((char*)pcap_head,this->pcap_header_len);
+
+    if(this->thread_id == std::numeric_limits<uint64_t>::max()){
+        printf("DPDK reader error: run without thread id!\n");
+        return -1;
+    }
 
     if(this->bind_core){
         // this->bindCore(this->rx_id*2 + 72);
@@ -439,9 +459,10 @@ int DPDKReader::run(){
             auto write_start = std::chrono::high_resolution_clock::now();
             u_int64_t _offset = this->writePacketToPacketBuffer(meta, ts);
             if(_offset == std::numeric_limits<uint64_t>::max()){
-                std::cerr << "DPDK Reader error: packet buffer overflow!" << std::endl;
-                err = 1;
-                break;
+                printf("DPDK Reader warning: packet buffer overflow!\n");
+                meta.data = nullptr;
+                rte_pktmbuf_free(bufs[i]);
+                continue;
             }
             auto write_end = std::chrono::high_resolution_clock::now();
             write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
@@ -458,7 +479,7 @@ int DPDKReader::run(){
             analysis_time += std::chrono::duration_cast<std::chrono::microseconds>(analysis_end - analysis_start).count();
 
             auto aggregate_start = std::chrono::high_resolution_clock::now();
-            u_int64_t last = this->packetAggregator->addPacket(flow_meta,_offset,ts,this->blockTmpQueue);
+            u_int64_t last = this->packetAggregator->addPacket(flow_meta,_offset,ts, this->disk_size);
             auto aggregate_end = std::chrono::high_resolution_clock::now();
             aggregate_time += std::chrono::duration_cast<std::chrono::microseconds>(aggregate_end - aggregate_start).count();
 

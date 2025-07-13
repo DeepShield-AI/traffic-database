@@ -1,19 +1,21 @@
 #ifndef MEMORY_MANAFER_HPP_
 #define MEMORY_MANAGER_HPP_
 #include <sys/mman.h>
-#include "../dpdk_lib/pointerRingBuffer.hpp"
+// #include "../dpdk_lib/pointerRingBuffer.hpp"
 #include "../dpdk_lib/diskAgent.hpp"
+#include "../dpdk_lib/dataBlockbuffer.hpp"
 
 class MemoryManager{
 private:
     const u_int32_t block_size;
-    const u_int64_t pool_size;
-    char* memoryPool;
+    // const u_int64_t pool_size;
+    // char* memoryPool;
 
-    u_int64_t memory_offset;
-    u_int64_t memory_size;
+    // u_int64_t memory_offset;
+    // u_int64_t memory_size;
 
-    PointerRingBuffer* block_ring;
+    // PointerRingBuffer* block_ring;
+    DataBlockBuffer* block_buffer;
     std::vector<DiskAgent*> disk_agents;
 
     std::atomic_bool stop;
@@ -22,14 +24,14 @@ private:
     u_int32_t core_id;
 
     void bindCore();
-    void allocate_blocks();
+    // void allocate_blocks();
 public:
-    MemoryManager(u_int32_t block_size, u_int64_t pool_size, PointerRingBuffer* block_ring, char* memoryPool, u_int64_t memory_offset, u_int64_t memory_size):
-        block_size(block_size), pool_size(pool_size), block_ring(block_ring), memoryPool(memoryPool), memory_offset(memory_offset), memory_size(memory_size) {
-        if(this->pool_size % this->block_size != 0){
-            printf("Memory manager error: pool size should be multiple of block size!");
-            throw std::runtime_error("memory manager block size failed");
-        }
+    MemoryManager(u_int32_t block_size, DataBlockBuffer* block_buffer):
+        block_size(block_size), block_buffer(block_buffer) {
+        // if(this->pool_size % this->block_size != 0){
+        //     printf("Memory manager error: pool size should be multiple of block size!");
+        //     throw std::runtime_error("memory manager block size failed");
+        // }
         // this->memoryPool = (char*)mmap(nullptr, this->pool_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         // if (this->memoryPool == MAP_FAILED){
         //     printf("Memory manager error: mmap failed for disk metas!\n");
@@ -41,7 +43,7 @@ public:
         this->stop = true;
     }
     ~MemoryManager(){
-        munmap(this->memoryPool, this->pool_size);
+        // munmap(this->memoryPool, this->pool_size);
     }
     void addAgent(DiskAgent* agent);
     void setBindCore(u_int32_t core_id);
