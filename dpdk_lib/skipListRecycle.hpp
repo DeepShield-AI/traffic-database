@@ -11,6 +11,7 @@
 #include <cstring>
 #include "zOrderTree.hpp"
 #include "bloomFilter.hpp"
+#include "memoryPool.hpp"
 
 #define PRE_TYPE u_int32_t
 #define FILTER_K_LEN 3
@@ -49,8 +50,8 @@ private:
 template <class KeyType, class ValueType>
 class SkipListNode{
 public:
-    KeyType key;
     ValueType value;
+    KeyType key;
     SpinLock mutex;
     u_int32_t level;
     // std::vector<SkipListNode*> next;
@@ -330,6 +331,89 @@ class SkipList{
         }
         return 0;
     }
+    int compareNodeKeyAndBlock(void* node, std::string key, u_int64_t value, u_int64_t block_size, u_int64_t threshold){
+        u_int64_t disk_id = value / block_size;
+        SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+        u_int64_t node_disk_id = p->value / block_size;
+        if(disk_id != node_disk_id){
+            return node_disk_id < disk_id && node_disk_id + threshold > disk_id ? 1 : -1;
+        }
+        if(this->keyLen == 1){
+            u_int8_t* real_key= (u_int8_t*)&(key[0]);
+            SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 2){
+            u_int16_t* real_key= (u_int16_t*)&(key[0]);
+            SkipListNode<u_int16_t,u_int64_t>* p = (SkipListNode<u_int16_t,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 4){
+            u_int32_t* real_key= (u_int32_t*)&(key[0]);
+            SkipListNode<u_int32_t,u_int64_t>* p = (SkipListNode<u_int32_t,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 8){
+            u_int64_t* real_key= (u_int64_t*)&(key[0]);
+            SkipListNode<u_int64_t,u_int64_t>* p = (SkipListNode<u_int64_t,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 12){
+            QuarTurpleIPv4* real_key= (QuarTurpleIPv4*)&(key[0]);
+            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 16){
+            IPv6Address* real_key= (IPv6Address*)&(key[0]);
+            SkipListNode<IPv6Address,u_int64_t>* p = (SkipListNode<IPv6Address,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 40){
+            QuarTurpleIPv6* real_key= (QuarTurpleIPv6*)&(key[0]);
+            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)node;
+            if(p->key < *real_key){
+                return -1;
+            }
+            if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }
+        else{
+            std::cerr << "Skip list error: getNext with undifined ele_len!" << std::endl;
+        }
+        return 0;
+    }
     void lockNode(void* node){
         if(this->keyLen == 1){
             SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
@@ -410,6 +494,14 @@ class SkipList{
         }
         return key;
     }
+    int compareNodeBlock(void* node, u_int64_t disk_id, u_int64_t block_size, u_int64_t threshold){
+        SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+        u_int64_t node_disk_id = p->value / block_size;
+        if(disk_id != node_disk_id){
+            return node_disk_id < disk_id && node_disk_id + threshold > disk_id ? 1 : -1;
+        }
+        return 0;
+    }
 public:
     SkipList(u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen) : maxLevel(maxLvl), level(0), nodeNum(0), keyLen(keyLen), valueLen(valueLen) {
         // this->head = newNode(std::string(this->keyLen,0),0,this->maxLevel);
@@ -444,7 +536,7 @@ public:
     u_int32_t getWriteThreadCount()const{
         return this->writeThreadCount.load();
     }
-    bool insert(std::string key, u_int64_t value, u_int64_t maxNode){
+    bool insert(std::string key, u_int64_t value, u_int64_t maxNode, MemoryPool* pool, u_int64_t disk_block_size){
         // construct new node
         if(key.size()!=this->keyLen){
             printf("Skip list error: insert with wrong key length %lu-%u!\n",key.size(),this->keyLen);
@@ -461,7 +553,15 @@ public:
         }
 
         int newLevel = randomLevel();
-        void* newNode = this->newNode(key,value,newLevel);
+        u_int32_t size = this->keyLen + this->valueLen + sizeof(SpinLock) + sizeof(u_int32_t) + sizeof(void*) * newLevel;
+        u_int64_t disk_id = value / disk_block_size;
+
+        char* mem = pool->allocate(size,disk_block_size);
+        if (mem == nullptr){
+            this->nodeNum--;
+            return false;
+        }
+        void* newNode = this->newNode(key,value,newLevel,mem);
 
         // get last nodes
         void* curr = this->head;
@@ -480,6 +580,74 @@ public:
                 // std::cout << "Skip list log: level " << i << std::endl;
                 this->lockNode(update[i]);
                 if(this->getNext(update[i],i) != nullptr && this->compareNodeKey(this->getNext(update[i],i),key)<0){// there may be new node inserted.
+                    this->unlockNode(update[i]);
+                    update[i] = this->getNext(update[i],i);
+                    continue;
+                }else{
+                    this->putNext(newNode,i,this->getNext(update[i],i));
+                    this->putNext(update[i],i,newNode);
+                    this->unlockNode(update[i]);
+                    break;
+                }
+            }
+        }
+
+        // this->nodeNum++;
+
+        u_int32_t curLevel = this->level.load();
+        while (curLevel < newLevel) {// CAS update level
+            if (this->level.compare_exchange_strong(curLevel, newLevel)) {
+                break;
+            }else{
+                curLevel = this->level.load();
+            }
+        }
+        return true;
+    }
+    bool insertWithBlockID(std::string key, u_int64_t value, u_int64_t maxNode, MemoryPool* pool, u_int64_t disk_block_size, u_int64_t threshold){
+        // construct new node
+        if(key.size()!=this->keyLen){
+            printf("Skip list error: insert with wrong key length %lu-%u!\n",key.size(),this->keyLen);
+            // std::cerr << "Skip list error: insert with wrong key length!" <<std::endl;
+            return true;
+        }
+
+        // printf("put one.\n");
+        
+        u_int64_t now_node_num = this->nodeNum++;
+        if(now_node_num > maxNode){
+            this->nodeNum--;
+            return false;
+        }
+
+        int newLevel = randomLevel();
+        u_int32_t size = this->keyLen + this->valueLen + sizeof(SpinLock) + sizeof(u_int32_t) + sizeof(void*) * newLevel;
+        u_int64_t disk_id = value / disk_block_size;
+
+        char* mem = pool->allocate(size,disk_block_size);
+        if (mem == nullptr){
+            this->nodeNum--;
+            return false;
+        }
+        void* newNode = this->newNode(key,value,newLevel,mem);
+
+        // get last nodes
+        void* curr = this->head;
+        std::vector<void*> update(maxLevel, nullptr);
+        u_int32_t nowLevel = this->level;
+        for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
+            while (this->getNext(curr,i) != nullptr && this->compareNodeKeyAndBlock(this->getNext(curr,i),key,value,disk_block_size, threshold)<0){
+                curr = this->getNext(curr,i);
+            }
+            update[i] = curr;
+        }
+
+        // insert
+        for(int i=0; i<newLevel; ++i){
+            while(true){
+                // std::cout << "Skip list log: level " << i << std::endl;
+                this->lockNode(update[i]);
+                if(this->getNext(update[i],i) != nullptr && this->compareNodeKeyAndBlock(this->getNext(update[i],i),key,value,disk_block_size, threshold)<0){// there may be new node inserted.
                     this->unlockNode(update[i]);
                     update[i] = this->getNext(update[i],i);
                     continue;
@@ -565,6 +733,37 @@ public:
     }
     u_int32_t getMaxLevel()const{
         return this->maxLevel;
+    }
+    void* recycleNode(u_int64_t disk_id, u_int64_t block_size, u_int64_t threshold){
+        // get last nodes
+        void* curr = this->head;
+        std::vector<void*> update(maxLevel, nullptr);
+        u_int32_t nowLevel = this->level;
+        for (int i = this->level - 1; i >= 0; i--) {
+            while (this->getNext(curr,i) != nullptr && this->compareNodeBlock(this->getNext(curr,i),disk_id, block_size,threshold)<0){
+                curr = this->getNext(curr,i);
+            }
+            update[i] = curr;
+        }
+
+        auto retNode = this->getNext(curr,0);
+        // break list
+        for(int i=0; i<this->level; ++i){
+            while(true){
+                this->lockNode(update[i]);
+                if(this->getNext(update[i],i) != nullptr && this->compareNodeBlock(this->getNext(update[i],i),disk_id, block_size, threshold)<0){// there may be new node inserted.
+                    this->unlockNode(update[i]);
+                    update[i] = this->getNext(update[i],i);
+                    continue;
+                }else{
+                    this->putNext(update[i],i,nullptr);
+                    this->unlockNode(update[i]);
+                    break;
+                }
+            }
+        }
+
+        return retNode;
     }
     std::string outputToChar(){
         // if(this->writeThreadCount){

@@ -1,5 +1,5 @@
 #ifndef DATA_BLOCK_BUFFER_HPP_
-#define MDATA_BLOCK_BUFFER_HPP_
+#define DATA_BLOCK_BUFFER_HPP_
 #include <iostream>
 #include <fcntl.h>
 #include <sys/mman.h>
