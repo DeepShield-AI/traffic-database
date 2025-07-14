@@ -11,6 +11,10 @@
 
 class IndexBlockBuffer{
 private:
+    const u_int64_t total_block_num;
+    const u_int64_t block_size;
+    const u_int64_t buffer_size;
+    const u_int64_t disk_block_num;
 public:
 };
 

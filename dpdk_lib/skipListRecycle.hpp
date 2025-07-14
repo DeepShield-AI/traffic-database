@@ -763,6 +763,8 @@ public:
             }
         }
 
+
+        this->nodeNum.fetch_sub(...);
         return retNode;
     }
     std::string outputToChar(){
