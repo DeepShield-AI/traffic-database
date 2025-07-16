@@ -34,7 +34,7 @@ struct DiskMeta{
     // u_int32_t padding;
     u_int64_t start_time;
     u_int64_t end_time;
-    u_int32_t index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
+    u_int64_t index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
 };
 
 class DiskBuffer {
@@ -86,7 +86,7 @@ public:
     //     }
     // }
     // index storage thread
-    void setIndexID(u_int64_t index, IndexType index_type, u_int32_t index_start, u_int32_t index_end){
+    void setIndexID(u_int64_t index, IndexType index_type, u_int64_t index_start, u_int64_t index_end){
         if (index < block_num) {
             disk_metas[index].index_meta[index_type * 2] = index_start;
             disk_metas[index].index_meta[index_type * 2 + 1] = index_end;

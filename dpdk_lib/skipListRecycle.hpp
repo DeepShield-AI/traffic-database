@@ -12,6 +12,7 @@
 #include "zOrderTree.hpp"
 #include "bloomFilter.hpp"
 #include "memoryPool.hpp"
+#include "indexBlockBuffer.hpp"
 
 #define PRE_TYPE u_int32_t
 #define FILTER_K_LEN 3
@@ -734,7 +735,7 @@ public:
     u_int32_t getMaxLevel()const{
         return this->maxLevel;
     }
-    void* recycleNode(u_int64_t disk_id, u_int64_t block_size, u_int64_t threshold){
+    void* recycleNode(u_int64_t disk_id, u_int64_t block_size, u_int64_t threshold, IndexBlockBuffer* buffer, u_int64_t disk_pos, u_int64_t thread_id){
         // get last nodes
         void* curr = this->head;
         std::vector<void*> update(maxLevel, nullptr);
@@ -763,8 +764,18 @@ public:
             }
         }
 
-
-        this->nodeNum.fetch_sub(...);
+        u_int64_t offset = 0;
+        u_int64_t node_count = 0;
+        for(auto node = retNode; node!=nullptr; node = this->getNext(node,0)){
+            std::string key = this->getKey(node);
+            buffer->writeBlock(&(key[0]),this->keyLen,disk_pos + offset,thread_id);
+            offset += this->keyLen;
+            u_int64_t value = this->getValue(node);
+            buffer->writeBlock((char*)&value,this->valueLen,disk_pos + offset,thread_id);
+            offset += this->valueLen;
+            node_count++;
+        }
+        this->nodeNum.fetch_sub(node_count);
         return retNode;
     }
     std::string outputToChar(){
