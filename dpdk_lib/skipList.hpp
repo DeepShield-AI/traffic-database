@@ -11,6 +11,7 @@
 #include <cstring>
 #include "zOrderTree.hpp"
 #include "bloomFilter.hpp"
+#include "indexBlockBuffer.hpp"
 
 #define PRE_TYPE u_int32_t
 #define FILTER_K_LEN 3
@@ -46,21 +47,50 @@ private:
     std::atomic<bool> flag; // 原子变量表示锁的状态
 };
 
+// template <class KeyType, class ValueType>
+// class SkipListNode{
+// public:
+//     KeyType key;
+//     ValueType value;
+//     std::vector<SkipListNode*> next;
+//     SpinLock mutex;
+//     // std::mutex mutex;
+
+//     SkipListNode(KeyType key, ValueType val, int level) : next(level, nullptr){
+//         this->key = key;
+//         this->value = val;
+//     }
+//     ~SkipListNode(){
+//         this->next.clear();
+//     }
+// };
+
 template <class KeyType, class ValueType>
 class SkipListNode{
 public:
-    KeyType key;
     ValueType value;
-    std::vector<SkipListNode*> next;
+    KeyType key;
     SpinLock mutex;
+    u_int32_t level;
+    // std::vector<SkipListNode*> next;
+    SkipListNode* next[1];
+    
     // std::mutex mutex;
 
-    SkipListNode(KeyType key, ValueType val, int level) : next(level, nullptr){
-        this->key = key;
-        this->value = val;
+    SkipListNode(KeyType key, ValueType val, u_int32_t level):
+        key(key),value(value),level(level) {
+        for(u_int32_t i = 0; i<level; ++i){
+            this->next[i]=nullptr;
+        }
     }
-    ~SkipListNode(){
-        this->next.clear();
+    ~SkipListNode()=default;
+    void init(KeyType key, ValueType val, u_int32_t level){
+        this->key = key;
+        this->value = value;
+        this->level = level;
+        for(u_int32_t i = 0; i<level; ++i){
+            this->next[i]=nullptr;
+        }
     }
 };
 
@@ -78,13 +108,6 @@ class SkipList{
     std::atomic_uint32_t writeThreadCount;
     std::atomic_uint32_t readThreadCount;
 
-    u_int32_t randomLevel(){
-        u_int32_t lvl = 1;
-        while (rand() % 2 == 0 && lvl < maxLevel){
-            lvl++;
-        }
-        return lvl;
-    }
     void* newNode(std::string key, u_int64_t value, u_int32_t level){
         void* pointer = nullptr;
         if(this->keyLen == 1){
@@ -144,6 +167,47 @@ class SkipList{
             delete p;
         }else{
             std::cerr << "Skip list error: deleteNode with undifined ele_len!" << std::endl;
+        }
+    }
+    void clearHead(){
+        void* node = this->head;
+        if(this->keyLen == 1){
+            SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else if(this->keyLen == 2){
+            SkipListNode<u_int16_t,u_int64_t>* p = (SkipListNode<u_int16_t,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else if(this->keyLen == 4){
+            SkipListNode<u_int32_t,u_int64_t>* p = (SkipListNode<u_int32_t,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else if(this->keyLen == 8){
+            SkipListNode<u_int64_t,u_int64_t>* p = (SkipListNode<u_int64_t,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else if(this->keyLen == 12){
+            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else if(this->keyLen == 16){
+            SkipListNode<IPv6Address,u_int64_t>* p = (SkipListNode<IPv6Address,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else if(this->keyLen == 40){
+            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)node;
+            for (u_int32_t i = 0; i < this->maxLevel; ++i){
+                p->next[i] = nullptr;
+            }
+        }else{
+            std::cerr << "Skip list error: clearNode with undifined ele_len!" << std::endl;
         }
     }
     void* getNext(void* node, u_int32_t level){
@@ -228,6 +292,34 @@ class SkipList{
         }
         return value;
     }
+    u_int32_t getLevel(void* node){
+        u_int32_t level;
+        if(this->keyLen == 1){
+            SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+            level = p->level;
+        }else if(this->keyLen == 2){
+            SkipListNode<u_int16_t,u_int64_t>* p = (SkipListNode<u_int16_t,u_int64_t>*)node;
+            level = p->level;
+        }else if(this->keyLen == 4){
+            SkipListNode<u_int32_t,u_int64_t>* p = (SkipListNode<u_int32_t,u_int64_t>*)node;
+            level = p->level;
+        }else if(this->keyLen == 8){
+            SkipListNode<u_int64_t,u_int64_t>* p = (SkipListNode<u_int64_t,u_int64_t>*)node;
+            level = p->level;
+        }else if(this->keyLen == 12){
+            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)node;
+            level = p->level;
+        }else if(this->keyLen == 16){
+            SkipListNode<IPv6Address,u_int64_t>* p = (SkipListNode<IPv6Address,u_int64_t>*)node;
+            level = p->level;
+        }else if(this->keyLen == 40){
+            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)node;
+            level = p->level;
+        }else{
+            std::cerr << "Skip list error: getLevel with undifined ele_len!" << std::endl;
+        }
+        return level;
+    }
     int compareNodeKey(void* node, std::string key){
         if(this->keyLen == 1){
             u_int8_t* real_key= (u_int8_t*)&(key[0]);
@@ -296,6 +388,83 @@ class SkipList{
                 return -1;
             }
             if(p->key > *real_key){
+                return 1;
+            }
+            return 0;
+        }
+        else{
+            std::cerr << "Skip list error: getNext with undifined ele_len!" << std::endl;
+        }
+        return 0;
+    }
+    int compareNode(void* node, void* other){
+        if(this->keyLen == 1){
+            SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+            SkipListNode<u_int8_t,u_int64_t>* q = (SkipListNode<u_int8_t,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 2){
+            SkipListNode<u_int16_t,u_int64_t>* p = (SkipListNode<u_int16_t,u_int64_t>*)node;
+            SkipListNode<u_int16_t,u_int64_t>* q = (SkipListNode<u_int16_t,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 4){
+            SkipListNode<u_int32_t,u_int64_t>* p = (SkipListNode<u_int32_t,u_int64_t>*)node;
+            SkipListNode<u_int32_t,u_int64_t>* q = (SkipListNode<u_int32_t,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 8){
+            SkipListNode<u_int64_t,u_int64_t>* p = (SkipListNode<u_int64_t,u_int64_t>*)node;
+            SkipListNode<u_int64_t,u_int64_t>* q = (SkipListNode<u_int64_t,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 12){
+            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)node;
+            SkipListNode<QuarTurpleIPv4,u_int64_t>* q = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 16){
+            SkipListNode<IPv6Address,u_int64_t>* p = (SkipListNode<IPv6Address,u_int64_t>*)node;
+            SkipListNode<IPv6Address,u_int64_t>* q = (SkipListNode<IPv6Address,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
+                return 1;
+            }
+            return 0;
+        }else if(this->keyLen == 40){
+            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)node;
+            SkipListNode<QuarTurpleIPv6,u_int64_t>* q = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)other;
+            if(p->key < q->key){
+                return -1;
+            }
+            if(p->key > q->key){
                 return 1;
             }
             return 0;
@@ -404,6 +573,13 @@ public:
             node = node_tmp;
         }
     }
+    u_int32_t randomLevel(){
+        u_int32_t lvl = 1;
+        while (rand() % 2 == 0 && lvl < maxLevel){
+            lvl++;
+        }
+        return lvl;
+    }
     void addWriteThread(){
         this->writeThreadCount++;
     }
@@ -413,31 +589,20 @@ public:
     u_int32_t getWriteThreadCount()const{
         return this->writeThreadCount.load();
     }
-    bool insert(std::string key, u_int64_t value, u_int64_t maxNode){
-        // construct new node
-        if(key.size()!=this->keyLen){
-            printf("Skip list error: insert with wrong key length %lu-%u!\n",key.size(),this->keyLen);
-            // std::cerr << "Skip list error: insert with wrong key length!" <<std::endl;
+    bool insert(void* newNode){
+        if(newNode == nullptr){
+            std::cerr << "Skip list error: insert with nullptr!" <<std::endl;
             return true;
         }
-
-        // printf("put one.\n");
-        
         u_int64_t now_node_num = this->nodeNum++;
-        if(now_node_num > maxNode){
-            this->nodeNum--;
-            return false;
-        }
+        
+        u_int32_t newLevel = this->getLevel(newNode);
 
-        int newLevel = randomLevel();
-        void* newNode = this->newNode(key,value,newLevel);
-
-        // get last nodes
         void* curr = this->head;
         std::vector<void*> update(maxLevel, nullptr);
         u_int32_t nowLevel = this->level;
         for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
-            while (this->getNext(curr,i) != nullptr && this->compareNodeKey(this->getNext(curr,i),key)<0){
+            while (this->getNext(curr,i) != nullptr && this->compareNode(this->getNext(curr,i),newNode)<0){
                 curr = this->getNext(curr,i);
             }
             update[i] = curr;
@@ -448,7 +613,7 @@ public:
             while(true){
                 // std::cout << "Skip list log: level " << i << std::endl;
                 this->lockNode(update[i]);
-                if(this->getNext(update[i],i) != nullptr && this->compareNodeKey(this->getNext(update[i],i),key)<0){// there may be new node inserted.
+                if(this->getNext(update[i],i) != nullptr && this->compareNode(this->getNext(update[i],i),newNode)<0){// there may be new node inserted.
                     this->unlockNode(update[i]);
                     update[i] = this->getNext(update[i],i);
                     continue;
@@ -461,8 +626,6 @@ public:
             }
         }
 
-        // this->nodeNum++;
-
         u_int32_t curLevel = this->level.load();
         while (curLevel < newLevel) {// CAS update level
             if (this->level.compare_exchange_strong(curLevel, newLevel)) {
@@ -473,6 +636,66 @@ public:
         }
         return true;
     }
+    // bool insert(std::string key, u_int64_t value, u_int64_t maxNode){
+    //     // construct new node
+    //     if(key.size()!=this->keyLen){
+    //         printf("Skip list error: insert with wrong key length %lu-%u!\n",key.size(),this->keyLen);
+    //         // std::cerr << "Skip list error: insert with wrong key length!" <<std::endl;
+    //         return true;
+    //     }
+
+    //     // printf("put one.\n");
+        
+    //     u_int64_t now_node_num = this->nodeNum++;
+    //     if(now_node_num > maxNode){
+    //         this->nodeNum--;
+    //         return false;
+    //     }
+
+    //     int newLevel = randomLevel();
+    //     void* newNode = this->newNode(key,value,newLevel);
+
+    //     // get last nodes
+    //     void* curr = this->head;
+    //     std::vector<void*> update(maxLevel, nullptr);
+    //     u_int32_t nowLevel = this->level;
+    //     for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
+    //         while (this->getNext(curr,i) != nullptr && this->compareNodeKey(this->getNext(curr,i),key)<0){
+    //             curr = this->getNext(curr,i);
+    //         }
+    //         update[i] = curr;
+    //     }
+
+    //     // insert
+    //     for(int i=0; i<newLevel; ++i){
+    //         while(true){
+    //             // std::cout << "Skip list log: level " << i << std::endl;
+    //             this->lockNode(update[i]);
+    //             if(this->getNext(update[i],i) != nullptr && this->compareNodeKey(this->getNext(update[i],i),key)<0){// there may be new node inserted.
+    //                 this->unlockNode(update[i]);
+    //                 update[i] = this->getNext(update[i],i);
+    //                 continue;
+    //             }else{
+    //                 this->putNext(newNode,i,this->getNext(update[i],i));
+    //                 this->putNext(update[i],i,newNode);
+    //                 this->unlockNode(update[i]);
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    //     // this->nodeNum++;
+
+    //     u_int32_t curLevel = this->level.load();
+    //     while (curLevel < newLevel) {// CAS update level
+    //         if (this->level.compare_exchange_strong(curLevel, newLevel)) {
+    //             break;
+    //         }else{
+    //             curLevel = this->level.load();
+    //         }
+    //     }
+    //     return true;
+    // }
     std::list<u_int32_t> findByKey(std::string key){
         if(key.size()!=this->keyLen){
             std::cerr << "Skip list error: findByKey with wrong key length!" <<std::endl;
@@ -534,6 +757,25 @@ public:
     }
     u_int32_t getMaxLevel()const{
         return this->maxLevel;
+    }
+    void writeNode(void* retNode, IndexBlockBuffer* buffer, u_int64_t thread_id, u_int64_t node_count, u_int64_t disk_pos){
+        u_int64_t offset = 0;
+        u_int64_t now_count = 0;
+        for(auto node = retNode; node!=nullptr; node = this->getNext(node,0)){
+            std::string key = this->getKey(node);
+            buffer->writeBlock(&(key[0]),this->keyLen,disk_pos + offset,thread_id);
+            offset += this->keyLen;
+            u_int64_t value = this->getValue(node);
+            buffer->writeBlock((char*)&value,this->valueLen,disk_pos + offset,thread_id);
+            offset += this->valueLen;
+            now_count++;
+            if(now_count >= node_count){
+                break;
+            }
+        }
+    }
+    void clear(){
+        this->clearHead();
     }
     std::string outputToChar(){
         // if(this->writeThreadCount){
@@ -941,22 +1183,6 @@ public:
 
         return data;
     }
-    // ZOrderIPv4Meta* outputToZOrderIPv4(){
-    //     // if(this->writeThreadCount){
-    //     //     std::cerr << "Skip list error: it is used by certain w-thread." << std::endl;
-    //     //     return nullptr;
-    //     // }
-    //     u_int64_t buffer_len = this->nodeNum;
-    //     ZOrderIPv4Meta* data = new ZOrderIPv4Meta[buffer_len];
-
-    //     u_int64_t offset = 0;
-    //     for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
-    //         data[offset].zorder = *(ZOrderIPv4*)(this->getKey(node).c_str());
-    //         data[offset].value = this->getValue(node);
-    //         offset ++;
-    //     }
-    //     return data;
-    // }
 };
 
 #endif

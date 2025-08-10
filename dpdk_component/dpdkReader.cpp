@@ -5,23 +5,6 @@
 const u_int8_t pcap_head[] = {0xd4,0xc3,0xb2,0xa1,0x02,0x00,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                             0xff,0xff,0x00,0x00,0x01,0x00,0x00,0x00};
 
-// u_int8_t hasher_32(u_int32_t value){
-//     u_int8_t hashValue = 0;
-//     for(int i = 0;i<sizeof(u_int32_t)/sizeof(u_int8_t);++i){
-//         hashValue ^= value & 0xff;
-//         value >>= sizeof(u_int8_t);
-//     }
-//     return hashValue;
-// }
-
-// u_int8_t hasher_16(u_int16_t value){
-//     u_int8_t hashValue = 0;
-//     for(int i = 0;i<sizeof(u_int16_t)/sizeof(u_int8_t);++i){
-//         hashValue ^= value & 0xff;
-//         value >>= sizeof(u_int8_t);
-//     }
-//     return hashValue;
-// }
 
 uint64_t swap_endianness(uint64_t value) {
     return ((value >> 56) & 0x00000000000000FFULL) | // byte 0
@@ -287,77 +270,6 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     return true;
 }
 
-// u_int64_t DPDKReader::getField(const char* data, u_int8_t offset, u_int8_t len){
-//     u_int64_t value = 0;
-//     switch (len)
-//     {
-//     case 0:
-//         value = offset;
-//         break;
-//     case 8:
-//         value = *(u_int8_t*)(data + offset/8);
-//         break;
-//     case 16:
-//         value = *(u_int8_t*)(data + offset/8);
-//         value <<= 8;
-//         value |= *(u_int8_t*)(data + offset/8 + 1);
-//         break;
-//     default:
-//         break;
-//     }
-
-//     return value;
-// }
-
-// bool DPDKReader::writeTagToRing(const char* data, Tag* tags, u_int8_t tag_num, FlowMetadata meta, u_int64_t ts, u_int64_t offset,u_int64_t last){
-//     for(u_int8_t i = 0; i< tag_num; ++i){
-//         // printf("tag id: %u, offset: %u\n",tags[i].id,tags[i].offset);
-//         Tag* tag = tags + i;
-//         Index* index = new Index();
-//         u_int64_t field = this->getField(data,tag->offset,tag->length);
-//         // printf("field: %llu\n",field);
-//         auto value_pair = this->tagAggregator->addTag(meta,tag->id,tag->agg,field,offset,last);
-//         if(value_pair.first == std::numeric_limits<uint64_t>::max()){
-//             continue;
-//         }
-
-//         index->key = std::string((char*)&(value_pair.second),sizeof(value_pair.second));
-//         u_int64_t value = this->calValue(value_pair.first);
-//         index->value = value;
-//         index->ts = ts;
-//         index->id = tag->id + IndexType::TOTAL - 1;
-//         index->len = sizeof(value_pair.second);
-//         // printf("put before\n");
-//         if(!(*(this->indexRings))[0]->put((void*)index)){
-//             return false;
-//         }
-//         // printf("put after\n");
-//         this->tagIndexCount++;
-//     }
-//     return true;
-// }
-
-// bool DPDKReader::writeAllTagsToRing(u_int64_t ts){
-//     auto key_values = this->tagAggregator->getAll();
-//     printf("tag count: %lu\n",key_values.size());
-//     for(auto tur:key_values){
-//         auto idx = tur.first;
-//         auto k_v = tur.second;
-//         Index* index = new Index();
-//         index->key = std::string((char*)&(k_v.second),sizeof(k_v.second));
-//         u_int64_t value = this->calValue(k_v.first);
-//         index->value = value;
-//         index->ts = ts;
-//         index->id = idx + IndexType::TOTAL - 1;
-//         index->len = sizeof(k_v.second);
-//         if(!(*(this->indexRings))[0]->put((void*)index)){
-//             return false;
-//         }
-//         this->tagIndexCount++;
-//     }
-//     return true;
-// }
-
 void DPDKReader::bindCore(u_int32_t cpu){
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
@@ -531,7 +443,7 @@ int DPDKReader::run(){
     auto end = std::chrono::high_resolution_clock::now();
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    printf("DPDK Reader log: thread quit, during %llu us with %llu packets, %llu Bytes, %llu indexes, and %llu tag indexes.\n",this->duration_time,pkt_count,this->byteLen,index_count,this->tagIndexCount);
+    printf("DPDK Reader log: thread quit, during %llu us with %llu packets, %llu Bytes, %llu indexes.\n",this->duration_time,pkt_count,this->byteLen,index_count);
     printf("DPDK Reader log: read time %llu us, write time %llu us,analysis time %llu us ,aggregate time %llu us, index time %llu us, delete time %llu us, total time %llu us.\n",read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     return 0;
 }
