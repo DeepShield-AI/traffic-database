@@ -40,7 +40,7 @@ private:
     u_int32_t core_id;
 
     // u_int32_t testID;
-    void setMeta(DiskBlock* block);
+    // void setMeta(DiskBlock* block);
     void addBlock(DiskBlock* block);
     void bindCore();
 public:
