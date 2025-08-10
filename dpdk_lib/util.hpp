@@ -203,12 +203,19 @@ struct IndexTMP{
     u_int64_t value;
 };
 
+// struct Index{
+//     std::string key;
+//     u_int64_t value;
+//     u_int64_t ts;
+//     u_int8_t id;
+//     u_int8_t len;
+// };
+
 struct Index{
-    std::string key;
-    u_int64_t value;
     u_int64_t ts;
     u_int8_t id;
     u_int8_t len;
+    void* node;
 };
 
 struct HilbertMeta{

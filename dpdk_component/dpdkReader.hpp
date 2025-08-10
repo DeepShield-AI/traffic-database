@@ -15,6 +15,7 @@
 #include "../dpdk_lib/diskAgent.hpp"
 #include "../dpdk_lib/dataBlockbuffer.hpp"
 #include "../dpdk_lib/memoryPool.hpp"
+#include "../dpdk_lib/skipList.hpp"
 
 #include <rte_eal.h>
 #include <rte_ethdev.h>
@@ -78,7 +79,7 @@ class DPDKReader{
 
     u_int64_t calValue(u_int64_t _offset);
     u_int64_t calDiff(u_int64_t offset, u_int64_t last_offset);
-
+    u_int64_t calIndexNodeLen(u_int32_t key_len, u_int32_t level);
 
     bool writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts);
     void bindCore(u_int32_t cpu);

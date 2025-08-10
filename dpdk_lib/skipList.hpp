@@ -573,9 +573,9 @@ public:
             node = node_tmp;
         }
     }
-    u_int32_t randomLevel(){
+    static u_int32_t randomLevel(u_int32_t max_level){
         u_int32_t lvl = 1;
-        while (rand() % 2 == 0 && lvl < maxLevel){
+        while (rand() % 2 == 0 && lvl < max_level){
             lvl++;
         }
         return lvl;
