@@ -41,7 +41,7 @@ private:
     char* buffer_blocks; // blocks
     // bool* finish_flags; // block written has been finished by RSS threads
     // bool* dirty_flags; // block is written and can not be modified
-    u_int64_t* block_disk_id;
+    u_int64_t* block_disk_id; // which disk block this buffer block corresponds to
     u_int64_t* start_times;
     u_int64_t* end_times;
     // std::vector<BlockCheckThreadMata> thread_metas;
@@ -127,7 +127,7 @@ public:
         // u_int64_t id = this->thread_metas.size();
         u_int64_t id = this->block_check_ids.size();
         if(id >= this->total_block_num){
-            printf("Data block buffer error: too many written threads!\n");
+            printf("Data block buffer error: too many check threads!\n");
             return std::numeric_limits<uint64_t>::max();
         }
         // BlockCheckThreadMata meta = {

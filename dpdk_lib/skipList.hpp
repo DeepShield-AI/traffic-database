@@ -96,53 +96,53 @@ public:
 
 // template <class KeyType, class ValueType>
 class SkipList{
-    const u_int32_t keyLen; // length of key
-    const u_int32_t valueLen; // length of value
-    const u_int32_t maxLevel; // 跳表的最大层数
+    u_int32_t keyLen; // length of key
+    u_int32_t valueLen; // length of value
+    u_int32_t maxLevel; // 跳表的最大层数
 
     std::atomic_uint32_t level; // 当前跳表的层数
     void* head;
     // SkipListNode<KeyType,ValueType>* head; // 头节点
     std::atomic_uint64_t nodeNum;
 
-    std::atomic_uint32_t writeThreadCount;
-    std::atomic_uint32_t readThreadCount;
+    // std::atomic_uint32_t writeThreadCount;
+    // std::atomic_uint32_t readThreadCount;
 
-    void* newNode(std::string key, u_int64_t value, u_int32_t level){
-        void* pointer = nullptr;
-        if(this->keyLen == 1){
-            u_int8_t* real_key= (u_int8_t*)&(key[0]);
-            SkipListNode<u_int8_t,u_int64_t>* p = new SkipListNode<u_int8_t,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else if(this->keyLen == 2){
-            u_int16_t* real_key= (u_int16_t*)&(key[0]);
-            SkipListNode<u_int16_t,u_int64_t>* p = new SkipListNode<u_int16_t,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else if(this->keyLen == 4){
-            u_int32_t* real_key= (u_int32_t*)&(key[0]);
-            SkipListNode<u_int32_t,u_int64_t>* p = new SkipListNode<u_int32_t,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else if(this->keyLen == 8){
-            u_int64_t* real_key= (u_int64_t*)&(key[0]);
-            SkipListNode<u_int64_t,u_int64_t>* p = new SkipListNode<u_int64_t,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else if(this->keyLen == 12){
-            QuarTurpleIPv4* real_key= (QuarTurpleIPv4*)&(key[0]);
-            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = new SkipListNode<QuarTurpleIPv4,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else if(this->keyLen == 16){
-            IPv6Address* real_key= (IPv6Address*)&(key[0]);
-            SkipListNode<IPv6Address,u_int64_t>* p = new SkipListNode<IPv6Address,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else if(this->keyLen == 40){
-            QuarTurpleIPv6* real_key= (QuarTurpleIPv6*)&(key[0]);
-            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = new SkipListNode<QuarTurpleIPv6,u_int64_t>(*real_key,value,level);
-            pointer = (void*)p;
-        }else{
-            std::cerr << "Skip list error: newNode with undifined ele_len!" << std::endl;
-        }
-        return pointer;
-    }
+    // void* newNode(std::string key, u_int64_t value, u_int32_t level){
+    //     void* pointer = nullptr;
+    //     if(this->keyLen == 1){
+    //         u_int8_t* real_key= (u_int8_t*)&(key[0]);
+    //         SkipListNode<u_int8_t,u_int64_t>* p = new SkipListNode<u_int8_t,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else if(this->keyLen == 2){
+    //         u_int16_t* real_key= (u_int16_t*)&(key[0]);
+    //         SkipListNode<u_int16_t,u_int64_t>* p = new SkipListNode<u_int16_t,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else if(this->keyLen == 4){
+    //         u_int32_t* real_key= (u_int32_t*)&(key[0]);
+    //         SkipListNode<u_int32_t,u_int64_t>* p = new SkipListNode<u_int32_t,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else if(this->keyLen == 8){
+    //         u_int64_t* real_key= (u_int64_t*)&(key[0]);
+    //         SkipListNode<u_int64_t,u_int64_t>* p = new SkipListNode<u_int64_t,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else if(this->keyLen == 12){
+    //         QuarTurpleIPv4* real_key= (QuarTurpleIPv4*)&(key[0]);
+    //         SkipListNode<QuarTurpleIPv4,u_int64_t>* p = new SkipListNode<QuarTurpleIPv4,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else if(this->keyLen == 16){
+    //         IPv6Address* real_key= (IPv6Address*)&(key[0]);
+    //         SkipListNode<IPv6Address,u_int64_t>* p = new SkipListNode<IPv6Address,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else if(this->keyLen == 40){
+    //         QuarTurpleIPv6* real_key= (QuarTurpleIPv6*)&(key[0]);
+    //         SkipListNode<QuarTurpleIPv6,u_int64_t>* p = new SkipListNode<QuarTurpleIPv6,u_int64_t>(*real_key,value,level);
+    //         pointer = (void*)p;
+    //     }else{
+    //         std::cerr << "Skip list error: newNode with undifined ele_len!" << std::endl;
+    //     }
+    //     return pointer;
+    // }
     void deleteNode(void* node){
         if(this->keyLen == 1){
             SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
@@ -170,6 +170,10 @@ class SkipList{
         }
     }
     void clearHead(){
+        if (this->head == nullptr){
+            printf("Skip list error: clearHead when head is nullptr!\n");
+            return;
+        }
         void* node = this->head;
         if(this->keyLen == 1){
             SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
@@ -555,24 +559,49 @@ class SkipList{
         return key;
     }
 public:
-    SkipList(u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen) : maxLevel(maxLvl), level(0), nodeNum(0), keyLen(keyLen), valueLen(valueLen) {
-        this->head = newNode(std::string(this->keyLen,0),0,this->maxLevel);
-        this->writeThreadCount = 0;
-        this->readThreadCount = 0;
-        //srand(static_cast<int>(time(nullptr)));
-        // printf("key_len:%u.\n",this->keyLen);
+    SkipList(){
+        this->head = nullptr;
+        this->maxLevel = 0;
+        this->keyLen = 0;
+        this->valueLen = 0;
+        this->level = 0;
+        this->nodeNum = 0;
     }
+
+    // SkipList(u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen) : maxLevel(maxLvl), level(0), nodeNum(0), keyLen(keyLen), valueLen(valueLen) {
+    //     // this->head = newNode(std::string(this->keyLen,0),0,this->maxLevel);
+    //     this->head = nullptr;
+    //     // this->writeThreadCount = 0;
+    //     // this->readThreadCount = 0;
+    //     //srand(static_cast<int>(time(nullptr)));
+    //     // printf("key_len:%u.\n",this->keyLen);
+    // }
+    // SkipList(void* head, u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen) : head(head), maxLevel(maxLvl), level(0), nodeNum(0), keyLen(keyLen), valueLen(valueLen) {
+    //     this->writeThreadCount = 0;
+    //     this->readThreadCount = 0;
+    // }
     ~SkipList(){
-        if(this->readThreadCount || this->writeThreadCount){
-            std::cout << "Skip list warning: it is used by certain thread." << std::endl;
-        }
-        void* node = this->head;
-        while(node != nullptr){
-            void* node_tmp = this->getNext(node,0);
-            this->deleteNode(node);
-            node = node_tmp;
+        // if(this->readThreadCount || this->writeThreadCount){
+        //     std::cout << "Skip list warning: it is used by certain thread." << std::endl;
+        // }
+        // void* node = this->head;
+        // while(node != nullptr){
+        //     void* node_tmp = this->getNext(node,0);
+        //     this->deleteNode(node);
+        //     node = node_tmp;
+        // }
+        if(this->head != nullptr){
+            this->deleteNode(this->head);
+            this->head = nullptr;
         }
     }
+
+    SkipList(const SkipList&) = delete;
+    SkipList& operator=(const SkipList&) = delete;
+
+    SkipList(SkipList&&) noexcept = default;
+    SkipList& operator=(SkipList&&) noexcept = default;
+
     static u_int32_t randomLevel(u_int32_t max_level){
         u_int32_t lvl = 1;
         while (rand() % 2 == 0 && lvl < max_level){
@@ -580,16 +609,33 @@ public:
         }
         return lvl;
     }
-    void addWriteThread(){
-        this->writeThreadCount++;
+    // void addWriteThread(){
+    //     this->writeThreadCount++;
+    // }
+    // void ereaseWriteThread(){
+    //     this->writeThreadCount--;
+    // }
+    // u_int32_t getWriteThreadCount()const{
+    //     return this->writeThreadCount.load();
+    // }
+    void addHead(void* head){
+        if(this->head != nullptr){
+            std::cerr << "Skip list error: addHead when head is not nullptr!" <<std::endl;
+            return;
+        }
+        this->head = head;
+        this->clearHead();
     }
-    void ereaseWriteThread(){
-        this->writeThreadCount--;
-    }
-    u_int32_t getWriteThreadCount()const{
-        return this->writeThreadCount.load();
+    void init(u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen){
+        this->maxLevel = maxLvl;
+        this->keyLen = keyLen;
+        this->valueLen = valueLen;
     }
     bool insert(void* newNode){
+        if (this->head == nullptr){
+            printf("Skip list error: insert when head is nullptr!\n");
+            return true;
+        }
         if(newNode == nullptr){
             std::cerr << "Skip list error: insert with nullptr!" <<std::endl;
             return true;
@@ -697,6 +743,10 @@ public:
     //     return true;
     // }
     std::list<u_int32_t> findByKey(std::string key){
+        if (this->head == nullptr){
+            printf("Skip list error: findByKey when head is nullptr!\n");
+            return std::list<u_int32_t>();
+        }
         if(key.size()!=this->keyLen){
             std::cerr << "Skip list error: findByKey with wrong key length!" <<std::endl;
             return std::list<u_int32_t>();
@@ -722,6 +772,10 @@ public:
         return res;
     }
     std::list<u_int32_t> findByRange(std::string begin, std::string end){
+        if (this->head == nullptr){
+            printf("Skip list error: findByRange when head is nullptr!\n");
+            return std::list<u_int32_t>();
+        }
         if(begin.size()!=this->keyLen || end.size()!=this->keyLen){
             std::cerr << "Skip list error: findByRange with wrong key length!" <<std::endl;
             return std::list<u_int32_t>();
@@ -775,414 +829,421 @@ public:
         }
     }
     void clear(){
+        if (this->head == nullptr){
+            printf("Skip list error: clear when head is nullptr!\n");
+            return;
+        }
         this->clearHead();
+        // void* old_head = this->head;
+        // this->head = nullptr;
+        // return old_head;
     }
-    std::string outputToChar(){
-        // if(this->writeThreadCount){
-        //     std::cerr << "Skip list error: it is used by certain w-thread." << std::endl;
-        //     return std::string();
-        // }
-        // std::cout << "Skip list log: outputToChar." <<std::endl;
+    // std::string outputToChar(){
+    //     // if(this->writeThreadCount){
+    //     //     std::cerr << "Skip list error: it is used by certain w-thread." << std::endl;
+    //     //     return std::string();
+    //     // }
+    //     // std::cout << "Skip list log: outputToChar." <<std::endl;
         
-        u_int64_t buffer_len = this->nodeNum * (this->keyLen + this->valueLen);
-        std::string data = std::string(buffer_len,0);
-        u_int64_t offset = 0;
-        for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
-            std::string key = this->getKey(node);
-            memcpy(&(data[offset]),&(key[0]),this->keyLen);
-            offset += this->keyLen;
-            u_int64_t value = this->getValue(node);
-            memcpy(&(data[offset]),&value,this->valueLen);
-            offset += this->valueLen;
-        }
-        return data;
-    }
-    std::string outputToCharCompact(){
-        std::string data = std::string();
-        std::string values = std::string(this->nodeNum * this->valueLen,0);
-        data += std::string((char*)&(this->nodeNum),sizeof(this->nodeNum));
-        u_int32_t offset = 0;
-        std::string last_key = std::string();
-        for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
-            auto key = this->getKey(node);
-            if(last_key != key){
-                data += key;
-                data += std::string((char*)&offset,sizeof(offset));
-                last_key = key;
-            }
-            u_int64_t value = this->getValue(node);
-            memcpy(&(values[offset*this->valueLen]),&value,this->valueLen);
-            offset ++;
-        }
-        data += values;
-        return data;
-    }
-    std::string outputToCharCompressedIntBloom(){
-        const u_int32_t slice_len = sizeof(PRE_TYPE);
-        const u_int32_t key_l = this->keyLen/slice_len;
-        std::string data = std::string();
-        // BloomFilter filter = BloomFilter(this->nodeNum, FILTER_K_LEN);
+    //     u_int64_t buffer_len = this->nodeNum * (this->keyLen + this->valueLen);
+    //     std::string data = std::string(buffer_len,0);
+    //     u_int64_t offset = 0;
+    //     for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
+    //         std::string key = this->getKey(node);
+    //         memcpy(&(data[offset]),&(key[0]),this->keyLen);
+    //         offset += this->keyLen;
+    //         u_int64_t value = this->getValue(node);
+    //         memcpy(&(data[offset]),&value,this->valueLen);
+    //         offset += this->valueLen;
+    //     }
+    //     return data;
+    // }
+    // std::string outputToCharCompact(){
+    //     std::string data = std::string();
+    //     std::string values = std::string(this->nodeNum * this->valueLen,0);
+    //     data += std::string((char*)&(this->nodeNum),sizeof(this->nodeNum));
+    //     u_int32_t offset = 0;
+    //     std::string last_key = std::string();
+    //     for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
+    //         auto key = this->getKey(node);
+    //         if(last_key != key){
+    //             data += key;
+    //             data += std::string((char*)&offset,sizeof(offset));
+    //             last_key = key;
+    //         }
+    //         u_int64_t value = this->getValue(node);
+    //         memcpy(&(values[offset*this->valueLen]),&value,this->valueLen);
+    //         offset ++;
+    //     }
+    //     data += values;
+    //     return data;
+    // }
+    // std::string outputToCharCompressedIntBloom(){
+    //     const u_int32_t slice_len = sizeof(PRE_TYPE);
+    //     const u_int32_t key_l = this->keyLen/slice_len;
+    //     std::string data = std::string();
+    //     // BloomFilter filter = BloomFilter(this->nodeNum, FILTER_K_LEN);
 
-        std::list<std::string> key_arr = std::list<std::string>();
+    //     std::list<std::string> key_arr = std::list<std::string>();
 
-        std::vector<std::string> layers = std::vector<std::string>(key_l,std::string());
-        std::vector<u_int32_t> new_node_count = std::vector<u_int32_t>(key_l,0);
+    //     std::vector<std::string> layers = std::vector<std::string>(key_l,std::string());
+    //     std::vector<u_int32_t> new_node_count = std::vector<u_int32_t>(key_l,0);
 
-        std::string values = std::string(this->nodeNum * this->valueLen,0);
-        u_int32_t value_offset = 0;
+    //     std::string values = std::string(this->nodeNum * this->valueLen,0);
+    //     u_int32_t value_offset = 0;
 
-        std::string last_key = std::string();
+    //     std::string last_key = std::string();
 
-        bool new_pre = true;
+    //     bool new_pre = true;
 
-        for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
-            std::string key = this->getKey(node);
-            if(key == last_key){
-                u_int64_t value = this->getValue(node);
-                memcpy(&(values[value_offset]),&value,this->valueLen);
-                value_offset += this->valueLen;
-                new_pre = false;
-                continue;
-            }
-            last_key = key;
-            key_arr.push_back(key);
-            // filter.insert(key);
+    //     for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
+    //         std::string key = this->getKey(node);
+    //         if(key == last_key){
+    //             u_int64_t value = this->getValue(node);
+    //             memcpy(&(values[value_offset]),&value,this->valueLen);
+    //             value_offset += this->valueLen;
+    //             new_pre = false;
+    //             continue;
+    //         }
+    //         last_key = key;
+    //         key_arr.push_back(key);
+    //         // filter.insert(key);
 
-            // for(auto c:key){
-            //     printf("%02x",(u_int8_t)c);
-            // }
-            // printf("\n");
+    //         // for(auto c:key){
+    //         //     printf("%02x",(u_int8_t)c);
+    //         // }
+    //         // printf("\n");
 
-            PRE_TYPE* key_int = (PRE_TYPE*)(&key[0]);
+    //         PRE_TYPE* key_int = (PRE_TYPE*)(&key[0]);
             
 
-            for(u_int8_t i = 0; i< key_l; ++i){
+    //         for(u_int8_t i = 0; i< key_l; ++i){
                 
-                // u_int8_t pre = key[key.size() - i - 1];
-                PRE_TYPE pre = key_int[key_l - i - 1];
+    //             // u_int8_t pre = key[key.size() - i - 1];
+    //             PRE_TYPE pre = key_int[key_l - i - 1];
 
-                // printf("%02x\n",(u_int8_t)pre);
+    //             // printf("%02x\n",(u_int8_t)pre);
 
-                if(new_pre){
-                    // only one node
-                    if (new_node_count[i]==1 && i != key_l-1){
-                        u_int32_t off = OFFSET_BIT;
-                        off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
-                        memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                        for(u_int8_t j=i+1;j<key_l; ++j){
-                            layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
-                            new_node_count[j] = 0;
-                        }
-                    }
+    //             if(new_pre){
+    //                 // only one node
+    //                 if (new_node_count[i]==1 && i != key_l-1){
+    //                     u_int32_t off = OFFSET_BIT;
+    //                     off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
+    //                     memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //                     for(u_int8_t j=i+1;j<key_l; ++j){
+    //                         layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
+    //                         new_node_count[j] = 0;
+    //                     }
+    //                 }
 
-                    // layers[i].push_back(pre);
-                    layers[i] += std::string((char*)&pre,sizeof(pre));
-                    u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
-                    layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
-                    // printf("layer: %u, offset: %u\n",i,offset);
-                    new_node_count[i] = 1;
-                    new_pre = true;
-                }else{
-                    // u_int8_t last_pre = layers[i][layers[i].size()-sizeof(PreIndexInt)];
-                    PRE_TYPE last_pre = *(PRE_TYPE*)&(layers[i][layers[i].size()-sizeof(PreIndexInt)]);
-                    if (last_pre == pre){
-                        new_node_count[i]++;
-                        continue;
-                    }
+    //                 // layers[i].push_back(pre);
+    //                 layers[i] += std::string((char*)&pre,sizeof(pre));
+    //                 u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
+    //                 layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
+    //                 // printf("layer: %u, offset: %u\n",i,offset);
+    //                 new_node_count[i] = 1;
+    //                 new_pre = true;
+    //             }else{
+    //                 // u_int8_t last_pre = layers[i][layers[i].size()-sizeof(PreIndexInt)];
+    //                 PRE_TYPE last_pre = *(PRE_TYPE*)&(layers[i][layers[i].size()-sizeof(PreIndexInt)]);
+    //                 if (last_pre == pre){
+    //                     new_node_count[i]++;
+    //                     continue;
+    //                 }
 
-                    // only one node
-                    if (new_node_count[i]==1 && i != key_l-1){
-                        u_int32_t off = OFFSET_BIT;
-                        off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
-                        memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                        for(u_int8_t j=i+1;j<key_l; ++j){
-                            layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
-                            new_node_count[j] = 0;
-                        }
-                    }
+    //                 // only one node
+    //                 if (new_node_count[i]==1 && i != key_l-1){
+    //                     u_int32_t off = OFFSET_BIT;
+    //                     off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
+    //                     memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //                     for(u_int8_t j=i+1;j<key_l; ++j){
+    //                         layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
+    //                         new_node_count[j] = 0;
+    //                     }
+    //                 }
 
-                    // layers[i].push_back(pre);
-                    layers[i] += std::string((char*)&pre,sizeof(pre));
-                    u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
-                    layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
-                    // printf("layer: %u, offset: %u\n",i,offset);
-                    new_node_count[i] = 1;
-                    new_pre = true;
-                }
-            }
-            u_int64_t value = this->getValue(node);
-            memcpy(&(values[value_offset]),&value,this->valueLen);
-            value_offset += this->valueLen;
-            new_pre = false;
-        }
+    //                 // layers[i].push_back(pre);
+    //                 layers[i] += std::string((char*)&pre,sizeof(pre));
+    //                 u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
+    //                 layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
+    //                 // printf("layer: %u, offset: %u\n",i,offset);
+    //                 new_node_count[i] = 1;
+    //                 new_pre = true;
+    //             }
+    //         }
+    //         u_int64_t value = this->getValue(node);
+    //         memcpy(&(values[value_offset]),&value,this->valueLen);
+    //         value_offset += this->valueLen;
+    //         new_pre = false;
+    //     }
 
-        for(u_int8_t i = 0; i< key_l; ++i){
-            if (new_node_count[i]==1 && i != key_l - 1){
-                u_int32_t off = OFFSET_BIT;
-                off += *(u_int32_t*)(&(layers[key_l - 1][layers[key_l-1].size()-sizeof(off)]));
-                memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                for(u_int8_t j=i+1;j<key_l; ++j){
-                    layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
-                }
-                break;
-            }
-        }
+    //     for(u_int8_t i = 0; i< key_l; ++i){
+    //         if (new_node_count[i]==1 && i != key_l - 1){
+    //             u_int32_t off = OFFSET_BIT;
+    //             off += *(u_int32_t*)(&(layers[key_l - 1][layers[key_l-1].size()-sizeof(off)]));
+    //             memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //             for(u_int8_t j=i+1;j<key_l; ++j){
+    //                 layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
+    //             }
+    //             break;
+    //         }
+    //     }
 
-        auto length = key_arr.size();
+    //     auto length = key_arr.size();
 
-        BloomFilter filter = BloomFilter(length, FILTER_K_LEN);
+    //     BloomFilter filter = BloomFilter(length, FILTER_K_LEN);
 
-        data += std::string((char*)&length,sizeof(u_int32_t));
-        data += filter.bitArray;
-        for(auto layer:layers){
-            u_int32_t len = layer.size();
-            // printf("len: %u\n",len);
-            data += std::string((char*)&len,sizeof(u_int32_t));
-        }
-        for(auto layer:layers){
-            data+=layer;
-        }
-        data+=values;
+    //     data += std::string((char*)&length,sizeof(u_int32_t));
+    //     data += filter.bitArray;
+    //     for(auto layer:layers){
+    //         u_int32_t len = layer.size();
+    //         // printf("len: %u\n",len);
+    //         data += std::string((char*)&len,sizeof(u_int32_t));
+    //     }
+    //     for(auto layer:layers){
+    //         data+=layer;
+    //     }
+    //     data+=values;
 
-        return data;
+    //     return data;
 
-    }
-    std::string outputToCharCompressedInt(){
-        const u_int32_t slice_len = sizeof(PRE_TYPE);
-        const u_int32_t key_l = this->keyLen/slice_len;
-        std::string data = std::string();
-        BloomFilter filter = BloomFilter(this->nodeNum, FILTER_K_LEN);
+    // }
+    // std::string outputToCharCompressedInt(){
+    //     const u_int32_t slice_len = sizeof(PRE_TYPE);
+    //     const u_int32_t key_l = this->keyLen/slice_len;
+    //     std::string data = std::string();
+    //     BloomFilter filter = BloomFilter(this->nodeNum, FILTER_K_LEN);
 
-        std::vector<std::string> layers = std::vector<std::string>(key_l,std::string());
-        std::vector<u_int32_t> new_node_count = std::vector<u_int32_t>(key_l,0);
+    //     std::vector<std::string> layers = std::vector<std::string>(key_l,std::string());
+    //     std::vector<u_int32_t> new_node_count = std::vector<u_int32_t>(key_l,0);
 
-        std::string values = std::string(this->nodeNum * this->valueLen,0);
-        u_int32_t value_offset = 0;
+    //     std::string values = std::string(this->nodeNum * this->valueLen,0);
+    //     u_int32_t value_offset = 0;
 
-        std::string last_key = std::string();
+    //     std::string last_key = std::string();
 
-        bool new_pre = true;
+    //     bool new_pre = true;
 
-        for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
-            std::string key = this->getKey(node);
-            if(key == last_key){
-                u_int64_t value = this->getValue(node);
-                memcpy(&(values[value_offset]),&value,this->valueLen);
-                value_offset += this->valueLen;
-                new_pre = false;
-                continue;
-            }
-            last_key = key;
-            filter.insert(key);
+    //     for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
+    //         std::string key = this->getKey(node);
+    //         if(key == last_key){
+    //             u_int64_t value = this->getValue(node);
+    //             memcpy(&(values[value_offset]),&value,this->valueLen);
+    //             value_offset += this->valueLen;
+    //             new_pre = false;
+    //             continue;
+    //         }
+    //         last_key = key;
+    //         filter.insert(key);
 
-            // for(auto c:key){
-            //     printf("%02x",(u_int8_t)c);
-            // }
-            // printf("\n");
+    //         // for(auto c:key){
+    //         //     printf("%02x",(u_int8_t)c);
+    //         // }
+    //         // printf("\n");
 
-            PRE_TYPE* key_int = (PRE_TYPE*)(&key[0]);
+    //         PRE_TYPE* key_int = (PRE_TYPE*)(&key[0]);
             
 
-            for(u_int8_t i = 0; i< key_l; ++i){
+    //         for(u_int8_t i = 0; i< key_l; ++i){
                 
-                // u_int8_t pre = key[key.size() - i - 1];
-                PRE_TYPE pre = key_int[key_l - i - 1];
+    //             // u_int8_t pre = key[key.size() - i - 1];
+    //             PRE_TYPE pre = key_int[key_l - i - 1];
 
-                // printf("%02x\n",(u_int8_t)pre);
+    //             // printf("%02x\n",(u_int8_t)pre);
 
-                if(new_pre){
-                    // only one node
-                    if (new_node_count[i]==1 && i != key_l-1){
-                        u_int32_t off = OFFSET_BIT;
-                        off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
-                        memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                        for(u_int8_t j=i+1;j<key_l; ++j){
-                            layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
-                            new_node_count[j] = 0;
-                        }
-                    }
+    //             if(new_pre){
+    //                 // only one node
+    //                 if (new_node_count[i]==1 && i != key_l-1){
+    //                     u_int32_t off = OFFSET_BIT;
+    //                     off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
+    //                     memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //                     for(u_int8_t j=i+1;j<key_l; ++j){
+    //                         layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
+    //                         new_node_count[j] = 0;
+    //                     }
+    //                 }
 
-                    // layers[i].push_back(pre);
-                    layers[i] += std::string((char*)&pre,sizeof(pre));
-                    u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
-                    layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
-                    // printf("layer: %u, offset: %u\n",i,offset);
-                    new_node_count[i] = 1;
-                    new_pre = true;
-                }else{
-                    // u_int8_t last_pre = layers[i][layers[i].size()-sizeof(PreIndexInt)];
-                    PRE_TYPE last_pre = *(PRE_TYPE*)&(layers[i][layers[i].size()-sizeof(PreIndexInt)]);
-                    if (last_pre == pre){
-                        new_node_count[i]++;
-                        continue;
-                    }
+    //                 // layers[i].push_back(pre);
+    //                 layers[i] += std::string((char*)&pre,sizeof(pre));
+    //                 u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
+    //                 layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
+    //                 // printf("layer: %u, offset: %u\n",i,offset);
+    //                 new_node_count[i] = 1;
+    //                 new_pre = true;
+    //             }else{
+    //                 // u_int8_t last_pre = layers[i][layers[i].size()-sizeof(PreIndexInt)];
+    //                 PRE_TYPE last_pre = *(PRE_TYPE*)&(layers[i][layers[i].size()-sizeof(PreIndexInt)]);
+    //                 if (last_pre == pre){
+    //                     new_node_count[i]++;
+    //                     continue;
+    //                 }
 
-                    // only one node
-                    if (new_node_count[i]==1 && i != key_l-1){
-                        u_int32_t off = OFFSET_BIT;
-                        off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
-                        memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                        for(u_int8_t j=i+1;j<key_l; ++j){
-                            layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
-                            new_node_count[j] = 0;
-                        }
-                    }
+    //                 // only one node
+    //                 if (new_node_count[i]==1 && i != key_l-1){
+    //                     u_int32_t off = OFFSET_BIT;
+    //                     off += *(u_int32_t*)(&(layers[key_l-1][layers[key_l-1].size()-sizeof(off)]));
+    //                     memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //                     for(u_int8_t j=i+1;j<key_l; ++j){
+    //                         layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
+    //                         new_node_count[j] = 0;
+    //                     }
+    //                 }
 
-                    // layers[i].push_back(pre);
-                    layers[i] += std::string((char*)&pre,sizeof(pre));
-                    u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
-                    layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
-                    // printf("layer: %u, offset: %u\n",i,offset);
-                    new_node_count[i] = 1;
-                    new_pre = true;
-                }
-            }
-            u_int64_t value = this->getValue(node);
-            memcpy(&(values[value_offset]),&value,this->valueLen);
-            value_offset += this->valueLen;
-            new_pre = false;
-        }
+    //                 // layers[i].push_back(pre);
+    //                 layers[i] += std::string((char*)&pre,sizeof(pre));
+    //                 u_int32_t offset = (i == key_l - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndexInt);
+    //                 layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
+    //                 // printf("layer: %u, offset: %u\n",i,offset);
+    //                 new_node_count[i] = 1;
+    //                 new_pre = true;
+    //             }
+    //         }
+    //         u_int64_t value = this->getValue(node);
+    //         memcpy(&(values[value_offset]),&value,this->valueLen);
+    //         value_offset += this->valueLen;
+    //         new_pre = false;
+    //     }
 
-        for(u_int8_t i = 0; i< key_l; ++i){
-            if (new_node_count[i]==1 && i != key_l - 1){
-                u_int32_t off = OFFSET_BIT;
-                off += *(u_int32_t*)(&(layers[key_l - 1][layers[key_l-1].size()-sizeof(off)]));
-                memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                for(u_int8_t j=i+1;j<key_l; ++j){
-                    layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
-                }
-                break;
-            }
-        }
+    //     for(u_int8_t i = 0; i< key_l; ++i){
+    //         if (new_node_count[i]==1 && i != key_l - 1){
+    //             u_int32_t off = OFFSET_BIT;
+    //             off += *(u_int32_t*)(&(layers[key_l - 1][layers[key_l-1].size()-sizeof(off)]));
+    //             memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //             for(u_int8_t j=i+1;j<key_l; ++j){
+    //                 layers[j].resize(layers[j].length()-sizeof(PreIndexInt));
+    //             }
+    //             break;
+    //         }
+    //     }
 
-        data += std::string((char*)&this->nodeNum,sizeof(u_int32_t));
-        data += filter.bitArray;
-        for(auto layer:layers){
-            u_int32_t len = layer.size();
-            // printf("len: %u\n",len);
-            data += std::string((char*)&len,sizeof(u_int32_t));
-        }
-        for(auto layer:layers){
-            data+=layer;
-        }
-        data+=values;
+    //     data += std::string((char*)&this->nodeNum,sizeof(u_int32_t));
+    //     data += filter.bitArray;
+    //     for(auto layer:layers){
+    //         u_int32_t len = layer.size();
+    //         // printf("len: %u\n",len);
+    //         data += std::string((char*)&len,sizeof(u_int32_t));
+    //     }
+    //     for(auto layer:layers){
+    //         data+=layer;
+    //     }
+    //     data+=values;
 
-        return data;
+    //     return data;
 
-    }
-    std::string outputToCharCompressed(){
-        std::string data = std::string();
-        BloomFilter filter = BloomFilter(this->nodeNum, 3);
+    // }
+    // std::string outputToCharCompressed(){
+    //     std::string data = std::string();
+    //     BloomFilter filter = BloomFilter(this->nodeNum, 3);
 
-        std::vector<std::string> layers = std::vector<std::string>(this->keyLen,std::string());
-        std::vector<u_int32_t> new_node_count = std::vector<u_int32_t>(this->keyLen,0);
+    //     std::vector<std::string> layers = std::vector<std::string>(this->keyLen,std::string());
+    //     std::vector<u_int32_t> new_node_count = std::vector<u_int32_t>(this->keyLen,0);
 
-        std::string values = std::string(this->nodeNum * this->valueLen,0);
-        u_int32_t value_offset = 0;
+    //     std::string values = std::string(this->nodeNum * this->valueLen,0);
+    //     u_int32_t value_offset = 0;
 
-        std::string last_key = std::string();
+    //     std::string last_key = std::string();
 
-        bool new_pre = true;
+    //     bool new_pre = true;
 
-        for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
-            std::string key = this->getKey(node);
-            if(key == last_key){
-                u_int64_t value = this->getValue(node);
-                memcpy(&(values[value_offset]),&value,this->valueLen);
-                value_offset += this->valueLen;
-                new_pre = false;
-                continue;
-            }
-            last_key = key;
-            filter.insert(key);
+    //     for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
+    //         std::string key = this->getKey(node);
+    //         if(key == last_key){
+    //             u_int64_t value = this->getValue(node);
+    //             memcpy(&(values[value_offset]),&value,this->valueLen);
+    //             value_offset += this->valueLen;
+    //             new_pre = false;
+    //             continue;
+    //         }
+    //         last_key = key;
+    //         filter.insert(key);
 
-            // for(auto c:key){
-            //     printf("%02x",(u_int8_t)c);
-            // }
-            // printf("\n");
+    //         // for(auto c:key){
+    //         //     printf("%02x",(u_int8_t)c);
+    //         // }
+    //         // printf("\n");
 
-            for(u_int8_t i = 0; i< key.size(); ++i){
+    //         for(u_int8_t i = 0; i< key.size(); ++i){
                 
-                u_int8_t pre = key[key.size() - i - 1];
+    //             u_int8_t pre = key[key.size() - i - 1];
 
-                // printf("%02x\n",(u_int8_t)pre);
+    //             // printf("%02x\n",(u_int8_t)pre);
 
-                if(new_pre){
-                    // only one node
-                    if (new_node_count[i]==1 && i != key.size()-1){
-                        u_int32_t off = OFFSET_BIT;
-                        off += *(u_int32_t*)(&(layers[key.size()-1][layers[key.size()-1].size()-sizeof(off)]));
-                        memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                        for(u_int8_t j=i+1;j<key.size(); ++j){
-                            layers[j].resize(layers[j].length()-sizeof(PreIndex));
-                            new_node_count[j] = 0;
-                        }
-                    }
+    //             if(new_pre){
+    //                 // only one node
+    //                 if (new_node_count[i]==1 && i != key.size()-1){
+    //                     u_int32_t off = OFFSET_BIT;
+    //                     off += *(u_int32_t*)(&(layers[key.size()-1][layers[key.size()-1].size()-sizeof(off)]));
+    //                     memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //                     for(u_int8_t j=i+1;j<key.size(); ++j){
+    //                         layers[j].resize(layers[j].length()-sizeof(PreIndex));
+    //                         new_node_count[j] = 0;
+    //                     }
+    //                 }
 
-                    layers[i].push_back(pre);
-                    u_int32_t offset = (i == key.size() - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndex);
-                    layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
-                    // printf("layer: %u, offset: %u\n",i,offset);
-                    new_node_count[i] = 1;
-                    new_pre = true;
-                }else{
-                    u_int8_t last_pre = layers[i][layers[i].size()-sizeof(PreIndex)];
-                    if (last_pre == pre){
-                        new_node_count[i]++;
-                        continue;
-                    }
+    //                 layers[i].push_back(pre);
+    //                 u_int32_t offset = (i == key.size() - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndex);
+    //                 layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
+    //                 // printf("layer: %u, offset: %u\n",i,offset);
+    //                 new_node_count[i] = 1;
+    //                 new_pre = true;
+    //             }else{
+    //                 u_int8_t last_pre = layers[i][layers[i].size()-sizeof(PreIndex)];
+    //                 if (last_pre == pre){
+    //                     new_node_count[i]++;
+    //                     continue;
+    //                 }
 
-                    // only one node
-                    if (new_node_count[i]==1 && i != key.size()-1){
-                        u_int32_t off = OFFSET_BIT;
-                        off += *(u_int32_t*)(&(layers[key.size()-1][layers[key.size()-1].size()-sizeof(off)]));
-                        memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                        for(u_int8_t j=i+1;j<key.size(); ++j){
-                            layers[j].resize(layers[j].length()-sizeof(PreIndex));
-                            new_node_count[j] = 0;
-                        }
-                    }
+    //                 // only one node
+    //                 if (new_node_count[i]==1 && i != key.size()-1){
+    //                     u_int32_t off = OFFSET_BIT;
+    //                     off += *(u_int32_t*)(&(layers[key.size()-1][layers[key.size()-1].size()-sizeof(off)]));
+    //                     memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //                     for(u_int8_t j=i+1;j<key.size(); ++j){
+    //                         layers[j].resize(layers[j].length()-sizeof(PreIndex));
+    //                         new_node_count[j] = 0;
+    //                     }
+    //                 }
 
-                    layers[i].push_back(pre);
-                    u_int32_t offset = (i == key.size() - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndex);
-                    layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
-                    // printf("layer: %u, offset: %u\n",i,offset);
-                    new_node_count[i] = 1;
-                    new_pre = true;
-                }
-            }
-            u_int64_t value = this->getValue(node);
-            memcpy(&(values[value_offset]),&value,this->valueLen);
-            value_offset += this->valueLen;
-            new_pre = false;
-        }
+    //                 layers[i].push_back(pre);
+    //                 u_int32_t offset = (i == key.size() - 1)? value_offset/this->valueLen : layers[i+1].size()/sizeof(PreIndex);
+    //                 layers[i] += std::string((char*)&offset,sizeof(u_int32_t));
+    //                 // printf("layer: %u, offset: %u\n",i,offset);
+    //                 new_node_count[i] = 1;
+    //                 new_pre = true;
+    //             }
+    //         }
+    //         u_int64_t value = this->getValue(node);
+    //         memcpy(&(values[value_offset]),&value,this->valueLen);
+    //         value_offset += this->valueLen;
+    //         new_pre = false;
+    //     }
 
-        for(u_int8_t i = 0; i< this->keyLen; ++i){
-            if (new_node_count[i]==1 && i != this->keyLen - 1){
-                u_int32_t off = OFFSET_BIT;
-                off += *(u_int32_t*)(&(layers[this->keyLen - 1][layers[this->keyLen-1].size()-sizeof(off)]));
-                memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
-                for(u_int8_t j=i+1;j<this->keyLen; ++j){
-                    layers[j].resize(layers[j].length()-sizeof(PreIndex));
-                }
-                break;
-            }
-        }
+    //     for(u_int8_t i = 0; i< this->keyLen; ++i){
+    //         if (new_node_count[i]==1 && i != this->keyLen - 1){
+    //             u_int32_t off = OFFSET_BIT;
+    //             off += *(u_int32_t*)(&(layers[this->keyLen - 1][layers[this->keyLen-1].size()-sizeof(off)]));
+    //             memcpy(&layers[i][layers[i].size()-sizeof(off)],&off,sizeof(off));
+    //             for(u_int8_t j=i+1;j<this->keyLen; ++j){
+    //                 layers[j].resize(layers[j].length()-sizeof(PreIndex));
+    //             }
+    //             break;
+    //         }
+    //     }
 
-        data += std::string((char*)&this->nodeNum,sizeof(u_int32_t));
-        data += filter.bitArray;
-        for(auto layer:layers){
-            u_int32_t len = layer.size();
-            // printf("len: %u\n",len);
-            data += std::string((char*)&len,sizeof(u_int32_t));
-        }
-        for(auto layer:layers){
-            data+=layer;
-        }
-        data+=values;
+    //     data += std::string((char*)&this->nodeNum,sizeof(u_int32_t));
+    //     data += filter.bitArray;
+    //     for(auto layer:layers){
+    //         u_int32_t len = layer.size();
+    //         // printf("len: %u\n",len);
+    //         data += std::string((char*)&len,sizeof(u_int32_t));
+    //     }
+    //     for(auto layer:layers){
+    //         data+=layer;
+    //     }
+    //     data+=values;
 
-        return data;
-    }
+    //     return data;
+    // }
 };
 
 #endif

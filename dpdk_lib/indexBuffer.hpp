@@ -3,84 +3,192 @@
 
 #include <cmath>
 #include "skipList.hpp"
+#include "prefixBloomFilter.hpp"
+#include "util.hpp"
 
-struct SkipListMeta{
-    u_int32_t maxLvl;
-    u_int32_t keyLen;
-    u_int32_t valueLen;
+#define IPV4_SKIPLISTNODE_HEAD_LEN (sizeof(SkipListNode<u_int32_t, u_int64_t>) + sizeof(void*) * (sizeof(u_int32_t) * 8 - 1))
+#define PORT_SKIPLISTNODE_HEAD_LEN (sizeof(SkipListNode<u_int16_t, u_int64_t>) + sizeof(void*) * (sizeof(u_int16_t) * 8 - 1))
+#define IPV6_SKIPLISTNODE_HEAD_LEN (sizeof(SkipListNode<IPv6Address, u_int64_t>) + sizeof(void*) * (sizeof(IPv6Address) * 8 - 1))
+#define QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN (sizeof(SkipListNode<QuarTurpleIPv4, u_int64_t>) + sizeof(void*) * (sizeof(QuarTurpleIPv4) * 8 - 1))
+#define QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN (sizeof(SkipListNode<QuarTurpleIPv6, u_int64_t>) + sizeof(void*) * (sizeof(QuarTurpleIPv6) * 8 - 1))
+#define SKIPLISTNODE_HEAD_LEN (IPV4_SKIPLISTNODE_HEAD_LEN * 2 + PORT_SKIPLISTNODE_HEAD_LEN * 2 + IPV6_SKIPLISTNODE_HEAD_LEN * 2 + QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN + QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN)
+
+struct IndexBufferMeta{
+    PrefixBloomFilter bloomFilterMeta;
+    SkipList skiplists[IndexType::TOTAL];
+    char skiplistHeads[SKIPLISTNODE_HEAD_LEN];
+    u_int64_t disk_block_id;
+    void init(BitMap* bitmap, size_t k, u_int64_t disk_block_num){
+        this->bloomFilterMeta.init(bitmap, k);
+        this->disk_block_id = disk_block_id;
+
+        u_int64_t offset = 0;
+        
+        this->skiplists[IndexType::SRCIP].init(sizeof(u_int32_t) * 8, sizeof(u_int32_t), sizeof(u_int64_t));
+        SkipListNode<u_int32_t,u_int64_t>* srcIPNode = (SkipListNode<u_int32_t,u_int64_t>*)this->skiplistHeads + offset;
+        srcIPNode->init(0, 0, sizeof(u_int32_t) * 8);
+        offset += IPV4_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::SRCIP].addHead(srcIPNode);
+
+        this->skiplists[IndexType::DSTIP].init(sizeof(u_int32_t) * 8, sizeof(u_int32_t), sizeof(u_int64_t));
+        SkipListNode<u_int32_t,u_int64_t>* dstIPNode = (SkipListNode<u_int32_t,u_int64_t>*)this->skiplistHeads + offset;
+        dstIPNode->init(0, 0, sizeof(u_int32_t) * 8);
+        offset += IPV4_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::DSTIP].addHead(dstIPNode);
+
+        this->skiplists[IndexType::SRCPORT].init(sizeof(u_int16_t) * 8, sizeof(u_int16_t), sizeof(u_int64_t));
+        SkipListNode<u_int16_t,u_int64_t>* srcPortNode = (SkipListNode<u_int16_t,u_int64_t>*)this->skiplistHeads + offset;
+        srcPortNode->init(0, 0, sizeof(u_int16_t) * 8);
+        offset += PORT_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::SRCPORT].addHead(srcPortNode);
+
+        this->skiplists[IndexType::DSTPORT].init(sizeof(u_int16_t) * 8, sizeof(u_int16_t), sizeof(u_int64_t));
+        SkipListNode<u_int16_t,u_int64_t>* dstPortNode = (SkipListNode<u_int16_t,u_int64_t>*)this->skiplistHeads + offset;
+        dstPortNode->init(0, 0, sizeof(u_int16_t) * 8);
+        offset += PORT_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::DSTPORT].addHead(dstPortNode);
+
+        this->skiplists[IndexType::SRCIPv6].init(sizeof(IPv6Address) * 8, sizeof(IPv6Address), sizeof(u_int64_t));
+        SkipListNode<IPv6Address,u_int64_t>* srcIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)this->skiplistHeads + offset;
+        srcIPv6Node->init(IPv6Address{0, 0}, 0, sizeof(IPv6Address) * 8);
+        offset += IPV6_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::SRCIPv6].addHead(srcIPv6Node);
+
+        this->skiplists[IndexType::DSTIPv6].init(sizeof(IPv6Address) * 8, sizeof(IPv6Address), sizeof(u_int64_t));
+        SkipListNode<IPv6Address,u_int64_t>* dstIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)this->skiplistHeads + offset;
+        dstIPv6Node->init(IPv6Address{0, 0}, 0, sizeof(IPv6Address) * 8);
+        offset += IPV6_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::DSTIPv6].addHead(dstIPv6Node);
+
+        this->skiplists[IndexType::QUARTURPLEIPv4].init(sizeof(QuarTurpleIPv4) * 8, sizeof(QuarTurpleIPv4), sizeof(u_int64_t));
+        SkipListNode<QuarTurpleIPv4,u_int64_t>* quarTurpleIPv4Node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)this->skiplistHeads + offset;
+        quarTurpleIPv4Node->init(QuarTurpleIPv4{0, 0, 0, 0}, 0, sizeof(QuarTurpleIPv4) * 8);
+        offset += QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::QUARTURPLEIPv4].addHead(quarTurpleIPv4Node);
+
+        this->skiplists[IndexType::QUARTURPLEIPv6].init(sizeof(QuarTurpleIPv6) * 8, sizeof(QuarTurpleIPv6), sizeof(u_int64_t));
+        SkipListNode<QuarTurpleIPv6,u_int64_t>* quarTurpleIPv6Node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)this->skiplistHeads + offset;
+        quarTurpleIPv6Node->init(QuarTurpleIPv6{0, 0, IPv6Address{0, 0}, IPv6Address{0, 0}}, 0, sizeof(QuarTurpleIPv6) * 8);
+        offset += QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN;
+        this->skiplists[IndexType::QUARTURPLEIPv6].addHead(quarTurpleIPv6Node);
+    }
 };
 
-class IndexBuffer{
-    const u_int32_t cacheCount;
-    // const u_int32_t maxLvl;
-    // const u_int32_t keyLen;
-    // const u_int32_t valueLen;
-    const SkipListMeta meta;
-    const u_int64_t maxNode;
+class IndexBuffer {
+private:
+    const u_int64_t total_block_num;
+    const u_int64_t disk_block_num;
+    u_int64_t size;
 
-    // SkipList** caches;
-    SkipList** caches;
-    bool* cacheFlag; // true for read
-    u_int64_t* start_times;
-
+    IndexBufferMeta* metas;
+    // std::vector<u_int64_t> index_write_ids;
+    std::vector<u_int64_t> index_check_ids;
 public:
-    IndexBuffer(u_int32_t _cacheCount, SkipListMeta meta, u_int32_t _maxNode):
-    cacheCount(_cacheCount),maxNode(_maxNode),meta(meta){
-        this->caches = new SkipList*[_cacheCount];
-        for(u_int32_t i=0; i<_cacheCount; ++i){
-            this->caches[i] = new SkipList(meta.maxLvl,meta.keyLen,meta.valueLen);
+    IndexBuffer(u_int64_t total_block_num, u_int64_t disk_block_num, BitMap* bitmap, size_t k):
+        total_block_num(total_block_num), disk_block_num(disk_block_num){
+        this->size = this->total_block_num * sizeof(IndexBufferMeta);
+        this->metas = (IndexBufferMeta*)mmap(nullptr, this->size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        if (this->metas == MAP_FAILED){
+            printf("Index buffer error: mmap failed for metas!\n");
+            throw std::runtime_error("memory manager mmap failed");
         }
-        this->cacheFlag = new bool[_cacheCount]();
-        this->start_times = new u_int64_t[_cacheCount];
-        for(u_int32_t i=0; i<_cacheCount; ++i){
-            this->start_times[i] = std::numeric_limits<uint64_t>::max();
+        for (u_int64_t i = 0; i < this->total_block_num; ++i){
+            this->metas[i].init(bitmap, k, i);
         }
+        this->index_check_ids = std::vector<u_int64_t>();
     }
     ~IndexBuffer(){
-        for(u_int32_t i=0; i<this->cacheCount; ++i){
-            delete this->caches[i];
+        munmap(this->metas, this->size);
+    }
+    u_int64_t addCheckThread(){
+        u_int64_t id = this->index_check_ids.size();
+        if(id >= this->total_block_num){
+            printf("Data block buffer error: too many check threads!\n");
+            return std::numeric_limits<uint64_t>::max();
         }
-        delete[] this->start_times;
-        delete[] this->cacheFlag;
-        delete[] this->caches;
+        this->index_check_ids.push_back(id);
+        return id;
     }
-    bool insert(std::string& key, u_int64_t value, u_int32_t id, u_int64_t ts, u_int32_t start){
-        if(this->cacheFlag[id]){
-            printf("Index Buffer log: %u is full.\n",id);
-            return false;
-        }
-        // if(this->caches[id]->insert(keys,value,this->maxNode, start)){
-        //     this->start_times[id] = std::min(this->start_times[id],ts);
-        //     return true;
-        // }
-        if(this->caches[id]->insert(key,value,this->maxNode)){
-            this->start_times[id] = std::min(this->start_times[id],ts);
-            return true;
-        }
-        printf("Index Buffer log: %u is full.\n",id);
-        this->cacheFlag[id] = true;
-        return false;
-    }
-    std::pair<SkipList*,u_int64_t> getCache(u_int32_t id){
-        if(!this->cacheFlag[id]){
-            return {nullptr,0};
-        }
-        SkipList* ret = this->caches[id];
-        u_int64_t ts = this->start_times[id];
-        this->caches[id] = new SkipList(this->meta.maxLvl,this->meta.keyLen,this->meta.valueLen);
-        this->cacheFlag[id] = false;
-        return {ret,ts};
-    }
-    std::pair<SkipList*,u_int64_t> directGetCache(u_int32_t id){
-        SkipList* ret = this->caches[id];
-        u_int64_t ts = this->start_times[id];
-        this->caches[id] = new SkipList(this->meta.maxLvl,this->meta.keyLen,this->meta.valueLen);
-        this->cacheFlag[id] = false;
-        return {ret,ts};
-    }
-    u_int32_t getCacheCount()const{
-        return this->cacheCount;
-    }
+    
 };
+
+// struct SkipListMeta{
+//     u_int32_t maxLvl;
+//     u_int32_t keyLen;
+//     u_int32_t valueLen;
+// };
+
+// class IndexBuffer{
+//     const u_int32_t cacheCount;
+//     // const u_int32_t maxLvl;
+//     // const u_int32_t keyLen;
+//     // const u_int32_t valueLen;
+//     const SkipListMeta meta;
+//     const u_int64_t maxNode;
+
+//     // SkipList** caches;
+//     SkipList** caches;
+//     bool* cacheFlag; // true for read
+//     u_int64_t* start_times;
+
+// public:
+//     IndexBuffer(u_int32_t _cacheCount, SkipListMeta meta, u_int32_t _maxNode):
+//     cacheCount(_cacheCount),maxNode(_maxNode),meta(meta){
+//         this->caches = new SkipList*[_cacheCount];
+//         for(u_int32_t i=0; i<_cacheCount; ++i){
+//             this->caches[i] = new SkipList(meta.maxLvl,meta.keyLen,meta.valueLen);
+//         }
+//         this->cacheFlag = new bool[_cacheCount]();
+//         this->start_times = new u_int64_t[_cacheCount];
+//         for(u_int32_t i=0; i<_cacheCount; ++i){
+//             this->start_times[i] = std::numeric_limits<uint64_t>::max();
+//         }
+//     }
+//     ~IndexBuffer(){
+//         for(u_int32_t i=0; i<this->cacheCount; ++i){
+//             delete this->caches[i];
+//         }
+//         delete[] this->start_times;
+//         delete[] this->cacheFlag;
+//         delete[] this->caches;
+//     }
+//     bool insert(std::string& key, u_int64_t value, u_int32_t id, u_int64_t ts, u_int32_t start){
+//         if(this->cacheFlag[id]){
+//             printf("Index Buffer log: %u is full.\n",id);
+//             return false;
+//         }
+//         // if(this->caches[id]->insert(keys,value,this->maxNode, start)){
+//         //     this->start_times[id] = std::min(this->start_times[id],ts);
+//         //     return true;
+//         // }
+//         if(this->caches[id]->insert(key,value,this->maxNode)){
+//             this->start_times[id] = std::min(this->start_times[id],ts);
+//             return true;
+//         }
+//         printf("Index Buffer log: %u is full.\n",id);
+//         this->cacheFlag[id] = true;
+//         return false;
+//     }
+//     std::pair<SkipList*,u_int64_t> getCache(u_int32_t id){
+//         if(!this->cacheFlag[id]){
+//             return {nullptr,0};
+//         }
+//         SkipList* ret = this->caches[id];
+//         u_int64_t ts = this->start_times[id];
+//         this->caches[id] = new SkipList(this->meta.maxLvl,this->meta.keyLen,this->meta.valueLen);
+//         this->cacheFlag[id] = false;
+//         return {ret,ts};
+//     }
+//     std::pair<SkipList*,u_int64_t> directGetCache(u_int32_t id){
+//         SkipList* ret = this->caches[id];
+//         u_int64_t ts = this->start_times[id];
+//         this->caches[id] = new SkipList(this->meta.maxLvl,this->meta.keyLen,this->meta.valueLen);
+//         this->cacheFlag[id] = false;
+//         return {ret,ts};
+//     }
+//     u_int32_t getCacheCount()const{
+//         return this->cacheCount;
+//     }
+// };
 
 #endif

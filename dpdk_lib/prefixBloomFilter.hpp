@@ -111,6 +111,12 @@ private:
     }
 
 public:
+    PrefixBloomFilter(){
+        this->bitmap = nullptr;
+        this->k = 0;
+        this->writing_col = std::numeric_limits<uint32_t>::max();
+        this->reading_col = std::numeric_limits<uint32_t>::max();
+    }
     PrefixBloomFilter(BitMap* bitmap, size_t numHashFunctions):
         bitmap(bitmap), k(numHashFunctions), writing_col(0) {
         if(this->bitmap->getRowCount() < (PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2){
@@ -120,14 +126,31 @@ public:
         this->reading_col = std::numeric_limits<uint32_t>::max();
     }
     ~PrefixBloomFilter() = default;
+    void init(BitMap* bitmap, size_t numHashFunctions){
+        this->bitmap = bitmap;
+        this->k = numHashFunctions;
+        if(this->bitmap->getRowCount() < (PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2){
+            printf("PrefixBloomFilter error: bitmap row count %llu is too small!\n", this->bitmap->getRowCount());
+        }
+        this->writing_col = std::numeric_limits<uint32_t>::max();
+        this->reading_col = std::numeric_limits<uint32_t>::max();
+    }
     void setWritingCol(u_int64_t col){
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while setWritingCol!\n");
+            return;
+        }
         if (col >= this->bitmap->getColCount()){
-            printf("PrefixBloomFilter error: col %llu out of range!\n", col);
+            printf("PrefixBloomFilter  error: col %llu out of range!\n", col);
             return;
         }
         this->writing_col = col;
     }
     void setReadingCol(u_int64_t col){
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while setReadingCol!\n");
+            return;
+        }
         if (col >= this->bitmap->getColCount()){
             printf("PrefixBloomFilter error: col %llu out of range!\n", col);
             return;
@@ -135,6 +158,10 @@ public:
         this->reading_col = col;
     }
     void insertPort(u_int16_t port, IndexType type){
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while insertPort!\n");
+            return;
+        }
         if (type == IndexType::SRCPORT){
             this->bitmap->set((u_int64_t)port, this->writing_col);
             return;
@@ -146,6 +173,10 @@ public:
         printf("PrefixBloomFilter error: set invalid port type %d!\n", type);
     }
     void insertIPv4(u_int32_t ip, IndexType type){
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while insertIPv4!\n");
+            return;
+        }
         if (type == IndexType::SRCIP){
             this->setIPv4(ip, (u_int64_t)PORT_BIT_LEN * 2);
             return;
@@ -157,6 +188,10 @@ public:
         printf("PrefixBloomFilter error: set invalid IPv4 type %d!\n", type);
     }
     void insertIPv6(IPv6Address ip, IndexType type){
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while insertIPv6!\n");
+            return;
+        }
         if (type == IndexType::SRCIPv6){
             this->setIPv6(ip, (u_int64_t)PORT_BIT_LEN * 2 + (u_int64_t)IPV4_BIT_LEN * 2);
             return;
@@ -169,6 +204,10 @@ public:
     }
 
     bool getPort(u_int16_t port, IndexType type) const {
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while getPort!\n");
+            return false;
+        }
         if (type == IndexType::SRCPORT){
             return this->bitmap->get((u_int64_t)port, this->reading_col);
         }
@@ -179,6 +218,10 @@ public:
         return false;
     }
     bool getIPv4(u_int32_t ip, IndexType type) const {
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while getIPv4!\n");
+            return false;
+        }
         if (type == IndexType::SRCIP){
             return this->getIPv4(ip, (u_int64_t)PORT_BIT_LEN * 2);
         }
@@ -189,6 +232,10 @@ public:
         return false;
     }
     bool getIPv6(IPv6Address ip, IndexType type) const {
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while getIPv6!\n");
+            return false;
+        }
         if (type == IndexType::SRCIPv6){
             return this->getIPv6(ip, (u_int64_t)PORT_BIT_LEN * 2 + (u_int64_t)IPV4_BIT_LEN * 2);
         }
