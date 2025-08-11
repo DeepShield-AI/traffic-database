@@ -106,6 +106,13 @@ public:
         munmap((void*)this->bitmap, this->size);
     }
 
+    u_int64_t getRowCount() const {
+        return this->row_count;
+    }
+    u_int64_t getColCount() const {
+        return this->col_count;
+    }
+
     bool get(u_int64_t row, u_int64_t col) const{
         // if (col >= this->col_count){
         //     printf("Bitmap error: col %llu out of range!\n", col);

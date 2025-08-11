@@ -59,6 +59,28 @@ struct IPv6Address{
     bool operator>=(const IPv6Address& other) const {
         return !(*this < other);
     }
+
+    IPv6Address operator>>(unsigned int shift) const {
+        IPv6Address result{0, 0};
+        if (shift == 0) {
+            result = *this;
+        } else if (shift < 64) {
+            result.low = (low >> shift) | (high << (64 - shift));
+            result.high = high >> shift;
+        } else if (shift < 128) {
+            result.low = high >> (shift - 64);
+            result.high = 0;
+        } else {
+            result.low = 0;
+            result.high = 0;
+        }
+        return result;
+    }
+
+    IPv6Address& operator>>=(unsigned int shift) {
+        *this = *this >> shift;
+        return *this;
+    }
 };
 
 struct QuarTurpleIPv4{
