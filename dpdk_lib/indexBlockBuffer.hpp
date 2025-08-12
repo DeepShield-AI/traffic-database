@@ -82,17 +82,11 @@ public:
         return id;
     }
     u_int64_t addCheckThread(){
-        // u_int64_t id = this->thread_metas.size();
         u_int64_t id = this->block_check_ids.size();
         if(id >= this->total_block_num){
             printf("Data block buffer error: too many written threads!\n");
             return std::numeric_limits<uint64_t>::max();
         }
-        // BlockCheckThreadMata meta = {
-        //     .block_check_id = id,
-        //     .block_written_id = id,
-        // };
-        // this->thread_metas.push_back(meta);
         this->block_check_ids.push_back(id);
         return id;
     }
@@ -134,7 +128,7 @@ public:
     }
     u_int64_t checkBlock(u_int64_t thread_id) const{
         u_int64_t block_check_id = this->block_check_ids[thread_id];
-        // u_int64_t real_check_id = (block_check_id + this->delayed_block_num) % this->total_block_num;
+
         for(u_int64_t i = 0; i < this->thread_num; ++i){
             if(!this->checkThread(block_check_id, i)){
                 return std::numeric_limits<uint64_t>::max();

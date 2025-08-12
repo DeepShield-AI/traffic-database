@@ -90,7 +90,7 @@ int DiskManager::run(){
         delete block;
     }
     while (true){
-        u_int64_t block_id = this->block_buffer->checkBlock(this->thread_id);
+        u_int64_t block_id = this->block_buffer->directGetBlockID(this->thread_id);
         if(block_id == std::numeric_limits<uint64_t>::max()){
             break;
         }
