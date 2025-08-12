@@ -114,7 +114,7 @@ public:
     //     io_uring_cqe_seen(ring, cqe);
     //     return true;
     // }
-    bool asyncWrite(char* buffer, u_int32_t block_id, u_int64_t write_pos) {
+    bool asyncWrite(char* buffer, u_int64_t block_id, u_int64_t write_pos) {
         if (write_pos > this->block_num){
             printf("Disk agent error: asyncWrit position %llu exceeds block number %llu!\n", write_pos, this->block_num);
             return false;
@@ -148,7 +148,7 @@ public:
         }
         return std::numeric_limits<u_int32_t>::max();
     }
-    bool read(char* buffer, u_int32_t id){
+    bool read(char* buffer, u_int64_t id){
         if (id >= this->block_num) {
             printf("Disk agent error: read id %u exceeds block number %llu!\n", id, this->block_num);
             return false;

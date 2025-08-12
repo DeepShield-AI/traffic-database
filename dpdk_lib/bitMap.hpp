@@ -112,6 +112,9 @@ public:
     u_int64_t getColCount() const {
         return this->col_count;
     }
+    u_int64_t getBackupColCount() const {
+        return this->backup_col_count;
+    }
 
     bool get(u_int64_t row, u_int64_t col) const{
         // if (col >= this->col_count){

@@ -85,6 +85,9 @@ int DiskManager::run(){
         DiskBlock* block = this->block_buffer->getBlock(this->thread_id);
         
         this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+        this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
+        // TDDO: Instantly write Packet Count?
+
         // this->setMeta(block);
         this->addBlock(block);
         delete block;
@@ -96,6 +99,9 @@ int DiskManager::run(){
         }
         DiskBlock* block = this->block_buffer->getBlock(this->thread_id);
         this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+        this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
+        // TDDO: Instantly write Packet Count?
+
         this->addBlock(block);
         delete block;
     }

@@ -812,20 +812,20 @@ public:
     u_int32_t getMaxLevel()const{
         return this->maxLevel;
     }
-    void writeNode(void* retNode, IndexBlockBuffer* buffer, u_int64_t thread_id, u_int64_t node_count, u_int64_t disk_pos){
+    void writeNode(IndexBlockBuffer* buffer, u_int64_t thread_id, u_int64_t disk_pos){
         u_int64_t offset = 0;
-        u_int64_t now_count = 0;
-        for(auto node = retNode; node!=nullptr; node = this->getNext(node,0)){
+        // u_int64_t now_count = 0;
+        for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
             std::string key = this->getKey(node);
             buffer->writeBlock(&(key[0]),this->keyLen,disk_pos + offset,thread_id);
             offset += this->keyLen;
             u_int64_t value = this->getValue(node);
             buffer->writeBlock((char*)&value,this->valueLen,disk_pos + offset,thread_id);
             offset += this->valueLen;
-            now_count++;
-            if(now_count >= node_count){
-                break;
-            }
+            // now_count++;
+            // if(now_count >= node_count){
+            //     break;
+            // }
         }
     }
     void clear(){

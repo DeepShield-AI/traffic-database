@@ -14,10 +14,12 @@ struct DiskMeta{
     u_int64_t start_time;
     u_int64_t end_time;
     u_int64_t disk_index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
+    uint64_t packet_count;
     void init(BitMap* bitmap, size_t k){
         this->bloomFilterMeta.init(bitmap, k);
         this->start_time = 0;
         this->end_time = 0;
+        this->packet_count = 0;
     }
 };
 
@@ -56,20 +58,34 @@ public:
             printf("Disk buffer error: index %lu out of bounds!\n", index);
         }
     }
-    void setBloomFilterCol(u_int32_t disk_block_id, u_int64_t col){
+    void setBloomFilterCol(u_int64_t disk_block_id, u_int64_t col){
         if (disk_block_id >= block_num){
             printf("Disk buffer error: disk_block_id %u out of bounds!\n", disk_block_id);
             return;
         }
         this->disk_metas[disk_block_id].bloomFilterMeta.setWritingCol(col);
     }
-    // disk manager thread
-    void setTime(u_int64_t index, u_int64_t start_time, u_int64_t end_time){
-        if (index < block_num) {
-            disk_metas[index].start_time = start_time;
-            disk_metas[index].end_time = end_time;
+    void clearPacketCount(u_int64_t disk_block_id){
+        if (disk_block_id < block_num) {
+            this->disk_metas[disk_block_id].packet_count = 0;
         } else {
-            printf("Disk buffer error: index %lu out of bounds!\n", index);
+            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
+        }
+    }
+    // disk manager thread
+    void setTime(u_int64_t disk_block_id, u_int64_t start_time, u_int64_t end_time){
+        if (disk_block_id < block_num) {
+            this->disk_metas[disk_block_id].start_time = start_time;
+            this->disk_metas[disk_block_id].end_time = end_time;
+        } else {
+            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", index);
+        }
+    }
+    void setPacketCount(u_int64_t disk_block_id, u_int64_t packet_count){
+        if (disk_block_id < block_num) {
+            this->disk_metas[disk_block_id].packet_count = packet_count;
+        } else {
+            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
         }
     }
 };

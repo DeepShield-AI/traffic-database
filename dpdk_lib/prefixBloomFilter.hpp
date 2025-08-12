@@ -135,6 +135,16 @@ public:
         this->writing_col = std::numeric_limits<uint32_t>::max();
         this->reading_col = std::numeric_limits<uint32_t>::max();
     }
+    BitMap* getBitmap() const {
+        return this->bitmap;
+    }
+    u_int64_t getWritingCol() const {
+        if (this->bitmap == nullptr){
+            printf("PrefixBloomFilter error: bitmap is not initialized while getWritingCol!\n");
+            return std::numeric_limits<u_int64_t>::max();
+        }
+        return this->writing_col;
+    }
     void setWritingCol(u_int64_t col){
         if (this->bitmap == nullptr){
             printf("PrefixBloomFilter error: bitmap is not initialized while setWritingCol!\n");

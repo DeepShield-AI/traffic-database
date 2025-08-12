@@ -26,6 +26,7 @@ struct DiskBlock{
     // u_int64_t last_write_pos; // Position of last block with the same RSS ID
     u_int64_t start_time; // Start time of packets in block
     u_int64_t end_time; // End time of packets in block
+    u_int64_t packet_count;
     char* buffer; // Data buffer of the block
 };
 
@@ -44,6 +45,7 @@ private:
     u_int64_t* block_disk_id; // which disk block this buffer block corresponds to
     u_int64_t* start_times;
     u_int64_t* end_times;
+    std::atomic_uint64_t* packet_counts;
     // std::vector<BlockCheckThreadMata> thread_metas;
     std::vector<u_int64_t> disk_write_ids;
     std::vector<u_int64_t> block_check_ids;
@@ -104,6 +106,7 @@ public:
             this->start_times[i] = std::numeric_limits<uint64_t>::max();
         }
         this->end_times = new u_int64_t[this->total_block_num]();
+        this->packet_counts = new std::atomic_uint64_t[this->total_block_num]();
         this->disk_write_ids = std::vector<u_int64_t>();
         this->block_check_ids = std::vector<u_int64_t>();
     }
@@ -175,6 +178,7 @@ public:
             // this->disk_write_ids[thread_id] = disk_id;
             if(new_data){
                 this->disk_write_ids[thread_id] = disk_id;
+                this->packet_counts[disk_pos / this->total_block_num] ++;
             }
             return true;
         }
@@ -182,6 +186,7 @@ public:
         memcpy(this->buffer_blocks + block_pos, data, len);
         if(new_data){
             this->disk_write_ids[thread_id] = disk_id;
+            this->packet_counts[disk_pos / this->total_block_num] ++;
         }
         return true;
     }
@@ -213,8 +218,11 @@ public:
         block->start_time = this->start_times[block->block_id];
         block->end_time = this->end_times[block->block_id];
         block->write_pos = this->block_disk_id[block->block_id];
+        block->packet_count = this->packet_counts[block->block_id].load();
         block->buffer = this->buffer_blocks + block->block_id * this->block_size;
         // u_int64_t block_check_id = this->block_check_ids[thread_id];
+
+        this->packet_counts[block->block_id] = 0; // reset packet count for next use
 
         this->block_check_ids[thread_id] += this->block_check_ids.size();
         this->block_check_ids[thread_id] %= this->total_block_num;

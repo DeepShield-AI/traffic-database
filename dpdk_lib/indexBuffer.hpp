@@ -137,6 +137,14 @@ public:
         return this->metas[buffer_meta_id].skiplists[type].insert(node);
     }
     // get insert node number of skiplist
+    u_int64_t getCheckDishID(u_int64_t thread_id){
+        if (thread_id >= this->index_check_ids.size()) {
+            printf("Index buffer error: thread_id %llu out of range!\n", thread_id);
+            return std::numeric_limits<u_int64_t>::max();
+        }
+        u_int64_t block_check_id = this->index_check_ids[thread_id];
+        return this->metas[block_check_id].disk_block_id;
+    }
     u_int64_t checkIndexCount(u_int64_t thread_id, IndexType type){
         if (thread_id >= this->index_check_ids.size()) {
             printf("Index buffer error: thread_id %llu out of range!\n", thread_id);

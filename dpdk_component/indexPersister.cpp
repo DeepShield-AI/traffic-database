@@ -32,12 +32,89 @@ void IndexPersister::bindCore(u_int32_t cpu){
     }
 }
 
-void IndexPersister::setThreadID(u_int64_t threadID){
-    this->thread_id = threadID;
+IndexBufferMeta* IndexPersister::checkAndGetMeta(){
+    u_int64_t disk_block_id = this->indexBuffer->getCheckDishID(this->index_buffer_thread_id);
+    u_int64_t packet_count = 0;
+    if (disk_block_id == std::numeric_limits<u_int64_t>::max()){
+        return nullptr;
+    }
+    while(true){
+        if (this->stop){
+            return nullptr;
+        }
+        packet_count = this->diskBuffer->getDiskMeta(disk_block_id)->packet_count;
+        if (packet_count != 0){
+            break;
+        }
+    }
+    while(true){
+        u_int64_t srcip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIPv6);
+        if (srcip_count < packet_count){
+            continue;
+        }
+        u_int64_t dstip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTIPv6);
+        if (dstip_count < packet_count){
+            continue;
+        }
+        u_int64_t srcport_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCPORT);
+        if (srcport_count < packet_count){
+            continue;
+        }
+        u_int64_t dstport_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTPORT);
+        if (dstport_count < packet_count){
+            continue;
+        }
+        u_int64_t quartruple_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv4) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv6);
+        if (quartruple_count < packet_count){
+            continue;
+        }
+
+        IndexBufferMeta* meta = this->indexBuffer->getIndexBufferMeta(this->index_block_buffer_thread_id);
+        return meta;
+    }
+    return nullptr;
 }
 
+void IndexPersister::persistMeta(IndexBufferMeta* meta){
+    u_int64_t total_node_len = 0;
+    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+        total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+    }
+    u_int64_t disk_pos = this->diskWritePos->fetch_add(total_node_len);
+    disk_pos = disk_pos & this->disk_size;
+
+    u_int64_t current_offset = disk_pos;
+    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+        meta->skiplists[type].writeNode(this->indexBlockBuffer, this->index_block_buffer_thread_id, current_offset);
+        u_int64_t new_offset = current_offset + meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+        this->diskBuffer->setIndexID(meta->disk_block_id, (IndexType)type, current_offset, new_offset);
+        current_offset = new_offset;
+    }
+
+    this->diskBuffer->setBloomFilterCol(meta->disk_block_id, meta->bloomFilterMeta.getWritingCol());
+}
+void IndexPersister::clearMeta(IndexBufferMeta* meta){
+    this->diskBuffer->clearPacketCount(meta->disk_block_id);
+    for(auto pool : *(this->memoryPools)){
+        pool->recycle(meta->disk_block_id);
+    }
+    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+        meta->skiplists[type].clear();
+    }
+
+    BitMap* bitmap = meta->bloomFilterMeta.getBitmap();
+    u_int64_t backup_col = bitmap->getBackupColCount();
+    u_int64_t new_col = meta->bloomFilterMeta.getWritingCol() + backup_col;
+    meta->bloomFilterMeta.getBitmap()->clearCol(new_col);
+    this->indexBuffer->updateIndexBufferMeta(this->index_buffer_thread_id, new_col);
+}
+
+// void IndexPersister::setThreadID(u_int64_t threadID){
+//     this->thread_id = threadID;
+// }
+
 int IndexPersister::run(){
-    if(this->thread_id == std::numeric_limits<uint64_t>::max()){
+    if(this->index_buffer_thread_id == std::numeric_limits<uint64_t>::max() || this->index_block_buffer_thread_id == std::numeric_limits<uint64_t>::max()){
         printf("Index Persister error: run without thread id!\n");
         return -1;
     }
@@ -51,24 +128,15 @@ int IndexPersister::run(){
     this->stop = false;
 
     while(true){
-        if(this->stop){
+        IndexBufferMeta* meta = this->checkAndGetMeta();
+        if(meta == nullptr){
             break;
         }
-        u_int64_t checkID = *(this->skiplistCheckID)++;
-        checkID %= this->skiplist_check_roll;
-        while(checkID >= IndexType::TOTAL){
-            checkID = *(this->skiplistCheckID)++;
-            checkID %= this->skiplist_check_roll;
-            break;
-        }
-        
-        auto skiplist = (*(this->skiplists))[checkID];
-        if(skiplist == nullptr){
-            continue;
-        }
-
-        while(skiplist->)
+        this->persistMeta(meta);
+        this->clearMeta(meta);
     }
+
+    std::cout << "Index Persister log: thread quit." << std::endl;
 }
 
 void IndexPersister::asynchronousStop(){
