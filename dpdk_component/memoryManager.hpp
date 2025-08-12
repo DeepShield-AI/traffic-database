@@ -4,6 +4,13 @@
 // #include "../dpdk_lib/pointerRingBuffer.hpp"
 #include "../dpdk_lib/diskAgent.hpp"
 #include "../dpdk_lib/dataBlockbuffer.hpp"
+#include "../dpdk_lib/indexBlockBuffer.hpp"
+
+enum AgentType{
+    DATA_AGENT,
+    INDEX_AGENT,
+    TOTAL,
+};
 
 class MemoryManager{
 private:
@@ -15,7 +22,9 @@ private:
     // u_int64_t memory_size;
 
     // PointerRingBuffer* block_ring;
-    DataBlockBuffer* block_buffer;
+    // DataBlockBuffer* block_buffer;
+    void* block_buffer;
+    AgentType agent_type;
     std::vector<DiskAgent*> disk_agents;
 
     std::atomic_bool stop;
@@ -26,8 +35,8 @@ private:
     void bindCore();
     // void allocate_blocks();
 public:
-    MemoryManager(u_int32_t block_size, DataBlockBuffer* block_buffer):
-        block_size(block_size), block_buffer(block_buffer) {
+    MemoryManager(u_int32_t block_size, void* block_buffer, AgentType agent_type):
+        block_size(block_size), block_buffer(block_buffer), agent_type(agent_type) {
         // if(this->pool_size % this->block_size != 0){
         //     printf("Memory manager error: pool size should be multiple of block size!");
         //     throw std::runtime_error("memory manager block size failed");

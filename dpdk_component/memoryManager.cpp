@@ -61,7 +61,15 @@ int MemoryManager::run(){
                 continue;
             }
 
-            this->block_buffer->recycleBlock((u_int64_t)block_id);
+            if (this->agent_type == DATA_AGENT){
+                DataBlockBuffer* buffer = (DataBlockBuffer*)this->block_buffer;
+                buffer->recycleBlock((u_int64_t)block_id);
+            }else if (this->agent_type == INDEX_AGENT){
+                IndexBlockBuffer* buffer = (IndexBlockBuffer*)this->block_buffer;
+                buffer->recycleBlock((u_int64_t)block_id);
+            }
+
+            // this->block_buffer->recycleBlock((u_int64_t)block_id);
             
             // u_int64_t pos = (u_int64_t)block_id * (u_int64_t)(this->block_size);
             // char* buffer = this->memoryPool + pos;
