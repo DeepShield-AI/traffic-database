@@ -20,6 +20,7 @@ struct IndexBufferMeta{
     u_int64_t disk_block_id;
     void init(BitMap* bitmap, size_t k, u_int64_t disk_block_num){
         this->bloomFilterMeta.init(bitmap, k);
+        this->bloomFilterMeta.setWritingCol(disk_block_num);
         this->disk_block_id = disk_block_id;
 
         u_int64_t offset = 0;
@@ -86,6 +87,10 @@ private:
 public:
     IndexBuffer(u_int64_t total_block_num, u_int64_t disk_block_num, BitMap* bitmap, size_t k):
         total_block_num(total_block_num), disk_block_num(disk_block_num){
+        if (disk_block_num % total_block_num != 0) {
+            printf("Index buffer error: disk_block_num must be a multiple of total_block_num!\n");
+            throw std::runtime_error("disk_block_num must be a multiple of total_block_num");
+        }
         this->size = this->total_block_num * sizeof(IndexBufferMeta);
         this->metas = (IndexBufferMeta*)mmap(nullptr, this->size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         if (this->metas == MAP_FAILED){
@@ -109,7 +114,61 @@ public:
         this->index_check_ids.push_back(id);
         return id;
     }
-    
+    bool insert(void* node, u_int64_t disk_block_id, IndexType type, u_int64_t ts){
+        u_int64_t buffer_meta_id = disk_block_id % this->total_block_num;
+        if (this->metas[buffer_meta_id].disk_block_id != disk_block_id){
+            return false;
+        }
+
+        if (type == IndexType::SRCIP || type == IndexType::DSTIP){
+            SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)node;
+            u_int32_t ip = ipNode->key;
+            this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(ip, type);
+        }else if (type == IndexType::SRCPORT || type == IndexType::DSTPORT){
+            SkipListNode<u_int16_t,u_int64_t>* portNode = (SkipListNode<u_int16_t,u_int64_t>*)node;
+            u_int16_t port = portNode->key;
+            this->metas[buffer_meta_id].bloomFilterMeta.insertPort(port, type);
+        }else if (type == IndexType::SRCIPv6 || type == IndexType::DSTIPv6){
+            SkipListNode<IPv6Address,u_int64_t>* ipNode = (SkipListNode<IPv6Address,u_int64_t>*)node;
+            IPv6Address ip = ipNode->key;
+            this->metas[buffer_meta_id].bloomFilterMeta.insertIPv6(ip, type);
+        }
+
+        return this->metas[buffer_meta_id].skiplists[type].insert(node);
+    }
+    // get insert node number of skiplist
+    u_int64_t checkIndexCount(u_int64_t thread_id, IndexType type){
+        if (thread_id >= this->index_check_ids.size()) {
+            printf("Index buffer error: thread_id %llu out of range!\n", thread_id);
+            return std::numeric_limits<u_int64_t>::max();
+        }
+        u_int64_t block_check_id = this->index_check_ids[thread_id];
+        return this->metas[block_check_id].skiplists[type].getNodeNum();
+    }
+    IndexBufferMeta* getIndexBufferMeta(u_int64_t thread_id){
+        if (thread_id >= this->index_check_ids.size()) {
+            printf("Index buffer error: thread_id %llu out of range!\n", thread_id);
+            return nullptr;
+        }
+        u_int64_t block_check_id = this->index_check_ids[thread_id];
+        return &this->metas[block_check_id];
+    }
+    void updateIndexBufferMeta(u_int64_t thread_id, u_int64_t bitmap_col){
+        if (thread_id >= this->index_check_ids.size()) {
+            printf("Index buffer error: thread_id %llu out of range!\n", thread_id);
+            return;
+        }
+        u_int64_t block_check_id = this->index_check_ids[thread_id];
+        for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+            this->metas[block_check_id].skiplists[type].clear();
+        }
+        this->metas[block_check_id].bloomFilterMeta.setWritingCol(bitmap_col);
+        this->metas[block_check_id].disk_block_id = (this->metas[block_check_id].disk_block_id + this->total_block_num) % this->disk_block_num;
+        
+        // TODO: Check position competition?
+        this->index_check_ids[thread_id] = (this->index_check_ids[thread_id] + this->index_check_ids.size()) % this->total_block_num;
+
+    }
 };
 
 // struct SkipListMeta{

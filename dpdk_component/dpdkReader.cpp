@@ -100,13 +100,19 @@ u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
     _offset %= this->disk_size;
     // this->writePointerToBlock((const char*)meta.header,sizeof(pcap_header),ts);
     // this->writePointerToBlock(meta.data + this->eth_header_len, meta.len, ts);
-    if (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
-        return std::numeric_limits<uint64_t>::max();
-    }
-    if (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
-        return std::numeric_limits<uint64_t>::max();
-    }
+    // if (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
+    //     return std::numeric_limits<uint64_t>::max();
+    // }
+    // if (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
+    //     return std::numeric_limits<uint64_t>::max();
+    // }
     // return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
+    while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
+        printf("DPDK reader warning: write pcap header to block buffer on %u failed, retrying...\n", _offset);
+    }
+    while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
+        printf("DPDK reader warning: write packet data to block buffer on %u failed, retrying...\n", _offset);
+    }
     return _offset;
 }
 
