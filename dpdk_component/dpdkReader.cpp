@@ -212,6 +212,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     // index->value = value;
     index->ts = ts;
     index->id = meta.sourceAddress.size() == 4? IndexType::SRCIP:IndexType::SRCIPv6;
+    index->disk_block_id = value / this->block_size;
     // index->len = meta.sourceAddress.size();
     level = SkipList::randomLevel(meta.sourceAddress.size()*8);
     index->len = this->calIndexNodeLen(meta.sourceAddress.size(), level);
@@ -239,6 +240,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index = new Index();
     index->ts = ts;
     index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
+    index->disk_block_id = value / this->block_size;
     level = SkipList::randomLevel(meta.destinationAddress.size()*8);
     index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
@@ -259,6 +261,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     // index->value = value;
     index->ts = ts;
     index->id = IndexType::SRCPORT;
+    index->disk_block_id = value / this->block_size;
     // index->len = sizeof(meta.sourcePort);
     level = SkipList::randomLevel(sizeof(meta.sourcePort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
@@ -279,6 +282,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
 
     index->ts = ts;
     index->id = IndexType::DSTPORT;
+    index->disk_block_id = value / this->block_size;
     level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
@@ -301,6 +305,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         // index->value = value;
         index->ts = ts;
         index->id = IndexType::QUARTURPLEIPv4;
+        index->disk_block_id = value / this->block_size;
         // index->len = sizeof(ipv4Turple);
         level = SkipList::randomLevel(sizeof(ipv4Turple)*8);
         index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
@@ -323,6 +328,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         // index->value = value;
         index->ts = ts;
         index->id = IndexType::QUARTURPLEIPv6;
+        index->disk_block_id = value / this->block_size;
         // index->len = sizeof(ipv6Turple);
         level = SkipList::randomLevel(sizeof(ipv6Turple)*8);
         index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);

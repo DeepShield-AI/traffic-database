@@ -235,6 +235,7 @@ struct IndexTMP{
 
 struct Index{
     u_int64_t ts;
+    u_int64_t disk_block_id;
     u_int8_t id;
     u_int8_t len;
     void* node;

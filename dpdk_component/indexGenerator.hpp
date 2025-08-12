@@ -8,10 +8,11 @@
 class IndexGenerator{
     // shared memory
     PointerRingBuffer* buffer;
-    std::vector<IndexBuffer*>* indexBuffers;
+    // std::vector<IndexBuffer*>* indexBuffers;
+    IndexBuffer* indexBuffer;
 
-    u_int32_t indexCacheCount;
-    u_int32_t cacheID;
+    // u_int32_t indexCacheCount;
+    // u_int32_t cacheID;
 
     // thread member
     u_int32_t threadID;
@@ -27,11 +28,11 @@ class IndexGenerator{
     void bindCore(u_int32_t cpu);
 
 public:
-    IndexGenerator(PointerRingBuffer* buffer,std::vector<IndexBuffer*>* indexBuffers, u_int32_t indexCacheCount, u_int32_t threadID, bool bind_core = false, u_int32_t core_id = 0){
+    IndexGenerator(PointerRingBuffer* buffer,IndexBuffer* indexBuffer, u_int32_t threadID, bool bind_core = false, u_int32_t core_id = 0){
         this->buffer = buffer;
-        this->indexBuffers = indexBuffers;
-        this->indexCacheCount = indexCacheCount;
-        this->cacheID = 0;
+        this->indexBuffer = indexBuffer;
+        // this->indexCacheCount = indexCacheCount;
+        // this->cacheID = 0;
         this->threadID = threadID;
         this->stop = true;
         this->duration_time = 0;

@@ -22,15 +22,19 @@ void IndexGenerator::putIndexToCache(Index* index){
         //     key = std::string();
         // }
         auto start = std::chrono::high_resolution_clock::now();
-
-        if((*(this->indexBuffers))[index->id]->insert(index->key,index->value,this->cacheID,index->ts,this->threadID)){
-            auto end = std::chrono::high_resolution_clock::now();
-            this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-            break;
+        
+        while(!this->indexBuffer->insert(index->node, index->disk_block_id, (IndexType)(index->id), index->ts)){
+            printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
         }
 
-        this->cacheID++;
-        this->cacheID %= this->indexCacheCount;
+        // if((*(this->indexBuffers))[index->id]->insert(index->key,index->value,this->cacheID,index->ts,this->threadID)){
+        //     auto end = std::chrono::high_resolution_clock::now();
+        //     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        //     break;
+        // }
+
+        // this->cacheID++;
+        // this->cacheID %= this->indexCacheCount;
     } 
 
     // this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
