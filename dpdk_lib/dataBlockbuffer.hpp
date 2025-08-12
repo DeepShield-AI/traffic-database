@@ -19,7 +19,7 @@
 //     u_int64_t block_written_id;
 // };
 
-struct DiskBlock{
+struct DataBlock{
     // u_int32_t rss_id; // RSS ID of the packet handling thread
     u_int64_t block_id; // ID of the block in memory pool
     u_int64_t write_pos; // Position in the disk to write
@@ -212,8 +212,8 @@ public:
     // u_int64_t getDiskID(u_int64_t block_check_id) const{
     //     return this->block_disk_id[block_check_id];
     // }
-    DiskBlock* getBlock(u_int64_t thread_id){
-        DiskBlock* block = new DiskBlock();
+    DataBlock* getBlock(u_int64_t thread_id){
+        DataBlock* block = new DataBlock();
         block->block_id = this->block_check_ids[thread_id];
         block->start_time = this->start_times[block->block_id];
         block->end_time = this->end_times[block->block_id];

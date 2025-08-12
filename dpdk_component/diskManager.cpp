@@ -10,17 +10,18 @@
 //     this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
 // }
 
-void DiskManager::addBlock(DiskBlock* block){
-    // if (block->rss_id >= this->rss_count) {
-    //     printf("Disk manager error: rss_id %u out of bounds!\n", block->rss_id);
-    //     return;
-    // }
-    u_int32_t agent_id = block->block_id % this->agents.size();
-    // if (block->write_pos >= this->block_num || block->last_write_pos >= this->block_num) {
-    //     printf("Disk manager error: position %llu or last position %llu out of bounds!\n", block->write_pos, block->last_write_pos);
-    //     return;
-    // }
-    this->agents[agent_id]->asyncWrite(block->buffer, block->block_id, block->write_pos);
+void DiskManager::addBlock(void* block){
+    if (this->agent_type == AgentType::DATA_AGENT){
+        DataBlock* data_block = (DataBlock*)block;
+        u_int32_t agent_id = data_block->block_id % this->agents.size();
+
+        this->agents[agent_id]->asyncWrite(data_block->buffer, data_block->block_id, data_block->write_pos);
+    }else if (this->agent_type == AgentType::INDEX_AGENT){
+        IndexBlock* index_block = (IndexBlock*)block;
+        u_int32_t agent_id = index_block->block_id % this->agents.size();
+
+        this->agents[agent_id]->asyncWrite(index_block->buffer, index_block->block_id, index_block->write_pos);
+    }
 }
 
 void DiskManager::addAgent(DiskAgent* agent){
@@ -54,6 +55,59 @@ void DiskManager::bindCore(){
     }
 }
 
+void DiskManager::runData(){
+    DataBlockBuffer* buffer = (DataBlockBuffer*)this->block_buffer;
+    while(true){
+        if(this->stop){
+            break;
+        }
+        u_int64_t block_id = buffer->checkBlock(this->thread_id);
+        if(block_id == std::numeric_limits<uint64_t>::max()){
+            continue;
+        }
+        // u_int64_t disk_id = this->block_buffer->getDiskID(block_id);
+        DataBlock* block = buffer->getBlock(this->thread_id);
+        
+        this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+        this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
+        // TDDO: Instantly write Packet Count?
+
+        // this->setMeta(block);
+        this->addBlock((void*)block);
+        delete block;
+    }
+    while (true){
+        u_int64_t block_id = buffer->directGetBlockID(this->thread_id);
+        if(block_id == std::numeric_limits<uint64_t>::max()){
+            break;
+        }
+        DataBlock* block = buffer->getBlock(this->thread_id);
+        this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
+        this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
+        // TDDO: Instantly write Packet Count?
+
+        this->addBlock((void*)block);
+        delete block;
+    }
+}
+
+void DiskManager::runIndex(){
+    IndexBlockBuffer* buffer = (IndexBlockBuffer*)this->block_buffer;
+    while(true){
+        if(this->stop){
+            break;
+        }
+        u_int64_t block_id = buffer->checkBlock(this->thread_id);
+        if(block_id == std::numeric_limits<uint64_t>::max()){
+            continue;
+        }
+        IndexBlock* block = buffer->getBlock(this->thread_id);
+
+        this->addBlock((void*)block);
+        delete block;
+    }
+}
+
 void DiskManager::setBindCore(u_int32_t core_id){
     this->core_id = core_id;
     this->bind_core = true;
@@ -72,38 +126,11 @@ int DiskManager::run(){
         this->bindCore();
     }
     this->stop = false;
-    while(true){
-        if(this->stop){
-            break;
-        }
-        u_int64_t block_id = this->block_buffer->checkBlock(this->thread_id);
-        // DiskBlock* block = (DiskBlock*)this->block_ring->get();
-        if(block_id == std::numeric_limits<uint64_t>::max()){
-            continue;
-        }
-        // u_int64_t disk_id = this->block_buffer->getDiskID(block_id);
-        DiskBlock* block = this->block_buffer->getBlock(this->thread_id);
-        
-        this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
-        this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
-        // TDDO: Instantly write Packet Count?
-
-        // this->setMeta(block);
-        this->addBlock(block);
-        delete block;
-    }
-    while (true){
-        u_int64_t block_id = this->block_buffer->directGetBlockID(this->thread_id);
-        if(block_id == std::numeric_limits<uint64_t>::max()){
-            break;
-        }
-        DiskBlock* block = this->block_buffer->getBlock(this->thread_id);
-        this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
-        this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
-        // TDDO: Instantly write Packet Count?
-
-        this->addBlock(block);
-        delete block;
+    
+    if (this->agent_type == AgentType::DATA_AGENT){
+        this->runData();
+    }else if (this->agent_type == AgentType::INDEX_AGENT){
+        this->runIndex();
     }
     
     printf("Disk manager log: thread quit.\n");

@@ -5,12 +5,7 @@
 #include "../dpdk_lib/diskAgent.hpp"
 #include "../dpdk_lib/dataBlockbuffer.hpp"
 #include "../dpdk_lib/indexBlockBuffer.hpp"
-
-enum AgentType{
-    DATA_AGENT,
-    INDEX_AGENT,
-    TOTAL,
-};
+#include "../dpdk_lib/util.hpp"
 
 class MemoryManager{
 private:

@@ -20,6 +20,12 @@ enum IndexType{
     TOTAL,
 };
 
+enum AgentType{
+    DATA_AGENT,
+    INDEX_AGENT,
+    TOTAL,
+};
+
 struct IPv6Address{
     u_int64_t low;
     u_int64_t high;

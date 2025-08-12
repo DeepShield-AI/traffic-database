@@ -8,6 +8,8 @@
 #include "../dpdk_lib/diskBuffer.hpp"
 // #include "../dpdk_lib/pointerRingBuffer.hpp"
 #include "../dpdk_lib/dataBlockbuffer.hpp"
+#include "../dpdk_lib/indexBlockBuffer.hpp"
+#include "../dpdk_lib/util.hpp"
 
 class DiskManager {
 private:
@@ -24,7 +26,9 @@ private:
 
     // std::vector<MemoryBuffer*> buffers;
     // PointerRingBuffer* block_ring;
-    DataBlockBuffer* block_buffer;
+    // DataBlockBuffer* block_buffer;
+    void* block_buffer;
+    AgentType agent_type;
 
     std::vector<DiskAgent*> agents;
     DiskBuffer* disk_buffer;
@@ -40,12 +44,13 @@ private:
     u_int32_t core_id;
 
     // u_int32_t testID;
-    // void setMeta(DiskBlock* block);
-    void addBlock(DiskBlock* block);
+    void addBlock(void* block);
     void bindCore();
+    void runData();
+    void runIndex();
 public:
-    DiskManager(u_int64_t disk_size, u_int64_t block_size, u_int32_t total_manager_count,int disk_fd, DataBlockBuffer* block_buffer, DiskBuffer* disk_buffer):
-        disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),total_manager_count(total_manager_count), disk_fd(disk_fd),block_buffer(block_buffer), disk_buffer(disk_buffer){
+    DiskManager(u_int64_t disk_size, u_int64_t block_size, u_int32_t total_manager_count,int disk_fd, DataBlockBuffer* block_buffer, AgentType agent_type, DiskBuffer* disk_buffer):
+        disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),total_manager_count(total_manager_count), disk_fd(disk_fd),block_buffer(block_buffer),agent_type(agent_type),disk_buffer(disk_buffer){
         // this->disk_fd = open(this->disk_name.c_str(), O_DIRECT | O_RDWR);
         // if (this->disk_fd < 0) {
         //     printf("Disk manager error: failed to open disk %s!\n", this->disk_name.c_str());
