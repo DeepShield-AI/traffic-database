@@ -20,7 +20,7 @@ struct InitData{
     // u_int32_t storage_ring_capacity;
     // u_int64_t truncate_interval;
     u_int16_t nb_rx;
-    u_int32_t pcap_header_len;
+    // u_int32_t pcap_header_len;
     u_int32_t eth_header_len;
     size_t hash_num;
     u_int64_t data_disk_size;
