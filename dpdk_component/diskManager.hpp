@@ -17,8 +17,7 @@ private:
     const u_int64_t disk_size;
     const u_int64_t block_size;
     const u_int64_t block_num;
-    const u_int32_t total_manager_count;
-    int disk_fd;
+    // int disk_fd;
     // u_int32_t threadID;
     // u_int32_t rss_count;
     // u_int32_t ring_depth;
@@ -49,8 +48,8 @@ private:
     void runData();
     void runIndex();
 public:
-    DiskManager(u_int64_t disk_size, u_int64_t block_size, u_int32_t total_manager_count,int disk_fd, DataBlockBuffer* block_buffer, AgentType agent_type, DiskBuffer* disk_buffer):
-        disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),total_manager_count(total_manager_count), disk_fd(disk_fd),block_buffer(block_buffer),agent_type(agent_type),disk_buffer(disk_buffer){
+    DiskManager(u_int64_t disk_size, u_int64_t block_size, void* block_buffer, AgentType agent_type, DiskBuffer* disk_buffer):
+        disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),block_buffer(block_buffer),agent_type(agent_type),disk_buffer(disk_buffer){
         // this->disk_fd = open(this->disk_name.c_str(), O_DIRECT | O_RDWR);
         // if (this->disk_fd < 0) {
         //     printf("Disk manager error: failed to open disk %s!\n", this->disk_name.c_str());

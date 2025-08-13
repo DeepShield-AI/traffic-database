@@ -76,7 +76,7 @@ void IndexGenerator::bindCore(u_int32_t cpu){
 void IndexGenerator::run(){
     printf("Index generator log: thread run.\n");
 
-    this->bindCore(this->threadID);
+    this->bindCore(this->core_id);
 
     this->stop = false;
 

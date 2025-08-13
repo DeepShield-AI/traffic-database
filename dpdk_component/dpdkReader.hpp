@@ -42,7 +42,7 @@ struct PacketMeta{
 
 // read packet from pcap, equivalent like extractor, lower substitution of trace catcher
 class DPDKReader{
-    const u_int32_t pcap_header_len;
+    // const u_int32_t pcap_header_len;
     const u_int32_t eth_header_len;
     const u_int64_t disk_size;
     const u_int64_t block_size;
@@ -85,8 +85,8 @@ class DPDKReader{
     void bindCore(u_int32_t cpu);
 
 public:
-    DPDKReader(u_int32_t pcap_header_len, u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, DPDK* dpdk, std::vector<PointerRingBuffer*>* rings,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, MemoryPool* indexMemoryPool, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core, u_int32_t core_id):
-    pcap_header_len(pcap_header_len),eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),dpdk(dpdk),indexRings(rings),block_buffer(block_buffer),diskWritePos(diskWritePos),indexMemoryPool(indexMemoryPool),port_id(port_id),rx_id(rx_id){
+    DPDKReader(u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, DPDK* dpdk, std::vector<PointerRingBuffer*>* rings,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, MemoryPool* indexMemoryPool, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core = false, u_int32_t core_id = 0):
+    eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),dpdk(dpdk),indexRings(rings),block_buffer(block_buffer),diskWritePos(diskWritePos),indexMemoryPool(indexMemoryPool),port_id(port_id),rx_id(rx_id){
         if(this->block_num & (this->block_size - 1)){
             printf("DPDK reader error: block size %u is not power of 2!\n",this->block_size);
             this->packetAggregator = nullptr;

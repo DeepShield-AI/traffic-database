@@ -25,12 +25,12 @@ struct DiskMeta{
 
 class DiskBuffer {
 private:
-    const std::string disk_name;
+    // const std::string disk_name;
     const u_int64_t block_num;
     DiskMeta* disk_metas;
 public:
-    DiskBuffer(const std::string& disk_name, u_int64_t block_num, BitMap* bitmap, size_t k)
-        : disk_name(disk_name), block_num(block_num) {
+    DiskBuffer(u_int64_t block_num, BitMap* bitmap, size_t k)
+        : block_num(block_num) {
         this->disk_metas = (DiskMeta*)mmap(nullptr, block_num * sizeof(DiskMeta), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         if (this->disk_metas == MAP_FAILED){
             printf("Disk buffer error: mmap failed for disk metas!\n");

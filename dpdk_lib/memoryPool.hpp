@@ -21,7 +21,7 @@ private:
     const u_int64_t capacity;
     const u_int64_t list_len;
 
-    const u_int64_t disk_block_num;
+    // const u_int64_t disk_block_num;
     // const u_int64_t barraier_size;
 
     char* buffer;
@@ -44,8 +44,8 @@ private:
     }
 
 public:
-    MemoryPool(u_int64_t capacity, u_int64_t list_len, u_int64_t disk_block_num):
-        capacity(capacity),list_len(list_len),disk_block_num(disk_block_num){
+    MemoryPool(u_int64_t capacity, u_int64_t list_len):
+        capacity(capacity),list_len(list_len){
         this->buffer = (char*)mmap(nullptr, this->capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         if (this->buffer == MAP_FAILED){
             printf("Memory pool error: mmap failed for blocks!\n");

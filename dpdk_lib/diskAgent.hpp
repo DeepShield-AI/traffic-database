@@ -33,14 +33,15 @@ private:
     const u_int64_t block_size;
     const u_int64_t block_num;
     const u_int32_t ring_depth;
+    const u_int64_t basic_offset;
 
     int disk_fd;
     struct io_uring_params params;
     
     struct io_uring* ring;
 public:
-    DiskAgent(u_int64_t disk_size, u_int64_t block_size, int disk_fd, u_int32_t ring_depth, u_int32_t idle_time)
-        : disk_size(disk_size), block_size(block_size), block_num(disk_size / block_size), ring_depth(ring_depth), disk_fd(disk_fd){
+    DiskAgent(u_int64_t disk_size, u_int64_t block_size, u_int64_t basic_offset, int disk_fd, u_int32_t ring_depth, u_int32_t idle_time)
+        : disk_size(disk_size), block_size(block_size), block_num(disk_size / block_size), ring_depth(ring_depth), basic_offset(basic_offset), disk_fd(disk_fd){
         if (this->disk_size % this->block_size != 0){
             printf("Disk agent error: disk size %llu is not a multiple of block size %u!\n", this->disk_size, this->block_size);
             throw std::runtime_error("Disk size wrong");
@@ -66,7 +67,7 @@ public:
             // while (io_uring_sq_ready(this->ring)>0);
             io_uring_queue_exit(this->ring);
         }
-        close(this->disk_fd);
+        // close(this->disk_fd);
     }
 
     int getDiskFd() const { return this->disk_fd; }
