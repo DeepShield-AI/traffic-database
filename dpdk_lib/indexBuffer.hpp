@@ -15,7 +15,7 @@
 
 struct IndexBufferMeta{
     PrefixBloomFilter bloomFilterMeta;
-    SkipList skiplists[IndexType::TOTAL];
+    SkipList skiplists[IndexType::TOTAL_INDEX];
     char skiplistHeads[SKIPLISTNODE_HEAD_LEN];
     u_int64_t disk_block_id;
     void init(BitMap* bitmap, size_t k, u_int64_t disk_block_num){
@@ -167,7 +167,7 @@ public:
             return;
         }
         u_int64_t block_check_id = this->index_check_ids[thread_id];
-        for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+        for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
             this->metas[block_check_id].skiplists[type].clear();
         }
         this->metas[block_check_id].bloomFilterMeta.setWritingCol(bitmap_col);

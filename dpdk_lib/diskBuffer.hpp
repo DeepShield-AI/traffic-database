@@ -13,7 +13,7 @@ struct DiskMeta{
     PrefixBloomFilter bloomFilterMeta;
     u_int64_t start_time;
     u_int64_t end_time;
-    u_int64_t disk_index_meta[IndexType::TOTAL * 2]; // each type has a start and end index id
+    u_int64_t disk_index_meta[IndexType::TOTAL_INDEX * 2]; // each type has a start and end index id
     uint64_t packet_count;
     void init(BitMap* bitmap, size_t k){
         this->bloomFilterMeta.init(bitmap, k);

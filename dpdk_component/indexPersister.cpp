@@ -77,14 +77,14 @@ IndexBufferMeta* IndexPersister::checkAndGetMeta(){
 
 void IndexPersister::persistMeta(IndexBufferMeta* meta){
     u_int64_t total_node_len = 0;
-    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
         total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
     }
     u_int64_t disk_pos = this->diskWritePos->fetch_add(total_node_len);
     disk_pos = disk_pos & this->disk_size;
 
     u_int64_t current_offset = disk_pos;
-    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
         meta->skiplists[type].writeNode(this->indexBlockBuffer, this->index_block_buffer_thread_id, current_offset);
         u_int64_t new_offset = current_offset + meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
         this->diskBuffer->setIndexID(meta->disk_block_id, (IndexType)type, current_offset, new_offset);
@@ -98,7 +98,7 @@ void IndexPersister::clearMeta(IndexBufferMeta* meta){
     for(auto pool : *(this->memoryPools)){
         pool->recycle(meta->disk_block_id);
     }
-    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL; ++type){
+    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
         meta->skiplists[type].clear();
     }
 

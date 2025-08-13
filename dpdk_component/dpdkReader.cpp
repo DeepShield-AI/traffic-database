@@ -286,7 +286,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-    SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
+    node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.destinationPort, value, level);
     if(!(*(this->indexRings))[0]->put((void*)index)){
         return false;

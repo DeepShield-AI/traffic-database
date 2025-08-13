@@ -6,7 +6,7 @@
 #include "header.hpp"
 #include "packetAggregator.hpp"
 
-#define INDEX_NUM IndexType::TOTAL
+#define INDEX_NUM IndexType::TOTAL_INDEX
 
 enum IndexType{
     SRCIP = 0,
@@ -17,13 +17,13 @@ enum IndexType{
     DSTIPv6,
     QUARTURPLEIPv4,
     QUARTURPLEIPv6,
-    TOTAL,
+    TOTAL_INDEX,
 };
 
 enum AgentType{
     DATA_AGENT,
     INDEX_AGENT,
-    TOTAL,
+    TOTAL_AGENT,
 };
 
 struct IPv6Address{
@@ -252,12 +252,12 @@ struct HilbertMeta{
     std::string hilbertValue;
 };
 
-const std::string index_name[INDEX_NUM] = {
-    "./data/index/pcap.pcap_srcip_idx",
-    "./data/index/pcap.pcap_dstip_idx",
-    "./data/index/pcap.pcap_srcport_idx",
-    "./data/index/pcap.pcap_dstport_idx",
-};
+// const std::string index_name[INDEX_NUM] = {
+//     "./data/index/pcap.pcap_srcip_idx",
+//     "./data/index/pcap.pcap_dstip_idx",
+//     "./data/index/pcap.pcap_srcport_idx",
+//     "./data/index/pcap.pcap_dstport_idx",
+// };
 
 // srcip dstip srcport dstport
 // inline std::vector<Index*> get_index(PacketMeta meta, u_int32_t eth_header_len,u_int64_t value){
