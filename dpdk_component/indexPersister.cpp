@@ -137,6 +137,7 @@ int IndexPersister::run(){
     }
 
     std::cout << "Index Persister log: thread quit." << std::endl;
+    return 0;
 }
 
 void IndexPersister::asynchronousStop(){

@@ -369,7 +369,7 @@ void Controller::init(InitData init_data){
         if ((init_data.index_disk_offset < init_data.data_disk_offset && this->index_disk_offset + init_data.index_disk_size > init_data.data_disk_offset) ||
             (init_data.index_disk_offset > init_data.data_disk_offset && this->data_disk_offset + init_data.data_disk_size > init_data.index_disk_offset) ||
             (init_data.index_disk_offset == init_data.data_disk_offset)){
-            printf("Controller error: index disk %lu should be not in the same range as data disk %llu.\n", init_data.index_disk_offset, init_data.data_disk_offset);
+            printf("Controller error: index disk %lu should be not in the same range as data disk %lu.\n", init_data.index_disk_offset, init_data.data_disk_offset);
             throw std::runtime_error("index disk is not in the same range as data disk");
         }
     } else {
@@ -382,11 +382,11 @@ void Controller::init(InitData init_data){
     }
 
     if(init_data.data_disk_size % init_data.data_block_size != 0){
-        printf("Controller error: data disk size %llu is not multiple of data block size %llu.\n",init_data.data_disk_size,init_data.data_block_size);
+        printf("Controller error: data disk size %lu is not multiple of data block size %lu.\n",init_data.data_disk_size,init_data.data_block_size);
         throw std::runtime_error("data disk size is not multiple of data block size");
     }
     if(init_data.index_disk_size % init_data.index_block_size != 0){
-        printf("Controller error: index disk size %llu is not multiple of index block size %llu.\n",init_data.index_disk_size,init_data.index_block_size);
+        printf("Controller error: index disk size %lu is not multiple of index block size %lu.\n",init_data.index_disk_size,init_data.index_block_size);
         throw std::runtime_error("index disk size is not multiple of index block size");
     }
 

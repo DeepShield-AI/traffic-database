@@ -26,7 +26,7 @@ struct InitData{
     u_int64_t data_disk_size;
     u_int64_t data_block_size;
     u_int64_t index_disk_size;
-    u_int16_t index_block_size;
+    u_int64_t index_block_size;
 
     u_int64_t memory_pool_capacity_each;
     u_int64_t memory_pool_list_len_each;

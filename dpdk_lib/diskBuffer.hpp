@@ -60,7 +60,7 @@ public:
     }
     void setBloomFilterCol(u_int64_t disk_block_id, u_int64_t col){
         if (disk_block_id >= block_num){
-            printf("Disk buffer error: disk_block_id %u out of bounds!\n", disk_block_id);
+            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
             return;
         }
         this->disk_metas[disk_block_id].bloomFilterMeta.setWritingCol(col);
@@ -78,7 +78,7 @@ public:
             this->disk_metas[disk_block_id].start_time = start_time;
             this->disk_metas[disk_block_id].end_time = end_time;
         } else {
-            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", index);
+            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
         }
     }
     void setPacketCount(u_int64_t disk_block_id, u_int64_t packet_count){

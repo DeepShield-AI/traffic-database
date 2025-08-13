@@ -76,11 +76,11 @@ public:
     DataBlockBuffer(const u_int64_t total_block_num, const u_int64_t block_size, const u_int64_t disk_block_num, const u_int64_t rss_num, u_int64_t delayed_block_num):
         total_block_num(total_block_num), block_size(block_size), buffer_size(total_block_num*block_size), disk_block_num(disk_block_num), rss_num(rss_num), delayed_block_num(delayed_block_num){
         if(this->buffer_size & (this->buffer_size - 1)){
-            printf("Data block buffer error: buffer size %u is not power of 2!\n",this->buffer_size);
+            printf("Data block buffer error: buffer size %lu is not power of 2!\n",this->buffer_size);
             throw std::runtime_error("buffer size wrong");
         }
         if(this->total_block_num * DISK_BLOCK_TIMES >= this->disk_block_num){
-            printf("Data block buffer error: buffer num %u is too large!\n",this->total_block_num);
+            printf("Data block buffer error: buffer num %lu is too large!\n",this->total_block_num);
             throw std::runtime_error("block buffer number wrong");
         }
         this->buffer_blocks = (char*)mmap(nullptr, this->buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);

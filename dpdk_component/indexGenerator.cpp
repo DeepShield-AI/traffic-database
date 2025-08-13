@@ -113,7 +113,7 @@ void IndexGenerator::run(){
     
     // duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     // std::cout << "Index generator log: thread " << this->threadID << " count " << count << std::endl; //just for test
-    printf("Index generator log: thread quit, process %llu indexes, during %llu us.\n",count,this->duration_time);
+    printf("Index generator log: thread quit, process %lu indexes, during %lu us.\n",count,this->duration_time);
 }
 void IndexGenerator::asynchronousStop(){
     this->stop = true;

@@ -596,11 +596,11 @@ public:
         }
     }
 
-    SkipList(const SkipList&) = delete;
-    SkipList& operator=(const SkipList&) = delete;
+    // SkipList(const SkipList&) = delete;
+    // SkipList& operator=(const SkipList&) = delete;
 
-    SkipList(SkipList&&) noexcept = default;
-    SkipList& operator=(SkipList&&) noexcept = default;
+    // SkipList(SkipList&&) noexcept = default;
+    // SkipList& operator=(SkipList&&) noexcept = default;
 
     static u_int32_t randomLevel(u_int32_t max_level){
         u_int32_t lvl = 1;

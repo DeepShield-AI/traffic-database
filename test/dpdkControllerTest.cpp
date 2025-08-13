@@ -17,10 +17,10 @@ const u_int32_t eth_header_len = 14;
 const size_t hash_num = 4;
 // const u_int64_t file_capacity = 1024*1024*1024;
 u_int16_t nb_rx = 1;
-u_int64_t data_disk_size = 1024*1024*1024*1024;
-u_int64_t data_block_size = 1024*1024*1024;
-u_int64_t index_disk_size = 256*1024*1024*1024;
-u_int64_t index_block_size = 1024*1024*1024;
+u_int64_t data_disk_size = 1024lu*1024lu*1024lu*1024lu;
+u_int64_t data_block_size = 1024lu*1024lu*1024lu;
+u_int64_t index_disk_size = 256lu*1024lu*1024lu*1024lu;
+u_int64_t index_block_size = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_capacity_each = 1024*1024;
 u_int64_t memory_pool_list_len_each = 1024;
 

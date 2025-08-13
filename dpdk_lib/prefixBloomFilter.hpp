@@ -120,7 +120,7 @@ public:
     PrefixBloomFilter(BitMap* bitmap, size_t numHashFunctions):
         bitmap(bitmap), k(numHashFunctions), writing_col(0) {
         if(this->bitmap->getRowCount() < (PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2){
-            printf("PrefixBloomFilter error: bitmap row count %llu is too small!\n", this->bitmap->getRowCount());
+            printf("PrefixBloomFilter error: bitmap row count %lu is too small!\n", this->bitmap->getRowCount());
         }
         this->writing_col = std::numeric_limits<uint32_t>::max();
         this->reading_col = std::numeric_limits<uint32_t>::max();
@@ -130,7 +130,7 @@ public:
         this->bitmap = bitmap;
         this->k = numHashFunctions;
         if(this->bitmap->getRowCount() < (PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2){
-            printf("PrefixBloomFilter error: bitmap row count %llu is too small!\n", this->bitmap->getRowCount());
+            printf("PrefixBloomFilter error: bitmap row count %lu is too small!\n", this->bitmap->getRowCount());
         }
         this->writing_col = std::numeric_limits<uint32_t>::max();
         this->reading_col = std::numeric_limits<uint32_t>::max();
@@ -151,7 +151,7 @@ public:
             return;
         }
         if (col >= this->bitmap->getColCount()){
-            printf("PrefixBloomFilter  error: col %llu out of range!\n", col);
+            printf("PrefixBloomFilter  error: col %lu out of range!\n", col);
             return;
         }
         this->writing_col = col;
@@ -162,7 +162,7 @@ public:
             return;
         }
         if (col >= this->bitmap->getColCount()){
-            printf("PrefixBloomFilter error: col %llu out of range!\n", col);
+            printf("PrefixBloomFilter error: col %lu out of range!\n", col);
             return;
         }
         this->reading_col = col;

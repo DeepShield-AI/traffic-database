@@ -57,7 +57,7 @@ void DPDKReader::writeBefore(const char* data, u_int32_t len, u_int64_t last_off
     // u_int64_t last_queue_id = last_offset >> 32;
     // u_int64_t offset = last_offset & 0xFFFFFFFF;
     // if (last_queue_id >= this->queue_size){
-    //     printf("DPDK reader error: last queue id %llu is out of range!\n", last_queue_id);
+    //     printf("DPDK reader error: last queue id %lu is out of range!\n", last_queue_id);
     //     return;
     // }
     // if (offset + len > this->block_size){
@@ -108,16 +108,16 @@ u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
     // }
     // return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
     while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
-        printf("DPDK reader warning: write pcap header to block buffer on %u failed, retrying...\n", _offset);
+        printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
     }
     while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
-        printf("DPDK reader warning: write packet data to block buffer on %u failed, retrying...\n", _offset);
+        printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset);
     }
     return _offset;
 }
 
 FlowMetadata DPDKReader::getFlowMetaData(PacketMeta& meta){
-    // printf("pkt len:%u\n",meta.len);
+    // printf("pkt len:%lu\n",meta.len);
     this->byteLen += meta.len;
     uint8_t version = (*(u_int8_t*)(meta.data + this->eth_header_len) >> 4) & 0x0F;
     if(version == 4){
@@ -137,12 +137,12 @@ FlowMetadata DPDKReader::getFlowMetaData(PacketMeta& meta){
         const u_int16_t* sport = (const u_int16_t*)(meta.data + this->eth_header_len + IPV6_HEADER_LEN);
         const u_int16_t* dport = sport + 1;
         IPv6Address srcip = {
-            .high = swap_endianness(*(u_int64_t*)(meta.data + this->eth_header_len + 8)),
             .low = swap_endianness(*(u_int64_t*)(meta.data + this->eth_header_len + 16)),
+            .high = swap_endianness(*(u_int64_t*)(meta.data + this->eth_header_len + 8)),
         };
         IPv6Address dstip = {
-            .high = swap_endianness(*(u_int64_t*)(meta.data + this->eth_header_len + 24)),
             .low = swap_endianness(*(u_int64_t*)(meta.data + this->eth_header_len + 32)),
+            .high = swap_endianness(*(u_int64_t*)(meta.data + this->eth_header_len + 24)),
         };
         FlowMetadata flow_meta = {
             .sourceAddress = std::string((char*)&srcip,sizeof(srcip)),
@@ -173,7 +173,7 @@ u_int64_t DPDKReader::calValue(u_int64_t _offset){
     // value |= this->rx_id & 0xff;
     // value <<= 48;
     // value |= _offset & 0xffffffffffff;
-    // printf("offset:%llu.\n",_offset);
+    // printf("offset:%lu.\n",_offset);
     return _offset;
 }
 
@@ -296,10 +296,10 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index = new Index();
         // index->key = meta.destinationPort;
         QuarTurpleIPv4 ipv4Turple = {
-            .srcip = *(u_int32_t*)(meta.sourceAddress.c_str()),
-            .dstip = *(u_int32_t*)(meta.destinationAddress.c_str()),
-            .srcport = meta.sourcePort,
             .dstport = meta.destinationPort,
+            .srcport = meta.sourcePort,
+            .dstip = *(u_int32_t*)(meta.destinationAddress.c_str()),
+            .srcip = *(u_int32_t*)(meta.sourceAddress.c_str()),
         };
         // index->key = std::string((char*)&(ipv4Turple),sizeof(ipv4Turple));
         // index->value = value;
@@ -319,10 +319,10 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index = new Index();
         // index->key = meta.destinationPort;
         QuarTurpleIPv6 ipv6Turple = {
-            .srcip = *(IPv6Address*)(meta.sourceAddress.c_str()),
-            .dstip = *(IPv6Address*)(meta.destinationAddress.c_str()),
-            .srcport = meta.sourcePort,
             .dstport = meta.destinationPort,
+            .srcport = meta.sourcePort,
+            .dstip = *(IPv6Address*)(meta.destinationAddress.c_str()),
+            .srcip = *(IPv6Address*)(meta.sourceAddress.c_str()),
         };
         // index->key = std::string((char*)&(ipv6Turple),sizeof(ipv6Turple));
         // index->value = value;
@@ -469,7 +469,7 @@ int DPDKReader::run(){
 
             auto index_start = std::chrono::high_resolution_clock::now();
             if(last != std::numeric_limits<uint64_t>::max()){
-                // printf("%llu\n",last);
+                // printf("%lu\n",last);
                 u_int32_t diff = (u_int32_t)this->calDiff(_offset,last);
                 this->writeBefore((const char*)(&diff),sizeof(diff),last);
             }else{
@@ -489,7 +489,7 @@ int DPDKReader::run(){
             //     printf("DPDK Reader error: write tag to ring failed!\n");
             // }
 
-            // printf("packet offset: %llu, l3 offset: %u, l4 offset: %u.\n",_offset,info->l3_offset,info->l4_offset);
+            // printf("packet offset: %lu, l3 offset: %lu, l4 offset: %lu.\n",_offset,info->l3_offset,info->l4_offset);
             
             auto delete_start = std::chrono::high_resolution_clock::now();
             meta.data = nullptr;
@@ -515,8 +515,8 @@ int DPDKReader::run(){
     auto end = std::chrono::high_resolution_clock::now();
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    printf("DPDK Reader log: thread quit, during %llu us with %llu packets, %llu Bytes, %llu indexes.\n",this->duration_time,pkt_count,this->byteLen,index_count);
-    printf("DPDK Reader log: read time %llu us, write time %llu us,analysis time %llu us ,aggregate time %llu us, index time %llu us, delete time %llu us, total time %llu us.\n",read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
+    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes.\n",this->duration_time,pkt_count,this->byteLen,index_count);
+    printf("DPDK Reader log: read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     return 0;
 }
 
@@ -600,7 +600,7 @@ int DPDKReader::run(){
 //     }
 //     auto end = std::chrono::high_resolution_clock::now();
 //     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-//     printf("DPDK Reader log: thread quit, during %llu us with %llu indexes.\n",this->duration_time,id_count);
+//     printf("DPDK Reader log: thread quit, during %lu us with %lu indexes.\n",this->duration_time,id_count);
 //     return 0;
 // }
 

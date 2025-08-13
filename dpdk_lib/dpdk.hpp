@@ -44,15 +44,15 @@ static const struct rte_bpf_xsym bpf_xsym[] = {
 			.val = (uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t))rte_pktmbuf_dump,
 			.nb_args = 3,
 			.args = {
-				[0] = {
+				{
 					.type = RTE_BPF_ARG_RAW,
 					.size = sizeof(uintptr_t),
 				},
-				[1] = {
+				{
 					.type = RTE_BPF_ARG_PTR_MBUF,
 					.size = sizeof(struct rte_mbuf),
 				},
-				[2] = {
+				{
 					.type = RTE_BPF_ARG_RAW,
 					.size = sizeof(uint32_t),
 				},
@@ -63,8 +63,8 @@ static const struct rte_bpf_xsym bpf_xsym[] = {
 
 static struct rte_eth_conf port_conf = {
 	.rxmode = {
-		.split_hdr_size = 0,
         .mq_mode = RTE_ETH_MQ_RX_RSS,
+		.split_hdr_size = 0,
 	},
 	.txmode = {
 		.mq_mode = RTE_ETH_MQ_TX_NONE,
@@ -168,8 +168,8 @@ class DPDK{
 
     bool dpdkInit(){
         int ret;
-        char* pro_name = "main";
-        char* para_name = "-l";
+        char pro_name[] = "main";
+        char para_name[] = "-l";
         char* a[3];
         a[0] = pro_name;
         u_int32_t cores_size = this->cores.size() + 1;  // include '\0'

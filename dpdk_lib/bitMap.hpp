@@ -26,7 +26,7 @@ private:
 
     u_int64_t getByteIndex(u_int64_t row, u_int64_t col) const{
         if (row >= this->row_count || col >= this->col_count){
-            printf("Bitmap error: row %llu and col %llu out of range!\n",row,col);
+            printf("Bitmap error: row %lu and col %lu out of range!\n",row,col);
             return std::numeric_limits<u_int64_t>::max();
         }
         u_int64_t byte_col = col % (this->col_count/sizeof(u_int8_t));
@@ -34,7 +34,7 @@ private:
     }
     u_int64_t getBitIndex(u_int64_t col) const{
         if (col >= this->col_count){
-            printf("Bitmap error: col %llu out of range!\n", col);
+            printf("Bitmap error: col %lu out of range!\n", col);
             return std::numeric_limits<u_int64_t>::max();
         }
         return col / (this->col_count/sizeof(u_int8_t));
@@ -82,11 +82,11 @@ public:
     BitMap(u_int64_t row_count, u_int64_t logic_col_count, u_int64_t backup_col_count): 
         row_count(row_count), col_count(logic_col_count + backup_col_count), backup_col_count(backup_col_count) {
         if (this->col_count % sizeof(u_int8_t)){
-            printf("Bitmap error: col_count %llu is not a multiple of u_int8_t size!\n", col_count);
+            printf("Bitmap error: col_count %lu is not a multiple of u_int8_t size!\n", col_count);
             throw std::runtime_error("Invalid column count for bitmap");
         }
         if (this->backup_col_count * 8 > this->col_count){
-            printf("Bitmap error: logic_col_count %llu is not bigger than 8 times of backup_col_count %llu!\n", col_count, backup_col_count);
+            printf("Bitmap error: logic_col_count %lu is not bigger than 8 times of backup_col_count %lu!\n", col_count, backup_col_count);
             throw std::runtime_error("Invalid column count for bitmap");
         }
         this->size = this->row_count * this->col_count / 8;
@@ -118,7 +118,7 @@ public:
 
     bool get(u_int64_t row, u_int64_t col) const{
         // if (col >= this->col_count){
-        //     printf("Bitmap error: col %llu out of range!\n", col);
+        //     printf("Bitmap error: col %lu out of range!\n", col);
         //     return false;
         // }
         // u_int64_t real_col = this->getRealColRead(logic_col);
@@ -145,7 +145,7 @@ public:
     // }
     void clearCol(u_int64_t col) {
         // if (row_end > this->row_count){
-        //     printf("Bitmap error: row end %llu out of range!\n", row_end);
+        //     printf("Bitmap error: row end %lu out of range!\n", row_end);
         // }
         // u_int64_t col = this->cleaning_col.load();
         u_int64_t bit_index = getBitIndex(col);
@@ -158,12 +158,12 @@ public:
     // set col should in the write field (cleaning - 2*backup, cleanning)
     void set(u_int64_t row, u_int64_t col) {
         // if (logic_col >= this->logic_col_count){
-        //     printf("Bitmap error: logic_col %llu out of range!\n", logic_col);
+        //     printf("Bitmap error: logic_col %lu out of range!\n", logic_col);
         //     return;
         // }
         // u_int64_t real_col = this->getRealColWrite(logic_col);
         // if (real_col == std::numeric_limits<u_int64_t>::max()){
-        //     printf("Bitmap warning: logic_col %llu out of cleaning_col.\n", logic_col);
+        //     printf("Bitmap warning: logic_col %lu out of cleaning_col.\n", logic_col);
         // }
         u_int64_t byte_index = this->getByteIndex(row, col);
         if (byte_index == std::numeric_limits<u_int64_t>::max()) return;

@@ -43,7 +43,7 @@ public:
     DiskAgent(u_int64_t disk_size, u_int64_t block_size, u_int64_t basic_offset, int disk_fd, u_int32_t ring_depth, u_int32_t idle_time)
         : disk_size(disk_size), block_size(block_size), block_num(disk_size / block_size), ring_depth(ring_depth), basic_offset(basic_offset), disk_fd(disk_fd){
         if (this->disk_size % this->block_size != 0){
-            printf("Disk agent error: disk size %llu is not a multiple of block size %u!\n", this->disk_size, this->block_size);
+            printf("Disk agent error: disk size %lu is not a multiple of block size %lu!\n", this->disk_size, this->block_size);
             throw std::runtime_error("Disk size wrong");
         }
         // this->disk_fd = open(this->disk_name.c_str(), O_DIRECT | O_RDWR);
@@ -117,7 +117,7 @@ public:
     // }
     bool asyncWrite(char* buffer, u_int64_t block_id, u_int64_t write_pos) {
         if (write_pos > this->block_num){
-            printf("Disk agent error: asyncWrit position %llu exceeds block number %llu!\n", write_pos, this->block_num);
+            printf("Disk agent error: asyncWrite position %lu exceeds block number %lu!\n", write_pos, this->block_num);
             return false;
         }
         struct io_uring_sqe* sqe = io_uring_get_sqe(ring);
@@ -151,7 +151,7 @@ public:
     }
     bool read(char* buffer, u_int64_t id){
         if (id >= this->block_num) {
-            printf("Disk agent error: read id %u exceeds block number %llu!\n", id, this->block_num);
+            printf("Disk agent error: read id %lu exceeds block number %lu!\n", id, this->block_num);
             return false;
         }
         struct io_uring_sqe* sqe = io_uring_get_sqe(ring);

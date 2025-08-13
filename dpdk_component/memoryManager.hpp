@@ -1,4 +1,4 @@
-#ifndef MEMORY_MANAFER_HPP_
+#ifndef MEMORY_MANAGER_HPP_
 #define MEMORY_MANAGER_HPP_
 #include <sys/mman.h>
 // #include "../dpdk_lib/pointerRingBuffer.hpp"
