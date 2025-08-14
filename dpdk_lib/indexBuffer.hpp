@@ -121,20 +121,32 @@ public:
             return false;
         }
 
+        printf("Insert type %u\n",type);
+
         if (type == IndexType::SRCIP || type == IndexType::DSTIP){
             SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)node;
             u_int32_t ip = ipNode->key;
-            this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(ip, type);
+            if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(ip, type)){
+                printf("Insert bloom filter fail at IPv4.\n");
+                return false;
+            }
         }else if (type == IndexType::SRCPORT || type == IndexType::DSTPORT){
             SkipListNode<u_int16_t,u_int64_t>* portNode = (SkipListNode<u_int16_t,u_int64_t>*)node;
             u_int16_t port = portNode->key;
-            this->metas[buffer_meta_id].bloomFilterMeta.insertPort(port, type);
+            if (!this->metas[buffer_meta_id].bloomFilterMeta.insertPort(port, type)){
+                printf("Insert bloom filter fail at port.\n");
+                return false;
+            }
         }else if (type == IndexType::SRCIPv6 || type == IndexType::DSTIPv6){
             SkipListNode<IPv6Address,u_int64_t>* ipNode = (SkipListNode<IPv6Address,u_int64_t>*)node;
             IPv6Address ip = ipNode->key;
-            this->metas[buffer_meta_id].bloomFilterMeta.insertIPv6(ip, type);
+            if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv6(ip, type)){
+                printf("Insert bloom filter fail at IPv6.\n");
+                return false;
+            }
         }
 
+        printf("bitmap finish\n");
         return this->metas[buffer_meta_id].skiplists[type].insert(node);
     }
     // get insert node number of skiplist

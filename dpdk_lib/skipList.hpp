@@ -632,6 +632,7 @@ public:
         this->valueLen = valueLen;
     }
     bool insert(void* newNode){
+        // printf("insert one\n");
         if (this->head == nullptr){
             printf("Skip list error: insert when head is nullptr!\n");
             return true;

@@ -7,7 +7,7 @@ Index* IndexGenerator::readIndexFromBuffer(){
 }
 void IndexGenerator::putIndexToCache(Index* index){
     
-    while(true){
+    // while(true){
         // if(index->id != 0){
         //     break;
         // }
@@ -21,11 +21,13 @@ void IndexGenerator::putIndexToCache(Index* index){
         // }else {
         //     key = std::string();
         // }
-        auto start = std::chrono::high_resolution_clock::now();
+        // auto start = std::chrono::high_resolution_clock::now();
         
-        while(!this->indexBuffer->insert(index->node, index->disk_block_id, (IndexType)(index->id), index->ts)){
-            printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
-        }
+    while(!this->indexBuffer->insert(index->node, index->disk_block_id, (IndexType)(index->id), index->ts)){
+        printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
+    }
+
+    printf("Insert type %u succeed.\n",index->id);
 
         // if((*(this->indexBuffers))[index->id]->insert(index->key,index->value,this->cacheID,index->ts,this->threadID)){
         //     auto end = std::chrono::high_resolution_clock::now();
@@ -35,7 +37,7 @@ void IndexGenerator::putIndexToCache(Index* index){
 
         // this->cacheID++;
         // this->cacheID %= this->indexCacheCount;
-    } 
+    // } 
 
     // this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     // ZOrderIPv4 zorder = ZOrderIPv4(index);

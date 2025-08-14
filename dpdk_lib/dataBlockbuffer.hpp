@@ -165,7 +165,7 @@ public:
         }
 
         if (block_offset + len >= this->block_size){
-            printf("new block\n");
+            // printf("new block\n");
             if(new_data) this->end_times[block_id] = ts;
             block_id++;
             block_id %= this->total_block_num;
@@ -181,7 +181,7 @@ public:
         }
 
         if (block_pos + len > this->buffer_size){
-            printf("new buffer\n");
+            // printf("new buffer\n");
             u_int64_t tmp = this->buffer_size - block_pos;
             memcpy(this->buffer_blocks + block_pos, data, tmp);
             memcpy(this->buffer_blocks, data + tmp, len - tmp);
