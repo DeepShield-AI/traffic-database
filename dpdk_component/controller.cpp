@@ -369,7 +369,7 @@ void Controller::init(InitData init_data){
         if ((init_data.index_disk_offset < init_data.data_disk_offset && this->index_disk_offset + init_data.index_disk_size > init_data.data_disk_offset) ||
             (init_data.index_disk_offset > init_data.data_disk_offset && this->data_disk_offset + init_data.data_disk_size > init_data.index_disk_offset) ||
             (init_data.index_disk_offset == init_data.data_disk_offset)){
-            printf("Controller error: index disk %lu should be not in the same range as data disk %lu.\n", init_data.index_disk_offset, init_data.data_disk_offset);
+            printf("Controller error: index disk %lu - %lu should be not in the same range as data disk %lu - %lu.\n", init_data.index_disk_offset, init_data.index_disk_offset + init_data.index_disk_size, init_data.data_disk_offset, init_data.data_disk_offset + init_data.data_disk_size);
             throw std::runtime_error("index disk is not in the same range as data disk");
         }
     } else {
@@ -416,13 +416,20 @@ void Controller::init(InitData init_data){
 
     this->bitmap = new BitMap((PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2, init_data.data_disk_size / init_data.data_block_size, init_data.bitmap_backup_col_num);
 
-    this->indexBuffer = new IndexBuffer(init_data.index_buffer_cache_num, init_data.data_block_size / init_data.data_block_size, this->bitmap, init_data.nb_rx);
+    printf("-2\n");
+    this->indexBuffer = new IndexBuffer(init_data.index_buffer_cache_num, init_data.data_disk_size / init_data.data_block_size, this->bitmap, init_data.nb_rx);
+    
+    printf("-1\n");
     this->indexBlockBuffer = new IndexBlockBuffer(init_data.index_block_cache_num, init_data.index_block_size, init_data.index_disk_size / init_data.index_block_size, init_data.index_persist_thread_num);
+
+    printf("0\n");
 
     this->dataBlockBuffer = new DataBlockBuffer(init_data.data_block_cache_num, init_data.data_block_size, init_data.data_disk_size / init_data.data_block_size, init_data.nb_rx, init_data.delay_threshold);
     this->diskMeta = new DiskBuffer(init_data.data_disk_size / init_data.data_block_size, this->bitmap, init_data.hash_num);
 
     this->dpdk = new DPDK(init_data.nb_rx,1,init_data.bind_core,init_data.dpdk_core_id_list);
+
+    printf("a\n");
 
     for (u_int32_t i = 0; i <init_data.data_agent_num_each * init_data.data_disk_manager_thread_num; ++i){
         DiskAgent* da = new DiskAgent(init_data.data_disk_size, init_data.data_block_size, init_data.data_disk_offset, this->data_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
@@ -433,6 +440,7 @@ void Controller::init(InitData init_data){
         this->indexAgents.push_back(ia);
     }
     
+    printf("b\n");
     // for(u_int32_t i=0;i<init_data.direct_storage_thread_num;++i){
     //     DirectStorage* directStorage = new DirectStorage(i);
     //     this->directStorages.push_back(directStorage);
@@ -487,6 +495,8 @@ void Controller::init(InitData init_data){
         this->indexMemoryManagers.push_back(im);
     }
 
+    printf("c\n");
+
     for(u_int32_t i=0; i<init_data.data_disk_manager_thread_num; ++i){
         DiskManager* dd = new DiskManager(init_data.data_disk_size, init_data.data_block_size, this->dataBlockBuffer, AgentType::DATA_AGENT, this->diskMeta);
         if (init_data.bind_core){
@@ -511,6 +521,8 @@ void Controller::init(InitData init_data){
         }
         this->indexPersisters.push_back(ip);
     }
+
+    printf("d\n");
 
     for(u_int32_t i=0;i<init_data.index_construct_thread_num;++i){
         // IndexGenerator* ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffers,(*(this->indexBuffers))[0]->getCacheCount(),i*2+42);

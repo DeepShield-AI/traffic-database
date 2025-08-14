@@ -47,16 +47,17 @@ public:
     IndexBlockBuffer(const u_int64_t total_block_num, const u_int64_t block_size, const u_int64_t disk_block_num, const u_int64_t thread_num):
         total_block_num(total_block_num), block_size(block_size), buffer_size(total_block_num*block_size), disk_block_num(disk_block_num), thread_num(thread_num){
         if(this->buffer_size & (this->buffer_size - 1)){
-            printf("Data block buffer error: buffer size %lu is not power of 2!\n",this->buffer_size);
+            printf("Index block buffer error: buffer size %lu is not power of 2!\n",this->buffer_size);
             throw std::runtime_error("buffer size wrong");
         }
         if(this->total_block_num * DISK_BLOCK_TIMES >= this->disk_block_num){
-            printf("Data block buffer error: buffer num %lu is too large!\n",this->total_block_num);
+            printf("Index block buffer error: buffer num %lu is too large!\n",this->total_block_num);
             throw std::runtime_error("block buffer number wrong");
         }
         this->buffer_blocks = (char*)mmap(nullptr, this->buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        // printf("buffer size: %lu\n",this->buffer_size);
         if (this->buffer_blocks == MAP_FAILED){
-            printf("Data block buffer error: mmap failed for blocks!\n");
+            printf("Index block buffer error: mmap failed for blocks!\n");
             throw std::runtime_error("memory manager mmap failed");
         }
 
@@ -75,7 +76,7 @@ public:
     u_int64_t addWriteThread(){
         u_int64_t id = this->disk_write_ids.size();
         if(id >= this->total_block_num){
-            printf("Data block buffer error: too many written threads!\n");
+            printf("Index block buffer error: too many written threads!\n");
             return std::numeric_limits<uint64_t>::max();
         }
         this->disk_write_ids.push_back(id);
@@ -84,7 +85,7 @@ public:
     u_int64_t addCheckThread(){
         u_int64_t id = this->block_check_ids.size();
         if(id >= this->total_block_num){
-            printf("Data block buffer error: too many written threads!\n");
+            printf("Index block buffer error: too many written threads!\n");
             return std::numeric_limits<uint64_t>::max();
         }
         this->block_check_ids.push_back(id);

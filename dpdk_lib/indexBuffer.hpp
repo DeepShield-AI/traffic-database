@@ -26,49 +26,49 @@ struct IndexBufferMeta{
         u_int64_t offset = 0;
         
         this->skiplists[IndexType::SRCIP].init(sizeof(u_int32_t) * 8, sizeof(u_int32_t), sizeof(u_int64_t));
-        SkipListNode<u_int32_t,u_int64_t>* srcIPNode = (SkipListNode<u_int32_t,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<u_int32_t,u_int64_t>* srcIPNode = (SkipListNode<u_int32_t,u_int64_t>*)(this->skiplistHeads + offset);
         srcIPNode->init(0, 0, sizeof(u_int32_t) * 8);
         offset += IPV4_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::SRCIP].addHead(srcIPNode);
 
         this->skiplists[IndexType::DSTIP].init(sizeof(u_int32_t) * 8, sizeof(u_int32_t), sizeof(u_int64_t));
-        SkipListNode<u_int32_t,u_int64_t>* dstIPNode = (SkipListNode<u_int32_t,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<u_int32_t,u_int64_t>* dstIPNode = (SkipListNode<u_int32_t,u_int64_t>*)(this->skiplistHeads + offset);
         dstIPNode->init(0, 0, sizeof(u_int32_t) * 8);
         offset += IPV4_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::DSTIP].addHead(dstIPNode);
 
         this->skiplists[IndexType::SRCPORT].init(sizeof(u_int16_t) * 8, sizeof(u_int16_t), sizeof(u_int64_t));
-        SkipListNode<u_int16_t,u_int64_t>* srcPortNode = (SkipListNode<u_int16_t,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<u_int16_t,u_int64_t>* srcPortNode = (SkipListNode<u_int16_t,u_int64_t>*)(this->skiplistHeads + offset);
         srcPortNode->init(0, 0, sizeof(u_int16_t) * 8);
         offset += PORT_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::SRCPORT].addHead(srcPortNode);
 
         this->skiplists[IndexType::DSTPORT].init(sizeof(u_int16_t) * 8, sizeof(u_int16_t), sizeof(u_int64_t));
-        SkipListNode<u_int16_t,u_int64_t>* dstPortNode = (SkipListNode<u_int16_t,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<u_int16_t,u_int64_t>* dstPortNode = (SkipListNode<u_int16_t,u_int64_t>*)(this->skiplistHeads + offset);
         dstPortNode->init(0, 0, sizeof(u_int16_t) * 8);
         offset += PORT_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::DSTPORT].addHead(dstPortNode);
 
         this->skiplists[IndexType::SRCIPv6].init(sizeof(IPv6Address) * 8, sizeof(IPv6Address), sizeof(u_int64_t));
-        SkipListNode<IPv6Address,u_int64_t>* srcIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<IPv6Address,u_int64_t>* srcIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)(this->skiplistHeads + offset);
         srcIPv6Node->init(IPv6Address{0, 0}, 0, sizeof(IPv6Address) * 8);
         offset += IPV6_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::SRCIPv6].addHead(srcIPv6Node);
 
         this->skiplists[IndexType::DSTIPv6].init(sizeof(IPv6Address) * 8, sizeof(IPv6Address), sizeof(u_int64_t));
-        SkipListNode<IPv6Address,u_int64_t>* dstIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<IPv6Address,u_int64_t>* dstIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)(this->skiplistHeads + offset);
         dstIPv6Node->init(IPv6Address{0, 0}, 0, sizeof(IPv6Address) * 8);
         offset += IPV6_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::DSTIPv6].addHead(dstIPv6Node);
 
         this->skiplists[IndexType::QUARTURPLEIPv4].init(sizeof(QuarTurpleIPv4) * 8, sizeof(QuarTurpleIPv4), sizeof(u_int64_t));
-        SkipListNode<QuarTurpleIPv4,u_int64_t>* quarTurpleIPv4Node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<QuarTurpleIPv4,u_int64_t>* quarTurpleIPv4Node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)(this->skiplistHeads + offset);
         quarTurpleIPv4Node->init(QuarTurpleIPv4{0, 0, 0, 0}, 0, sizeof(QuarTurpleIPv4) * 8);
         offset += QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::QUARTURPLEIPv4].addHead(quarTurpleIPv4Node);
 
         this->skiplists[IndexType::QUARTURPLEIPv6].init(sizeof(QuarTurpleIPv6) * 8, sizeof(QuarTurpleIPv6), sizeof(u_int64_t));
-        SkipListNode<QuarTurpleIPv6,u_int64_t>* quarTurpleIPv6Node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)this->skiplistHeads + offset;
+        SkipListNode<QuarTurpleIPv6,u_int64_t>* quarTurpleIPv6Node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)(this->skiplistHeads + offset);
         quarTurpleIPv6Node->init(QuarTurpleIPv6{0, 0, IPv6Address{0, 0}, IPv6Address{0, 0}}, 0, sizeof(QuarTurpleIPv6) * 8);
         offset += QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN;
         this->skiplists[IndexType::QUARTURPLEIPv6].addHead(quarTurpleIPv6Node);
@@ -97,6 +97,7 @@ public:
             printf("Index buffer error: mmap failed for metas!\n");
             throw std::runtime_error("memory manager mmap failed");
         }
+        // printf("meta address %lu\n", (u_int64_t)this->metas);
         for (u_int64_t i = 0; i < this->total_block_num; ++i){
             this->metas[i].init(bitmap, k, i);
         }

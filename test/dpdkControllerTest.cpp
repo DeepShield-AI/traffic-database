@@ -44,7 +44,7 @@ const u_int32_t agent_ring_idle_time = 1024;
 std::string data_disk_name = "/dev/sdb";
 u_int64_t data_disk_offset = 0;
 std::string index_disk_name = "/dev/sdb";
-u_int64_t index_disk_offset = data_block_size;
+u_int64_t index_disk_offset = data_disk_offset + data_disk_size;
 
 bool bind_core = false;
 // u_int32_t controller_core_id = 0;
