@@ -38,6 +38,8 @@ void MemoryManager::setBindCore(u_int32_t core_id){
 }
 
 int MemoryManager::run(){
+    printf("Memory manager log: thread run.\n");
+
     if (this->bind_core){
         this->bindCore();
     }

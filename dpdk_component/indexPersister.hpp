@@ -46,9 +46,9 @@ private:
 public:
     IndexPersister(u_int64_t disk_size, u_int64_t block_size, IndexBuffer* indexBuffer, IndexBlockBuffer* indexBlockBuffer, DiskBuffer* diskBuffer, std::vector<MemoryPool*>* memoryPools, std::atomic_uint64_t* diskWritePos, bool bind_core = false, u_int32_t core_id = 0):
         disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),indexBuffer(indexBuffer),indexBlockBuffer(indexBlockBuffer),diskBuffer(diskBuffer),memoryPools(memoryPools),diskWritePos(diskWritePos),bind_core(bind_core),core_id(core_id){
-        if(this->block_num & (this->block_size - 1)){
-            printf("Index persister error: block size %lu is not power of 2!\n",this->block_size);
-            return;
+        if(this->disk_size & (this->disk_size - 1)){
+            printf("Index persister error: block size %lu is not power of 2!\n",this->disk_size);
+            throw std::runtime_error("Unsupport block size");
         }
         this->stop = true;
         this->index_buffer_thread_id = this->indexBuffer->addCheckThread();

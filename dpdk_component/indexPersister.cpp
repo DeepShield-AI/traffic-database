@@ -81,7 +81,7 @@ void IndexPersister::persistMeta(IndexBufferMeta* meta){
         total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
     }
     u_int64_t disk_pos = this->diskWritePos->fetch_add(total_node_len);
-    disk_pos = disk_pos & this->disk_size;
+    disk_pos = disk_pos % this->disk_size;
 
     u_int64_t current_offset = disk_pos;
     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){

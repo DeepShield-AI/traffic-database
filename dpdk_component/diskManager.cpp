@@ -61,10 +61,13 @@ void DiskManager::runData(){
         if(this->stop){
             break;
         }
+        // printf("checking.\n");
         u_int64_t block_id = buffer->checkBlock(this->thread_id);
         if(block_id == std::numeric_limits<uint64_t>::max()){
+            // printf("checking.\n");
             continue;
         }
+        printf("get one.\n");
         // u_int64_t disk_id = this->block_buffer->getDiskID(block_id);
         DataBlock* block = buffer->getBlock(this->thread_id);
         
@@ -97,6 +100,7 @@ void DiskManager::runIndex(){
         if(this->stop){
             break;
         }
+        // printf("checking.\n");
         u_int64_t block_id = buffer->checkBlock(this->thread_id);
         if(block_id == std::numeric_limits<uint64_t>::max()){
             continue;
@@ -122,6 +126,9 @@ int DiskManager::run(){
         printf("Disk manager error: run without thread id!\n");
         return -1;
     }
+
+    printf("Disk manager log: thread run.\n");
+
     if (this->bind_core){
         this->bindCore();
     }

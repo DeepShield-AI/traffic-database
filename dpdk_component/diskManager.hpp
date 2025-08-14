@@ -65,7 +65,14 @@ public:
 
         this->bind_core = false;
         this->core_id = 0;
-        this->thread_id = std::numeric_limits<uint64_t>::max();
+        if (this->agent_type == AgentType::DATA_AGENT){
+            this->thread_id = ((DataBlockBuffer*)(this->block_buffer))->addCheckThread();
+        }else if (this->agent_type == AgentType::INDEX_AGENT){
+            this->thread_id = ((IndexBlockBuffer*)(this->block_buffer))->addCheckThread();
+        }else{
+            this->thread_id = std::numeric_limits<uint64_t>::max();
+        }
+        // this->thread_id = std::numeric_limits<uint64_t>::max();
     }
     ~DiskManager() = default;
     void addAgent(DiskAgent* agent);

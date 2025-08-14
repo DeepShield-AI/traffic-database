@@ -28,7 +28,8 @@ class IndexGenerator{
     void bindCore(u_int32_t cpu);
 
 public:
-    IndexGenerator(PointerRingBuffer* buffer,IndexBuffer* indexBuffer, u_int32_t threadID, bool bind_core = false, u_int32_t core_id = 0){
+    IndexGenerator(PointerRingBuffer* buffer,IndexBuffer* indexBuffer, u_int32_t threadID, bool bind_core = false, u_int32_t core_id = 0):
+        bind_core(bind_core), core_id(core_id){
         this->buffer = buffer;
         this->indexBuffer = indexBuffer;
         // this->indexCacheCount = indexCacheCount;

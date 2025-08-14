@@ -87,10 +87,10 @@ class DPDKReader{
 public:
     DPDKReader(u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, DPDK* dpdk, std::vector<PointerRingBuffer*>* rings,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, MemoryPool* indexMemoryPool, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core = false, u_int32_t core_id = 0):
     eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),dpdk(dpdk),indexRings(rings),block_buffer(block_buffer),diskWritePos(diskWritePos),indexMemoryPool(indexMemoryPool),port_id(port_id),rx_id(rx_id){
-        if(this->block_num & (this->block_size - 1)){
-            printf("DPDK reader error: block size %lu is not power of 2!\n",this->block_size);
+        if(this->disk_size & (this->disk_size - 1)){
+            printf("DPDK reader error: block size %lu is not power of 2!\n",this->disk_size);
             this->packetAggregator = nullptr;
-            return;
+            throw std::runtime_error("Unsupport block size");
         }
 
         this->stop = true;
@@ -101,7 +101,7 @@ public:
         this->bind_core = bind_core;
         this->core_id = core_id;
         this->diskWritePos->store(0);
-        this->thread_id = std::numeric_limits<uint64_t>::max();
+        this->thread_id = this->block_buffer->addWriteThread();
     }
     ~DPDKReader(){
         if (this->packetAggregator != nullptr) delete this->packetAggregator;

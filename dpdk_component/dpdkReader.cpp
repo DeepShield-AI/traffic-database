@@ -70,6 +70,7 @@ void DPDKReader::writeBefore(const char* data, u_int32_t len, u_int64_t last_off
     // }
     // memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, len);
     this->block_buffer->writeBlock(data,len,last_offset,this->thread_id, false, 0);
+    // printf("write before on %lu.\n",last_offset);
 }
 
 void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta){
@@ -111,8 +112,9 @@ u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
         printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
     }
     while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
-        printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset);
+        printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset + sizeof(pcap_header));
     }
+    // printf("write packet on %lu.\n",_offset);
     return _offset;
 }
 

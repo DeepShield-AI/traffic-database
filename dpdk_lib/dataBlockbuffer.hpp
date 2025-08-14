@@ -56,9 +56,13 @@ private:
         u_int64_t disk_left_barrier_id = this->block_disk_id[block_check_id];
         u_int64_t disk_right_barrier_id = (disk_left_barrier_id + this->delayed_block_num) % this->disk_block_num;
         disk_left_barrier_id = (disk_right_barrier_id + this->disk_block_num - barrier_len) % this->disk_block_num;
-        if(disk_write_id > disk_right_barrier_id || disk_write_id < disk_left_barrier_id){
+        // printf("checking with left %lu, right %lu, write %lu.\n",disk_left_barrier_id,disk_right_barrier_id,disk_write_id);
+        if( (disk_left_barrier_id < disk_right_barrier_id && (disk_write_id > disk_right_barrier_id || disk_write_id < disk_left_barrier_id)) ||
+            (disk_left_barrier_id > disk_right_barrier_id && disk_write_id > disk_right_barrier_id && disk_write_id < disk_left_barrier_id)){
+            // printf("checking.\n");
             return true;
         }
+        // printf("checking.\n");
         return false;
     }
     bool directCheckRSS(u_int64_t block_check_id, u_int64_t rss_id) const{
@@ -67,7 +71,8 @@ private:
         u_int64_t disk_left_barrier_id = this->block_disk_id[block_check_id];
         u_int64_t disk_right_barrier_id = disk_left_barrier_id % this->disk_block_num;
         disk_left_barrier_id = (disk_right_barrier_id + this->disk_block_num - barrier_len) % this->disk_block_num;
-        if(disk_write_id > disk_right_barrier_id || disk_write_id < disk_left_barrier_id){
+        if( (disk_left_barrier_id < disk_right_barrier_id && (disk_write_id > disk_right_barrier_id || disk_write_id < disk_left_barrier_id)) ||
+            (disk_left_barrier_id > disk_right_barrier_id && disk_write_id > disk_right_barrier_id && disk_write_id < disk_left_barrier_id)){
             return true;
         }
         return false;
@@ -143,14 +148,16 @@ public:
         return id;
     }
     bool writeBlock(const char* data, u_int64_t len, u_int64_t disk_pos, u_int64_t thread_id, bool new_data, u_int64_t ts){
-        u_int64_t block_id = disk_pos / this->total_block_num;
-        u_int64_t disk_id = disk_pos / this->disk_block_num;
+        u_int64_t block_id = (disk_pos / this->block_size) % this->total_block_num;
+        u_int64_t disk_id = (disk_pos / this->block_size) % this->disk_block_num;
 
         u_int64_t block_offset = disk_pos % this->block_size;
         u_int64_t block_pos = disk_pos % this->buffer_size;
 
+        // printf("Write block on block_pos %lu & block_offset %lu\n",block_pos, block_offset);
 
         if (this->block_disk_id[block_id] != disk_id){
+            // printf("Write block on block_pos %lu & block_offset %lu\n",block_pos, block_offset);
             if(new_data){
                 this->disk_write_ids[thread_id] = disk_id;
             }
@@ -158,6 +165,7 @@ public:
         }
 
         if (block_offset + len >= this->block_size){
+            printf("new block\n");
             if(new_data) this->end_times[block_id] = ts;
             block_id++;
             block_id %= this->total_block_num;
@@ -173,13 +181,14 @@ public:
         }
 
         if (block_pos + len > this->buffer_size){
-            u_int64_t tmp = this->block_size - block_pos;
+            printf("new buffer\n");
+            u_int64_t tmp = this->buffer_size - block_pos;
             memcpy(this->buffer_blocks + block_pos, data, tmp);
             memcpy(this->buffer_blocks, data + tmp, len - tmp);
             // this->disk_write_ids[thread_id] = disk_id;
             if(new_data){
                 this->disk_write_ids[thread_id] = disk_id;
-                this->packet_counts[disk_pos / this->total_block_num] ++;
+                this->packet_counts[(disk_pos / this->block_size) % this->total_block_num] ++;
             }
             return true;
         }
@@ -187,13 +196,14 @@ public:
         memcpy(this->buffer_blocks + block_pos, data, len);
         if(new_data){
             this->disk_write_ids[thread_id] = disk_id;
-            this->packet_counts[disk_pos / this->total_block_num] ++;
+            this->packet_counts[(disk_pos / this->block_size) % this->disk_block_num] ++;
         }
         return true;
     }
     u_int64_t checkBlock(u_int64_t thread_id) const{
         u_int64_t block_check_id = this->block_check_ids[thread_id];
         // u_int64_t real_check_id = (block_check_id + this->delayed_block_num) % this->total_block_num;
+        // printf("checking with rss_num %lu and disk_block_num %lu.\n",this->rss_num, this->disk_block_num);
         for(u_int64_t i = 0; i < this->rss_num; ++i){
             if(!this->checkRSS(block_check_id, i)){
                 return std::numeric_limits<uint64_t>::max();

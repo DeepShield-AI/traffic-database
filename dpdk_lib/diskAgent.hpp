@@ -66,6 +66,8 @@ public:
         if (this->ring != nullptr){
             // while (io_uring_sq_ready(this->ring)>0);
             io_uring_queue_exit(this->ring);
+            delete this->ring;
+            this->ring = nullptr;
         }
         // close(this->disk_fd);
     }
@@ -78,11 +80,13 @@ public:
     
     bool kernel_run(u_int32_t cpu_core) {
         this->params.sq_thread_cpu = cpu_core;
+        this->ring = new io_uring;
         if (io_uring_queue_init_params(this->ring_depth, this->ring, &params) < 0) {
             printf("Disk agent error: failed to init io_uring with SQPOLL!\n");
             throw std::runtime_error("io_uring init failed");
             return false;
         }
+        printf("Disk Agent log: run on kernel %u.\n",cpu_core);
         return true;
     }
 
