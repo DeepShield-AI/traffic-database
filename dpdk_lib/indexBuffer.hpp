@@ -121,7 +121,7 @@ public:
             return false;
         }
 
-        printf("Insert type %u\n",type);
+        // printf("Insert type %u\n",type);
 
         if (type == IndexType::SRCIP || type == IndexType::DSTIP){
             SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)node;
@@ -146,7 +146,7 @@ public:
             }
         }
 
-        printf("bitmap finish\n");
+        // printf("bitmap finish\n");
         return this->metas[buffer_meta_id].skiplists[type].insert(node);
     }
     // get insert node number of skiplist

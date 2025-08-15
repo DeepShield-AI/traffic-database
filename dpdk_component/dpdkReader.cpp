@@ -196,6 +196,7 @@ u_int64_t DPDKReader::calDiff(u_int64_t offset, u_int64_t last_offset){
 }
 
 u_int64_t DPDKReader::calIndexNodeLen(u_int32_t key_len, u_int32_t level){
+    // printf("keylen: %u, level: %u\n",key_len,level);
     u_int64_t len = sizeof(u_int64_t);
     len += key_len;
     len += sizeof(SpinLock);

@@ -46,7 +46,7 @@ private:
 public:
     MemoryPool(u_int64_t capacity, u_int64_t list_len):
         capacity(capacity),list_len(list_len){
-        this->buffer = (char*)mmap(nullptr, this->capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        this->buffer = (char*)mmap(nullptr, this->capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
         if (this->buffer == MAP_FAILED){
             printf("Memory pool error: mmap failed for blocks!\n");
             throw std::runtime_error("memory manager mmap failed");
@@ -54,8 +54,8 @@ public:
         this->allocate_pos = 0;
         this->allocated_list = new NodeMeta[list_len];
         this->allocated_list[0] = {
-            .data_block_id = 0,
-            .start_offset = 0,
+            .data_block_id = std::numeric_limits<uint64_t>::max(),
+            .start_offset = std::numeric_limits<uint64_t>::max(),
             .dirty = false,
         };
         this->list_head = 0;
@@ -68,6 +68,7 @@ public:
 
     char* allocate(u_int64_t len, u_int64_t disk_block_id){
         if (this->allocate_pos + len > this->capacity){
+            printf("new turn.\n");
             this->allocate_pos = 0;
         }
         u_int64_t end = this->allocate_pos + len;
@@ -75,7 +76,15 @@ public:
         //     this->list_head = (this->list_head + 1) % this->list_len;
         // }
         auto barrier = this->allocated_list[list_head].start_offset;
-        while(barrier > this->allocate_pos && barrier <= end){
+        if (barrier == std::numeric_limits<uint64_t>::max() && this->allocate_pos + len <= this->capacity){
+            this->allocated_list[list_head].data_block_id = disk_block_id;
+            this->allocated_list[list_head].start_offset = this->allocate_pos;
+            char* p = this->buffer + this->allocate_pos;
+            this->allocate_pos = end;
+            return p;
+        }
+        while(barrier >= this->allocate_pos && barrier < end){
+            printf("Memory buffer pool warning: memory overhead.\n");
             barrier = this->allocated_list[list_head].start_offset;
         }
 

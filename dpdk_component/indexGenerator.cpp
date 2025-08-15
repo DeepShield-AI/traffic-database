@@ -27,7 +27,7 @@ void IndexGenerator::putIndexToCache(Index* index){
         printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
     }
 
-    printf("Insert type %u succeed.\n",index->id);
+    // printf("Insert type %u succeed.\n",index->id);
 
         // if((*(this->indexBuffers))[index->id]->insert(index->key,index->value,this->cacheID,index->ts,this->threadID)){
         //     auto end = std::chrono::high_resolution_clock::now();

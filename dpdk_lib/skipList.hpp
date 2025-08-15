@@ -100,7 +100,7 @@ class SkipList{
     u_int32_t valueLen; // length of value
     u_int32_t maxLevel; // 跳表的最大层数
 
-    std::atomic_uint32_t level; // 当前跳表的层数
+    std::atomic_uint32_t now_level; // 当前跳表的层数
     void* head;
     // SkipListNode<KeyType,ValueType>* head; // 头节点
     std::atomic_uint64_t nodeNum;
@@ -402,6 +402,12 @@ class SkipList{
         return 0;
     }
     int compareNode(void* node, void* other){
+        if(node == nullptr){
+            printf("node is null.\n");
+        }
+        if(other == nullptr){
+            printf("other is null.\n");
+        }
         if(this->keyLen == 1){
             SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
             SkipListNode<u_int8_t,u_int64_t>* q = (SkipListNode<u_int8_t,u_int64_t>*)other;
@@ -564,7 +570,7 @@ public:
         this->maxLevel = 0;
         this->keyLen = 0;
         this->valueLen = 0;
-        this->level = 0;
+        this->now_level = 0;
         this->nodeNum = 0;
     }
 
@@ -641,19 +647,28 @@ public:
             std::cerr << "Skip list error: insert with nullptr!" <<std::endl;
             return true;
         }
+
+        // printf("value: %lu\n",this->getValue(newNode));
+
         u_int64_t now_node_num = this->nodeNum++;
+
+        // printf("nodenum: %lu\n",now_node_num);
         
         u_int32_t newLevel = this->getLevel(newNode);
 
+        // printf("newlevel: %lu\n",newLevel);
+
         void* curr = this->head;
         std::vector<void*> update(maxLevel, nullptr);
-        u_int32_t nowLevel = this->level;
+        u_int32_t nowLevel = this->now_level;
         for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
             while (this->getNext(curr,i) != nullptr && this->compareNode(this->getNext(curr,i),newNode)<0){
                 curr = this->getNext(curr,i);
             }
             update[i] = curr;
         }
+
+        // printf("a\n");
 
         // insert
         for(int i=0; i<newLevel; ++i){
@@ -673,14 +688,18 @@ public:
             }
         }
 
-        u_int32_t curLevel = this->level.load();
+        // printf("b\n");
+
+        u_int32_t curLevel = this->now_level.load();
         while (curLevel < newLevel) {// CAS update level
-            if (this->level.compare_exchange_strong(curLevel, newLevel)) {
+            if (this->now_level.compare_exchange_strong(curLevel, newLevel)) {
                 break;
             }else{
-                curLevel = this->level.load();
+                curLevel = this->now_level.load();
             }
         }
+
+        // printf("c\n");
         return true;
     }
     // bool insert(std::string key, u_int64_t value, u_int64_t maxNode){
@@ -755,7 +774,7 @@ public:
         void* curr = this->head;
         std::list<u_int32_t> res = std::list<u_int32_t>();
         void* beginNode = nullptr;
-        for (int i = this->level - 1; i >= 0; i--) {
+        for (int i = this->now_level - 1; i >= 0; i--) {
             while (this->getNext(curr,i) != nullptr && this->compareNodeKey(this->getNext(curr,i),key)<0)
                 curr = this->getNext(curr,i);
         }
@@ -784,7 +803,7 @@ public:
         void* curr = this->head;
         std::list<u_int32_t> res = std::list<u_int32_t>();
         void* beginNode = nullptr;
-        for (int i = this->level - 1; i >= 0; i--) {
+        for (int i = this->now_level - 1; i >= 0; i--) {
             while (this->getNext(curr,i) != nullptr && this->compareNodeKey(this->getNext(curr,i),begin)<0)
                 curr = this->getNext(curr,i);
         }
@@ -835,6 +854,7 @@ public:
             return;
         }
         this->clearHead();
+        this->nodeNum = 0;
         // void* old_head = this->head;
         // this->head = nullptr;
         // return old_head;
