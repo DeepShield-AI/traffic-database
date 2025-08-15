@@ -478,12 +478,18 @@ void Controller::init(InitData init_data){
         if (init_data.bind_core){
             dm->setBindCore(init_data.data_recycling_core_id_list[i]);
         }
+        for(u_int32_t j=0; j<init_data.data_agent_num_each; ++j){
+            dm->addAgent(this->dataAgents[i*init_data.data_agent_num_each + j]);
+        }
         this->dataMemoryManagers.push_back(dm);
     }
     for(u_int32_t i=0; i<init_data.index_memory_manager_thread_num; ++i){
         MemoryManager* im = new MemoryManager(init_data.index_block_size, this->indexBlockBuffer, AgentType::INDEX_AGENT);
         if (init_data.bind_core){
             im->setBindCore(init_data.index_recycling_core_id_list[i]);
+        }
+        for(u_int32_t j=0; j<init_data.index_agent_num_each; ++j){
+            im->addAgent(this->indexAgents[i*init_data.index_agent_num_each + j]);
         }
         this->indexMemoryManagers.push_back(im);
     }
@@ -492,12 +498,18 @@ void Controller::init(InitData init_data){
         if (init_data.bind_core){
             dd->setBindCore(init_data.data_dumping_core_id_list[i]);
         }
+        for(u_int32_t j=0; j<init_data.data_agent_num_each; ++j){
+            dd->addAgent(this->dataAgents[i*init_data.data_agent_num_each + j]);
+        }
         this->dataDiskManagers.push_back(dd);
     }
     for(u_int32_t i=0; i<init_data.index_disk_manager_thread_num; ++i){
         DiskManager* id = new DiskManager(init_data.index_disk_size, init_data.index_block_size, this->indexBlockBuffer, AgentType::INDEX_AGENT,nullptr);
         if (init_data.bind_core){
             id->setBindCore(init_data.index_dumping_core_id_list[i]);
+        }
+        for(u_int32_t j=0; j<init_data.index_agent_num_each; ++j){
+            id->addAgent(this->indexAgents[i*init_data.index_agent_num_each + j]);
         }
         this->indexDiskManagers.push_back(id);
     }

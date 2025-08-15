@@ -226,6 +226,7 @@ public:
     DataBlock* getBlock(u_int64_t thread_id){
         DataBlock* block = new DataBlock();
         block->block_id = this->block_check_ids[thread_id];
+        printf("thread id %lu, block id %lu\n",thread_id, block->block_id);
         block->start_time = this->start_times[block->block_id];
         block->end_time = this->end_times[block->block_id];
         block->write_pos = this->block_disk_id[block->block_id];

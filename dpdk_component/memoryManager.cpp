@@ -47,11 +47,11 @@ int MemoryManager::run(){
 
     while(!this->stop){
         for(auto agent: this->disk_agents){
-            u_int32_t block_id = agent->processCompletions();
-            if (block_id == std::numeric_limits<u_int32_t>::max()) {
+            u_int64_t block_id = agent->processCompletions();
+            if (block_id == std::numeric_limits<u_int64_t>::max()) {
                 continue;
             }
-
+            printf("Memory manager log: type %u finish block %lu.\n",this->agent_type,block_id);
             if (this->agent_type == DATA_AGENT){
                 DataBlockBuffer* buffer = (DataBlockBuffer*)this->block_buffer;
                 buffer->recycleBlock((u_int64_t)block_id);

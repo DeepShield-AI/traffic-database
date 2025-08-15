@@ -13,9 +13,12 @@
 void DiskManager::addBlock(void* block){
     if (this->agent_type == AgentType::DATA_AGENT){
         DataBlock* data_block = (DataBlock*)block;
+        // printf("agent num: %lu\n",this->agents.size());
         u_int32_t agent_id = data_block->block_id % this->agents.size();
 
+        // printf("before write.\n");
         this->agents[agent_id]->asyncWrite(data_block->buffer, data_block->block_id, data_block->write_pos);
+        // printf("after write.\n");
     }else if (this->agent_type == AgentType::INDEX_AGENT){
         IndexBlock* index_block = (IndexBlock*)block;
         u_int32_t agent_id = index_block->block_id % this->agents.size();
@@ -67,16 +70,20 @@ void DiskManager::runData(){
             // printf("checking.\n");
             continue;
         }
-        printf("get one.\n");
+        // printf("get one.\n");
         // u_int64_t disk_id = this->block_buffer->getDiskID(block_id);
         DataBlock* block = buffer->getBlock(this->thread_id);
         
+        // printf("get block.\n");
         this->disk_buffer->setTime(block->write_pos,block->start_time,block->end_time);
         this->disk_buffer->setPacketCount(block->write_pos,block->packet_count);
+
+        // printf("set block.\n");
         // TDDO: Instantly write Packet Count?
 
         // this->setMeta(block);
         this->addBlock((void*)block);
+        // printf("add block\n");
         delete block;
     }
     while (true){

@@ -139,19 +139,21 @@ public:
             return false;
         }
 
+        printf("Disk agent log: writing block %lu to position %lu.\n",block_id,write_pos);
+
         return true;
     }
-    u_int32_t processCompletions() {
+    u_int64_t processCompletions() {
         struct io_uring_cqe* cqe = nullptr;
         if(io_uring_peek_cqe(ring, &cqe) == 0 && cqe != nullptr) {
             if (cqe->res < 0) {
                 printf("Disk agent error: IO operation failed: %s\n", strerror(-cqe->res));
-                return std::numeric_limits<u_int32_t>::max();
+                return std::numeric_limits<u_int64_t>::max();
             }
             io_uring_cqe_seen(ring, cqe);
             return cqe->user_data;
         }
-        return std::numeric_limits<u_int32_t>::max();
+        return std::numeric_limits<u_int64_t>::max();
     }
     bool read(char* buffer, u_int64_t id){
         if (id >= this->block_num) {
