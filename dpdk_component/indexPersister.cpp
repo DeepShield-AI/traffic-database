@@ -47,8 +47,10 @@ IndexBufferMeta* IndexPersister::checkAndGetMeta(){
             break;
         }
     }
+    // printf("get block id %lu, packet_count %lu\n",disk_block_id,packet_count);
     while(true){
         u_int64_t srcip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIPv6);
+        // printf("srcip count: %lu\n",srcip_count);
         if (srcip_count < packet_count){
             continue;
         }
@@ -133,6 +135,7 @@ int IndexPersister::run(){
             break;
         }
         this->persistMeta(meta);
+        printf("Index Persister log: persist index of block %lu.\n",meta->disk_block_id);
         this->clearMeta(meta);
     }
 

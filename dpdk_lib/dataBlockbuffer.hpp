@@ -147,7 +147,7 @@ public:
         this->block_check_ids.push_back(id);
         return id;
     }
-    bool writeBlock(const char* data, u_int64_t len, u_int64_t disk_pos, u_int64_t thread_id, bool new_data, u_int64_t ts){
+    bool writeBlock(const char* data, u_int64_t len, u_int64_t disk_pos, u_int64_t thread_id, bool new_data, bool new_index, u_int64_t ts){
         u_int64_t block_id = (disk_pos / this->block_size) % this->total_block_num;
         u_int64_t disk_id = (disk_pos / this->block_size) % this->disk_block_num;
 
@@ -188,7 +188,9 @@ public:
             // this->disk_write_ids[thread_id] = disk_id;
             if(new_data){
                 this->disk_write_ids[thread_id] = disk_id;
-                this->packet_counts[(disk_pos / this->block_size) % this->total_block_num] ++;
+                if (new_index){
+                    this->packet_counts[(disk_pos / this->block_size) % this->total_block_num] ++;
+                }
             }
             return true;
         }
@@ -196,7 +198,9 @@ public:
         memcpy(this->buffer_blocks + block_pos, data, len);
         if(new_data){
             this->disk_write_ids[thread_id] = disk_id;
-            this->packet_counts[(disk_pos / this->block_size) % this->disk_block_num] ++;
+            if(new_index){
+                this->packet_counts[(disk_pos / this->block_size) % this->disk_block_num] ++;
+            }
         }
         return true;
     }
@@ -226,7 +230,7 @@ public:
     DataBlock* getBlock(u_int64_t thread_id){
         DataBlock* block = new DataBlock();
         block->block_id = this->block_check_ids[thread_id];
-        printf("thread id %lu, block id %lu\n",thread_id, block->block_id);
+        // printf("thread id %lu, block id %lu\n",thread_id, block->block_id);
         block->start_time = this->start_times[block->block_id];
         block->end_time = this->end_times[block->block_id];
         block->write_pos = this->block_disk_id[block->block_id];

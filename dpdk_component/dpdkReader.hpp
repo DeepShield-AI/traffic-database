@@ -74,7 +74,8 @@ class DPDKReader{
 
     //read packet of offset from file;
     void readPacket(struct rte_mbuf *buf,u_int64_t ts,PacketMeta* meta);
-    u_int64_t writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts);
+    u_int64_t getOffset(PacketMeta& meta);
+    void writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts, u_int64_t _offset, bool new_index);
     FlowMetadata getFlowMetaData(PacketMeta& meta);
 
     u_int64_t calValue(u_int64_t _offset);

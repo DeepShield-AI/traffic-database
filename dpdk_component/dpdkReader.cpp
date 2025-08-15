@@ -69,7 +69,7 @@ void DPDKReader::writeBefore(const char* data, u_int32_t len, u_int64_t last_off
     //     return;
     // }
     // memcpy(this->blockTmpQueue[last_queue_id]->buffer + offset, data, len);
-    this->block_buffer->writeBlock(data,len,last_offset,this->thread_id, false, 0);
+    this->block_buffer->writeBlock(data,len,last_offset,this->thread_id, false, false, 0);
     // printf("write before on %lu.\n",last_offset);
 }
 
@@ -94,11 +94,16 @@ void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta
     meta->data = rte_pktmbuf_mtod(buf, const char *);
 }
 
-u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
-    // u_int64_t _offset = ((u_int64_t)(this->queue_head) << 32) + this->write_offset;
+u_int64_t DPDKReader::getOffset(PacketMeta& meta){
     u_int64_t total_len = sizeof(pcap_header) + meta.len;
     u_int64_t _offset = this->diskWritePos->fetch_add(total_len);
     _offset %= this->disk_size;
+    return _offset;
+}
+
+void DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts, u_int64_t _offset, bool new_index){
+    // u_int64_t _offset = ((u_int64_t)(this->queue_head) << 32) + this->write_offset;
+    
     // this->writePointerToBlock((const char*)meta.header,sizeof(pcap_header),ts);
     // this->writePointerToBlock(meta.data + this->eth_header_len, meta.len, ts);
     // if (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
@@ -108,14 +113,14 @@ u_int64_t DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts){
     //     return std::numeric_limits<uint64_t>::max();
     // }
     // return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
-    while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,ts)){
+    while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,new_index,ts)){
         printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
     }
-    while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, ts)){
+    while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, _offset + sizeof(pcap_header), this->thread_id, true, false, ts)){
         printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset + sizeof(pcap_header));
     }
     // printf("write packet on %lu.\n",_offset);
-    return _offset;
+    // return _offset;
 }
 
 FlowMetadata DPDKReader::getFlowMetaData(PacketMeta& meta){
@@ -443,16 +448,14 @@ int DPDKReader::run(){
                 
             // }
             // printfauto read_start = std::chrono::high_resolution_clock::now();("\n");
-            auto write_start = std::chrono::high_resolution_clock::now();
-            u_int64_t _offset = this->writePacketToPacketBuffer(meta, ts);
+
+            u_int64_t _offset = this->getOffset(meta);
             if(_offset == std::numeric_limits<uint64_t>::max()){
                 printf("DPDK Reader warning: packet buffer overflow!\n");
                 meta.data = nullptr;
                 rte_pktmbuf_free(bufs[i]);
                 continue;
             }
-            auto write_end = std::chrono::high_resolution_clock::now();
-            write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
 
             auto analysis_start = std::chrono::high_resolution_clock::now();
             FlowMetadata flow_meta = this->getFlowMetaData(meta);
@@ -473,10 +476,18 @@ int DPDKReader::run(){
             auto index_start = std::chrono::high_resolution_clock::now();
             if(last != std::numeric_limits<uint64_t>::max()){
                 // printf("%lu\n",last);
+                auto write_start = std::chrono::high_resolution_clock::now();
+                this->writePacketToPacketBuffer(meta,ts,_offset,false);
+                auto write_end = std::chrono::high_resolution_clock::now();
+                write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
                 u_int32_t diff = (u_int32_t)this->calDiff(_offset,last);
                 this->writeBefore((const char*)(&diff),sizeof(diff),last);
             }else{
                 /* with index */
+                auto write_start = std::chrono::high_resolution_clock::now();
+                this->writePacketToPacketBuffer(meta,ts,_offset,true);
+                auto write_end = std::chrono::high_resolution_clock::now();
+                write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
                 u_int64_t value = this->calValue(_offset);
                 if(!this->writeIndexToRing(value,flow_meta,ts)){
                     printf("DPDK Reader error: write index to ring failed!\n");

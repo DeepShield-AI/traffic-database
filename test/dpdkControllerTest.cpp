@@ -16,7 +16,7 @@ const u_int32_t index_ring_capacity = 1024*1024*128;
 const u_int32_t eth_header_len = 14;
 const size_t hash_num = 4;
 // const u_int64_t file_capacity = 1024*1024*1024;
-u_int16_t nb_rx = 1;
+u_int16_t nb_rx = 2;
 u_int64_t data_disk_size = 1024lu*1024lu*1024lu*1024lu;
 u_int64_t data_block_size = 1024lu*1024lu*1024lu;
 u_int64_t index_disk_size = 256lu*1024lu*1024lu*1024lu;
@@ -25,13 +25,13 @@ u_int64_t memory_pool_capacity = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_list_len_each = 1024;
 
 u_int64_t data_block_cache_num = 4;
-u_int64_t index_buffer_cache_num = 4;
+u_int64_t index_buffer_cache_num = 8;
 u_int64_t index_block_cache_num = 4;
 u_int64_t delay_threshold = 1;
 u_int64_t bitmap_backup_col_num = 8;
 
-u_int32_t index_construct_thread_num = 1;
-u_int32_t index_persist_thread_num = 1;
+u_int32_t index_construct_thread_num = 2;
+u_int32_t index_persist_thread_num = 2;
 const u_int32_t data_disk_manager_thread_num = 1;
 const u_int32_t index_disk_manager_thread_num = 1;
 const u_int32_t data_memory_manager_thread_num = 1;
