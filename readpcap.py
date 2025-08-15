@@ -72,7 +72,7 @@ def read_pcap(file_path):
 
             else:
                 # 其他 IP 协议暂不支持
-                print(protocol)
+                print(version)
                 continue
 
 if __name__ == "__main__":

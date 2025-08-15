@@ -44,6 +44,18 @@ private:
         }
         return false;
     }
+    bool directCheckThread(u_int64_t block_check_id, u_int64_t rss_id) const {
+        u_int64_t disk_write_id = this->disk_write_ids[rss_id];
+        u_int64_t barrier_len = this->total_block_num * 2;
+        u_int64_t disk_left_barrier_id = this->block_disk_id[block_check_id];
+        u_int64_t disk_right_barrier_id = disk_left_barrier_id % this->disk_block_num;
+        disk_left_barrier_id = (disk_right_barrier_id + this->disk_block_num - barrier_len) % this->disk_block_num;
+        if( (disk_left_barrier_id < disk_right_barrier_id && (disk_write_id >= disk_right_barrier_id || disk_write_id < disk_left_barrier_id)) ||
+            (disk_left_barrier_id > disk_right_barrier_id && disk_write_id >= disk_right_barrier_id && disk_write_id < disk_left_barrier_id)){
+            return true;
+        }
+        return false;
+    }
 public:
     IndexBlockBuffer(const u_int64_t total_block_num, const u_int64_t block_size, const u_int64_t disk_block_num, const u_int64_t thread_num):
         total_block_num(total_block_num), block_size(block_size), buffer_size(total_block_num*block_size), disk_block_num(disk_block_num), thread_num(thread_num){
@@ -137,6 +149,16 @@ public:
             }
         }
         return block_check_id;
+    }
+    u_int64_t directCheckBlock(u_int64_t thread_id) const{
+        u_int64_t block_check_id = this->block_check_ids[thread_id];
+
+        for(u_int64_t i = 0; i < this->thread_num; ++i){
+            if(this->directCheckThread(block_check_id, i)){
+                return block_check_id;
+            }
+        }
+        return std::numeric_limits<uint64_t>::max();
     }
     IndexBlock* getBlock(u_int64_t thread_id){
         IndexBlock* block = new IndexBlock();

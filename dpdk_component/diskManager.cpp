@@ -88,6 +88,7 @@ void DiskManager::runData(){
     }
     while (true){
         u_int64_t block_id = buffer->directGetBlockID(this->thread_id);
+        // printf("block id: %lu\n", block_id);
         if(block_id == std::numeric_limits<uint64_t>::max()){
             break;
         }
@@ -111,6 +112,17 @@ void DiskManager::runIndex(){
         u_int64_t block_id = buffer->checkBlock(this->thread_id);
         if(block_id == std::numeric_limits<uint64_t>::max()){
             continue;
+        }
+        IndexBlock* block = buffer->getBlock(this->thread_id);
+
+        this->addBlock((void*)block);
+        delete block;
+    }
+    while (true){
+        u_int64_t block_id = buffer->directCheckBlock(this->thread_id);
+        // printf("block id: %lu\n", block_id);
+        if(block_id == std::numeric_limits<uint64_t>::max()){
+            break;
         }
         IndexBlock* block = buffer->getBlock(this->thread_id);
 

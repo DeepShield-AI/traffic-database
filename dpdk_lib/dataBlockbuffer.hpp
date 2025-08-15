@@ -71,8 +71,8 @@ private:
         u_int64_t disk_left_barrier_id = this->block_disk_id[block_check_id];
         u_int64_t disk_right_barrier_id = disk_left_barrier_id % this->disk_block_num;
         disk_left_barrier_id = (disk_right_barrier_id + this->disk_block_num - barrier_len) % this->disk_block_num;
-        if( (disk_left_barrier_id < disk_right_barrier_id && (disk_write_id > disk_right_barrier_id || disk_write_id < disk_left_barrier_id)) ||
-            (disk_left_barrier_id > disk_right_barrier_id && disk_write_id > disk_right_barrier_id && disk_write_id < disk_left_barrier_id)){
+        if( (disk_left_barrier_id < disk_right_barrier_id && (disk_write_id >= disk_right_barrier_id || disk_write_id < disk_left_barrier_id)) ||
+            (disk_left_barrier_id > disk_right_barrier_id && (disk_write_id >= disk_right_barrier_id && disk_write_id < disk_left_barrier_id))){
             return true;
         }
         return false;

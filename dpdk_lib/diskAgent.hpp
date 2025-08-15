@@ -130,7 +130,7 @@ public:
             return false;
         }
         u_int64_t offset = write_pos * this->block_size;
-        io_uring_prep_write(sqe, this->disk_fd, buffer, this->block_size, offset);
+        io_uring_prep_write(sqe, this->disk_fd, buffer, this->block_size, offset + this->basic_offset);
         sqe->user_data = block_id;
 
         int ret = io_uring_submit(ring);
@@ -139,7 +139,7 @@ public:
             return false;
         }
 
-        printf("Disk agent log: writing block %lu to position %lu.\n",block_id,write_pos);
+        printf("Disk agent log: writing block %lu to position %lu with basic offset %lu.\n",block_id,write_pos,this->basic_offset);
 
         return true;
     }
