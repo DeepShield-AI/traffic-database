@@ -92,7 +92,7 @@ public:
             throw std::runtime_error("disk_block_num must be a multiple of total_block_num");
         }
         this->size = this->total_block_num * sizeof(IndexBufferMeta);
-        this->metas = (IndexBufferMeta*)mmap(nullptr, this->size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        this->metas = (IndexBufferMeta*)mmap(nullptr, this->size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
         if (this->metas == MAP_FAILED){
             printf("Index buffer error: mmap failed for metas!\n");
             throw std::runtime_error("memory manager mmap failed");

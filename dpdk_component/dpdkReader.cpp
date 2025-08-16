@@ -441,8 +441,6 @@ int DPDKReader::run(){
                 err = 1;
                 break;
             }
-            auto read_end = std::chrono::high_resolution_clock::now();
-            read_time += std::chrono::duration_cast<std::chrono::microseconds>(read_end - read_start).count();
 
             // for(u_int8_t i = 0; i< meta.tag_num; ++i){
                 
@@ -456,6 +454,9 @@ int DPDKReader::run(){
                 rte_pktmbuf_free(bufs[i]);
                 continue;
             }
+
+            auto read_end = std::chrono::high_resolution_clock::now();
+            read_time += std::chrono::duration_cast<std::chrono::microseconds>(read_end - read_start).count();
 
             auto analysis_start = std::chrono::high_resolution_clock::now();
             FlowMetadata flow_meta = this->getFlowMetaData(meta);
@@ -473,30 +474,31 @@ int DPDKReader::run(){
             auto aggregate_end = std::chrono::high_resolution_clock::now();
             aggregate_time += std::chrono::duration_cast<std::chrono::microseconds>(aggregate_end - aggregate_start).count();
 
-            auto index_start = std::chrono::high_resolution_clock::now();
+            
             if(last != std::numeric_limits<uint64_t>::max()){
                 // printf("%lu\n",last);
                 auto write_start = std::chrono::high_resolution_clock::now();
                 this->writePacketToPacketBuffer(meta,ts,_offset,false);
                 auto write_end = std::chrono::high_resolution_clock::now();
-                write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
+                
                 u_int32_t diff = (u_int32_t)this->calDiff(_offset,last);
                 this->writeBefore((const char*)(&diff),sizeof(diff),last);
+                write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
             }else{
                 /* with index */
                 auto write_start = std::chrono::high_resolution_clock::now();
                 this->writePacketToPacketBuffer(meta,ts,_offset,true);
                 auto write_end = std::chrono::high_resolution_clock::now();
                 write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
+                auto index_start = std::chrono::high_resolution_clock::now();
                 u_int64_t value = this->calValue(_offset);
                 if(!this->writeIndexToRing(value,flow_meta,ts)){
                     printf("DPDK Reader error: write index to ring failed!\n");
                 }
                 index_count++;
+                auto index_end = std::chrono::high_resolution_clock::now();
+                index_time += std::chrono::duration_cast<std::chrono::microseconds>(index_end - index_start).count();
             }
-            auto index_end = std::chrono::high_resolution_clock::now();
-            index_time += std::chrono::duration_cast<std::chrono::microseconds>(index_end - index_start).count();
-            
             
 
             // if(!this->writeTagToRing(meta.data,meta.tags,meta.tag_num,flow_meta,ts,_offset,last)){
@@ -529,7 +531,7 @@ int DPDKReader::run(){
     auto end = std::chrono::high_resolution_clock::now();
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes.\n",this->duration_time,pkt_count,this->byteLen,index_count);
+    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps.\n",this->duration_time,pkt_count,this->byteLen,index_count,(double)this->byteLen/(double)this->duration_time/125.0);
     printf("DPDK Reader log: read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     return 0;
 }

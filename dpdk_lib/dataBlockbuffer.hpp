@@ -89,7 +89,7 @@ public:
             throw std::runtime_error("block buffer number wrong");
         }
         // printf("buffer size: %lu\n",this->buffer_size);
-        this->buffer_blocks = (char*)mmap(nullptr, this->buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        this->buffer_blocks = (char*)mmap(nullptr, this->buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
         if (this->buffer_blocks == MAP_FAILED){
             printf("Data block buffer error: mmap failed for blocks!\n");
             throw std::runtime_error("memory manager mmap failed");
