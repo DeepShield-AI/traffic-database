@@ -410,6 +410,7 @@ int DPDKReader::run(){
         .len = 0,
     };
 
+    u_int64_t wait_time = 0;
     u_int64_t read_time = 0;
     u_int64_t analysis_time = 0;
     u_int64_t write_time = 0;
@@ -419,8 +420,15 @@ int DPDKReader::run(){
     u_int64_t total_time = 0;
     
     while(true){
+        auto wait_start = std::chrono::high_resolution_clock::now();
         ts = rte_rdtsc();
+        
         nb_rx = this->dpdk->getRXBurst(bufs,this->port_id,this->rx_id);
+        auto wait_end = std::chrono::high_resolution_clock::now();
+
+        if (has_start){
+            wait_time += std::chrono::duration_cast<std::chrono::microseconds>(wait_end - wait_start).count();
+        }
         
         if(nb_rx == 0 && !(this->stop)){
             continue;
@@ -532,7 +540,7 @@ int DPDKReader::run(){
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps.\n",this->duration_time,pkt_count,this->byteLen,index_count,(double)this->byteLen/(double)this->duration_time/125.0);
-    printf("DPDK Reader log: read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
+    printf("DPDK Reader log: wait time %lu us, read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",wait_time,read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     return 0;
 }
 
