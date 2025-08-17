@@ -29,7 +29,7 @@ LDFLAGS_SHARED = $(shell $(PKGCONF) --libs libdpdk)
 all: clean $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(BUILD_PATH)$(TARGET) $(LDFLAGS) -lpcap -luring -pthread $(LDFLAGS_SHARED)
+	$(CC) $(OBJS) -o $(BUILD_PATH)$(TARGET) $(LDFLAGS) -lpcap -luring -lnuma -pthread $(LDFLAGS_SHARED)
 
 $(BUILD_PATH)$(TEST_PATH)%.o: $(TEST_PATH)%.cpp
 	mkdir -p $(dir $@)

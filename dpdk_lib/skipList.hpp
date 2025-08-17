@@ -88,9 +88,9 @@ public:
         this->key = key;
         this->value = value;
         this->level = level;
-        for(u_int32_t i = 0; i<level; ++i){
-            this->next[i]=nullptr;
-        }
+        // for(u_int32_t i = 0; i<level; ++i){
+        //     this->next[i]=nullptr;
+        // }
     }
 };
 
@@ -602,19 +602,52 @@ public:
         }
     }
 
+    // static inline uint32_t randomLevel(uint32_t max_level) {
+    //     // 生成一个随机数
+    //     uint32_t r = (uint32_t)rand();
+
+    //     // 计算 trailing zeros (连续的 0 bit 个数)
+    //     #if defined(__GNUC__)
+    //     uint32_t tz = __builtin_ctz(r | 1); // 避免 r=0 导致未定义
+    //     #else
+    //     // 如果没有 __builtin_ctz，可以用循环替代，但效率会低
+    //     uint32_t tz = 0;
+    //     while (((r >> tz) & 1) == 0 && tz < 31) tz++;
+    //     #endif
+
+    //     uint32_t lvl = tz + 1;
+    //     if (lvl > max_level) lvl = max_level;
+    //     return lvl;
+    // }
+
     // SkipList(const SkipList&) = delete;
     // SkipList& operator=(const SkipList&) = delete;
 
     // SkipList(SkipList&&) noexcept = default;
     // SkipList& operator=(SkipList&&) noexcept = default;
 
-    static u_int32_t randomLevel(u_int32_t max_level){
-        u_int32_t lvl = 1;
-        while (rand() % 2 == 0 && lvl < max_level){
-            lvl++;
-        }
+    static uint32_t randomLevel(uint32_t max_level) {
+    // 生成 (0,1) 区间的浮点随机数
+        double u = (double)rand() / ((double)RAND_MAX + 1.0);
+
+        // 计算几何分布随机变量: level = floor(-log2(u)) + 1
+        uint32_t lvl = (uint32_t)(-log2(u)) + 1;
+
+        if (lvl > max_level) lvl = max_level;
         return lvl;
     }
+
+    // static uint32_t randomLevel(uint32_t max_level) {
+    //     return max_level;
+    // }
+
+    // static u_int32_t randomLevel(u_int32_t max_level){
+    //     u_int32_t lvl = 1;
+    //     while (rand() % 2 == 0 && lvl < max_level){
+    //         lvl++;
+    //     }
+    //     return lvl;
+    // }
     // void addWriteThread(){
     //     this->writeThreadCount++;
     // }
@@ -655,6 +688,7 @@ public:
         // printf("nodenum: %lu\n",now_node_num);
         
         u_int32_t newLevel = this->getLevel(newNode);
+        // u_int32_t newLevel = this->randomGetLevel(this->maxLevel);
 
         // printf("newlevel: %lu\n",newLevel);
 

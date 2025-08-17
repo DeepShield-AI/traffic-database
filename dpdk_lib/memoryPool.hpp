@@ -68,7 +68,7 @@ public:
 
     char* allocate(u_int64_t len, u_int64_t disk_block_id){
         if (this->allocate_pos + len > this->capacity){
-            printf("new turn.\n");
+            // printf("new turn.\n");
             this->allocate_pos = 0;
         }
         u_int64_t end = this->allocate_pos + len;

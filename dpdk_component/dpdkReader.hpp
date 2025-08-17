@@ -10,7 +10,8 @@
 #include "../dpdk_lib/header.hpp"
 #include "../dpdk_lib/util.hpp"
 #include "../dpdk_lib/dpdk.hpp"
-#include "../dpdk_lib/pointerRingBuffer.hpp"
+// #include "../dpdk_lib/pointerRingBuffer.hpp"
+#include "../dpdk_lib/singleRingBuffer.hpp"
 #include "../dpdk_lib/packetAggregator.hpp"
 #include "../dpdk_lib/diskAgent.hpp"
 #include "../dpdk_lib/dataBlockbuffer.hpp"
@@ -47,6 +48,8 @@ class DPDKReader{
     const u_int64_t disk_size;
     const u_int64_t block_size;
     const u_int64_t block_num;
+    const u_int64_t cell_size;
+    const u_int64_t cell_num;
 
     u_int16_t port_id;
     u_int16_t rx_id;
@@ -55,14 +58,22 @@ class DPDKReader{
     PacketAggregator* packetAggregator;
 
     // write only
-    std::vector<PointerRingBuffer*>* indexRings;
+    // std::vector<PointerRingBuffer*>* indexRings;
+    PointerRingBuffer* indexRing;
     DataBlockBuffer* block_buffer;
-    std::atomic_uint_fast64_t* diskWritePos;
+    std::atomic_uint_fast64_t* diskWriteCell;
+    u_int64_t writeCell;
+    u_int64_t writeOffset;
     MemoryPool* indexMemoryPool;
 
     std::atomic_bool stop;
 
     u_int64_t duration_time;
+    u_int64_t create_time;
+    u_int64_t cal_time;
+    u_int64_t allocate_time;
+    u_int64_t init_time;
+    u_int64_t put_time;
     u_int64_t byteLen;
 
     bool bind_core;
@@ -86,22 +97,34 @@ class DPDKReader{
     void bindCore(u_int32_t cpu);
 
 public:
-    DPDKReader(u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, DPDK* dpdk, std::vector<PointerRingBuffer*>* rings,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, MemoryPool* indexMemoryPool, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core = false, u_int32_t core_id = 0):
-    eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),dpdk(dpdk),indexRings(rings),block_buffer(block_buffer),diskWritePos(diskWritePos),indexMemoryPool(indexMemoryPool),port_id(port_id),rx_id(rx_id){
-        if(this->disk_size & (this->disk_size - 1)){
-            printf("DPDK reader error: block size %lu is not power of 2!\n",this->disk_size);
+    DPDKReader(u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, u_int64_t cell_size, DPDK* dpdk, PointerRingBuffer* ring,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, MemoryPool* indexMemoryPool, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core = false, u_int32_t core_id = 0):
+    eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),cell_size(cell_size),cell_num(disk_size/cell_size),dpdk(dpdk),indexRing(ring),block_buffer(block_buffer),diskWriteCell(diskWritePos),indexMemoryPool(indexMemoryPool),port_id(port_id),rx_id(rx_id){
+        if(this->cell_num & (this->cell_num - 1)){
+            printf("DPDK reader error: cell number %lu is not power of 2!\n",this->cell_num);
+            this->packetAggregator = nullptr;
+            throw std::runtime_error("Unsupport block size");
+        }
+        if(this->block_size % this->cell_size){
+            printf("DPDK reader error: block size %lu is not multiple of cell size %lu!\n",this->block_size, this->cell_size);
             this->packetAggregator = nullptr;
             throw std::runtime_error("Unsupport block size");
         }
 
         this->stop = true;
         this->duration_time = 0;
+        this->create_time = 0;
+        this->cal_time = 0;
+        this->allocate_time = 0;
+        this->init_time = 0;
+        this->put_time = 0;
         this->byteLen = 0;
 
         this->packetAggregator = new PacketAggregator(capacity, std::numeric_limits<uint64_t>::max());
         this->bind_core = bind_core;
         this->core_id = core_id;
-        this->diskWritePos->store(0);
+        this->diskWriteCell->store(0);
+        this->writeCell = std::numeric_limits<uint64_t>::max();
+        this->writeOffset = 0;
         this->thread_id = this->block_buffer->addWriteThread();
     }
     ~DPDKReader(){

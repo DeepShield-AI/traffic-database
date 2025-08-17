@@ -9,7 +9,7 @@
 //                             0x00,0x00,0x04,0x00,0x65,0x00,0x00,0x00};
 // const u_int8_t pcap_head[] = {0xd4,0xc3,0xb2,0xa1,0x02,0x00,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 //                             0xff,0xff,0x00,0x00,0x01,0x00,0x00,0x00};
-const u_int32_t index_ring_capacity = 1024*1024*128;
+const u_int32_t index_ring_capacity = 1024*1024*32;
 // const u_int32_t storage_ring_capacity = 1024;
 // const u_int64_t truncate_interval = ((u_int64_t)1)<<32;
 // const u_int32_t pcap_header_len = 24;
@@ -24,7 +24,7 @@ u_int64_t index_block_size = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_capacity = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_list_len_each = 1024;
 
-u_int64_t data_block_cache_num = 8;
+u_int64_t data_block_cache_num = 16;
 u_int64_t index_buffer_cache_num = 8;
 u_int64_t index_block_cache_num = 4;
 u_int64_t delay_threshold = 1;

@@ -401,13 +401,13 @@ void Controller::init(InitData init_data){
 
     // this->bindCore(24);
 
-    // for(u_int32_t i=0;i<flowMetaEleLens.size();++i){
-    //     PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
-    //     this->indexRings->push_back(ir);
-    // }
+    for(u_int32_t i=0;i<init_data.nb_rx;++i){
+        PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
+        this->indexRings->push_back(ir);
+    }
 
-    PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
-    this->indexRings->push_back(ir);
+    // PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
+    // this->indexRings->push_back(ir);
 
     for (u_int32_t i=0; i<init_data.nb_rx; ++i){
         MemoryPool* mp = new MemoryPool(init_data.memory_pool_capacity_each, init_data.memory_pool_list_len_each);
@@ -527,10 +527,10 @@ void Controller::init(InitData init_data){
         IndexGenerator* ig;
         if (init_data.bind_core){
             // ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffers,(*(this->indexBuffers))[0]->getCacheCount(),i,init_data.bind_core,init_data.indexing_core_id_list[i]);
-            ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffer, i, init_data.bind_core, init_data.indexing_core_id_list[i]);
+            ig = new IndexGenerator((*(this->indexRings))[i],this->indexBuffer, i, init_data.bind_core, init_data.indexing_core_id_list[i]);
         }else{
             // ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffers,(*(this->indexBuffers))[0]->getCacheCount(),i);
-            ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffer, i);
+            ig = new IndexGenerator((*(this->indexRings))[i],this->indexBuffer, i);
         }
         this->indexGenerators.push_back(ig);
     }
@@ -543,9 +543,9 @@ void Controller::init(InitData init_data){
         DPDKReader* reader;
         if (init_data.bind_core){
             // reader = new DPDKReader(init_data.pcap_header_len,init_data.eth_header_len,dpdk,this->indexRings,0,i,init_data.file_capacity,buffer, init_data.bind_core, init_data.packet_core_id_list[i]);
-            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, this->dpdk, this->indexRings, this->dataBlockBuffer, this->dataWritePos, (*(this->indexMemoryPools))[i], 0, i, init_data.delay_threshold * init_data.data_block_size, init_data.bind_core, init_data.packet_core_id_list[i]);
+            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, init_data.data_block_size/init_data.nb_rx, this->dpdk, (*(this->indexRings))[i], this->dataBlockBuffer, this->dataWritePos, (*(this->indexMemoryPools))[i], 0, i, init_data.delay_threshold * init_data.data_block_size, init_data.bind_core, init_data.packet_core_id_list[i]);
         }else{
-            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, this->dpdk, this->indexRings, this->dataBlockBuffer, this->dataWritePos, (*(this->indexMemoryPools))[i], 0, i, init_data.delay_threshold * init_data.data_block_size);
+            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, init_data.data_block_size/init_data.nb_rx, this->dpdk, (*(this->indexRings))[i], this->dataBlockBuffer, this->dataWritePos, (*(this->indexMemoryPools))[i], 0, i, init_data.delay_threshold * init_data.data_block_size);
         }
         this->readers.push_back(reader);
     }
@@ -584,6 +584,12 @@ void Controller::bindCore(u_int32_t cpu){
     } else {
         printf("Controller warning: %lu failed to bind to cpu %d!\n",thread,cpu);
     }
+
+    // if (numa_available() != -1) {
+    //     // 绑定当前线程的内存分配策略到 node 0
+    //     numa_run_on_node(0);
+    //     numa_set_membind(numa_allocate_nodemask());
+    // }
 }
 
 void Controller::run(){

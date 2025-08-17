@@ -3,7 +3,8 @@
 #include <iostream>
 #include "../dpdk_lib/util.hpp"
 #include "../dpdk_lib/indexBuffer.hpp"
-#include "../dpdk_lib/pointerRingBuffer.hpp"
+// #include "../dpdk_lib/pointerRingBuffer.hpp"
+#include "../dpdk_lib/singleRingBuffer.hpp"
 
 class IndexGenerator{
     // shared memory

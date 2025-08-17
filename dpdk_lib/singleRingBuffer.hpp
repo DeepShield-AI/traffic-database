@@ -1,5 +1,5 @@
-#ifndef POINTERRINGBUFFER_HPP_
-#define POINTERRINGBUFFER_HPP_
+#ifndef SINGLERINGBUFFER_HPP_
+#define SINGLERINGBUFFER_HPP_
 #include <iostream>
 #include <unistd.h>
 #include <atomic>
@@ -13,15 +13,17 @@ private:
     const u_int32_t capacity_;
     // std::atomic_uint64_t writePos;
     // std::atomic_uint64_t readPos;
-    std::atomic_uint_fast64_t writePos;
-    std::atomic_uint_fast64_t readPos;
+    // std::atomic_uint_fast64_t writePos;
+    // std::atomic_uint_fast64_t readPos;
+    u_int64_t writePos;
+    u_int64_t readPos;
 
     void** pointers;
-    std::atomic_bool* signalBuffer_;
+    // std::atomic_bool* signalBuffer_;
     
     // std::atomic_bool has_begin;
-    std::atomic_uint32_t readThreadCount;
-    std::atomic_uint32_t writeThreadCount;
+    // std::atomic_uint32_t readThreadCount;
+    // std::atomic_uint32_t writeThreadCount;
 
     std::atomic_bool stop;
 
@@ -33,7 +35,7 @@ public:
         if(this->capacity_ & (this->capacity_ - 1)){
             printf("PointerRingBuffer error: capacity %u is not power of 2!\n",capacity);
             this->pointers = nullptr;
-            this->signalBuffer_ = nullptr;
+            // this->signalBuffer_ = nullptr;
             return;
         }
         this->pointers = new void*[this->capacity_];
@@ -45,24 +47,24 @@ public:
         for(u_int32_t i = 0;i<this->capacity_;++i){
             this->pointers[i] = nullptr;
         }
-        this->signalBuffer_ = new std::atomic_bool[this->capacity_];
-        for(u_int32_t i = 0;i<this->capacity_;++i){
-            this->signalBuffer_[i] = false;
-        }
+        // this->signalBuffer_ = new std::atomic_bool[this->capacity_];
+        // for(u_int32_t i = 0;i<this->capacity_;++i){
+        //     this->signalBuffer_[i] = false;
+        // }
         this->writePos = 0;
         this->readPos = 0;
         
-        this->readThreadCount = 0;
-        this->writeThreadCount = 0;
+        // this->readThreadCount = 0;
+        // this->writeThreadCount = 0;
         // this->has_begin = false;
         this->stop = false;
     }
     ~PointerRingBuffer(){
-        if(this->readThreadCount || this->writeThreadCount){
-            std::cout << "Pointer ring buffer warning: destroy while it is used by certain thread." <<std::endl;
-        }
+        // if(this->readThreadCount || this->writeThreadCount){
+        //     std::cout << "Pointer ring buffer warning: destroy while it is used by certain thread." <<std::endl;
+        // }
         delete this->pointers;
-        delete this->signalBuffer_;
+        // delete this->signalBuffer_;
     }
     bool put(void* data){
         if(this->pointers == nullptr){
@@ -70,15 +72,16 @@ public:
             return false;
         }
 
-        u_int64_t pos = this->writePos++;// notice writePos is an automic variable
+        u_int64_t pos = this->writePos;// notice writePos is an automic variable
         pos %= this->capacity_;
 
-        while(this->signalBuffer_[pos]){
+        while(this->writePos == this->capacity_ - 1 + this->readPos){
             printf("ring buffer wait\n");
         } // wait util not writed
 
         this->pointers[pos] = data;
-        this->signalBuffer_[pos] = true;
+        // this->signalBuffer_[pos] = true;
+        this->writePos ++;
 
         return true;
     }
@@ -88,11 +91,11 @@ public:
             return nullptr;
         }
         
-        u_int64_t pos = this->readPos++; // notice readPos is an automic variable
+        u_int64_t pos = this->readPos; // notice readPos is an automic variable
         pos %= this->capacity_;
         // printf("get at %llu.\n",pos);
 
-        while(!this->signalBuffer_[pos]){
+        while(this->writePos == this->readPos){
             if(this->stop){
                 return nullptr;
             }
@@ -103,7 +106,8 @@ public:
         // }
 
         void* data = this->pointers[pos];
-        this->signalBuffer_[pos] = false;
+        this->readPos ++;
+        // this->signalBuffer_[pos] = false;
         
         return data;
     }

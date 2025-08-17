@@ -3,6 +3,8 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <numa.h>
+#include <numaif.h>
 #include "dpdkReader.hpp"
 #include "indexGenerator.hpp"
 #include "indexPersister.hpp"

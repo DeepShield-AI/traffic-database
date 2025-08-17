@@ -96,7 +96,12 @@ void DPDKReader::readPacket(struct rte_mbuf *buf, u_int64_t ts, PacketMeta* meta
 
 u_int64_t DPDKReader::getOffset(PacketMeta& meta){
     u_int64_t total_len = sizeof(pcap_header) + meta.len;
-    u_int64_t _offset = this->diskWritePos->fetch_add(total_len);
+    u_int64_t _offset = this->writeOffset + this->writeCell * this->cell_size;
+    this->writeOffset += total_len;
+    if(this->writeOffset + sizeof(u_int64_t) > this->cell_size){
+        this->writeOffset += sizeof(u_int64_t);
+    }
+    // u_int64_t _offset = this->diskWritePos->fetch_add(total_len);
     _offset %= this->disk_size;
     return _offset;
 }
@@ -113,6 +118,67 @@ void DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts, u_int
     //     return std::numeric_limits<uint64_t>::max();
     // }
     // return (u_int32_t)(this->packetBuffer->getFileOffset() + this->packetBuffer->getOffset()) - meta.len - sizeof(pcap_header);
+    if(this->writeOffset > this->cell_size){
+        // printf("write offset: %lu\n",this->writeOffset);
+        u_int64_t tmp_cell = this->writeCell;
+        this->writeCell = this->diskWriteCell->fetch_add(1);
+        this->writeCell %= this->cell_num;
+        this->writeOffset %= this->cell_size;
+        u_int64_t basic_offset = _offset % this->cell_size;
+        u_int64_t tmp_len = this->cell_size - basic_offset - sizeof(u_int64_t);
+        u_int64_t new_offset = this->writeCell * this->cell_size;
+        // printf("a\n");
+        if(sizeof(pcap_header) > tmp_len){
+            // printf("a1\n");
+            if (tmp_len != 0){
+                while (!this->block_buffer->writeBlock((const char*)meta.header,tmp_len,_offset,this->thread_id,true,new_index,ts)){
+                    printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
+                }
+            }
+            // printf("a2\n");
+            u_int64_t next_pos = ((this->writeCell + this->cell_num - tmp_cell - 1) % this->cell_num) * this->cell_size;
+            while (!this->block_buffer->writeBlock((const char*)(&next_pos),sizeof(u_int64_t),_offset + tmp_len,this->thread_id,true,false,ts)){
+                printf("DPDK reader warning: write cell pointer to block buffer on %lu failed, retrying...\n", _offset);
+            }
+            // printf("a3\n");
+            if (tmp_len == 0){
+                while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),new_offset,this->thread_id,true,new_index,ts)){
+                    printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
+                }
+            }else{
+                while (!this->block_buffer->writeBlock((const char*)meta.header + tmp_len, sizeof(pcap_header) - tmp_len,new_offset,this->thread_id,true,false,ts)){
+                    printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
+                }
+            }
+            // printf("a4\n");
+            while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len, new_offset + sizeof(pcap_header) - tmp_len, this->thread_id, true, false, ts)){
+                printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset + sizeof(pcap_header));
+            }
+            // printf("a5\n");
+            return;
+        }
+        // printf("b\n");
+        while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,new_index,ts)){
+            printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
+        }
+        // printf("c, %lu\n",tmp_len - sizeof(pcap_header));
+        if (tmp_len > sizeof(pcap_header)){
+            while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, tmp_len - sizeof(pcap_header), _offset + sizeof(pcap_header), this->thread_id, true, false, ts)){
+                printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset + sizeof(pcap_header));
+            }
+        }
+        // printf("d\n");
+        u_int64_t next_pos = ((this->writeCell + this->cell_num - tmp_cell - 1) % this->cell_num) * this->cell_size;
+        while (!this->block_buffer->writeBlock((const char*)(&next_pos),sizeof(u_int64_t),_offset + tmp_len,this->thread_id,true,false,ts)){
+            printf("DPDK reader warning: write cell pointer to block buffer on %lu failed, retrying...\n", _offset);
+        }
+        // printf("e\n");
+        while (!this->block_buffer->writeBlock(meta.data + this->eth_header_len, meta.len + sizeof(pcap_header) - tmp_len, new_offset, this->thread_id, true, false, ts)){
+            printf("DPDK reader warning: write packet data to block buffer on %lu failed, retrying...\n", _offset + sizeof(pcap_header));
+        }
+        // printf("f\n");
+        return;
+    }
     while (!this->block_buffer->writeBlock((const char*)meta.header,sizeof(pcap_header),_offset,this->thread_id,true,new_index,ts)){
         printf("DPDK reader warning: write pcap header to block buffer on %lu failed, retrying...\n", _offset);
     }
@@ -214,6 +280,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     u_int32_t level = 0;
     Index* index = nullptr;
 
+    auto start = std::chrono::high_resolution_clock::now();
     index = new Index();
     // index->key = *(u_int32_t*)(meta.sourceAddress.c_str());
     // index->key = meta.sourceAddress;
@@ -221,10 +288,22 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->ts = ts;
     index->id = meta.sourceAddress.size() == 4? IndexType::SRCIP:IndexType::SRCIPv6;
     index->disk_block_id = value / this->block_size;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     // index->len = meta.sourceAddress.size();
     level = SkipList::randomLevel(meta.sourceAddress.size()*8);
     index->len = this->calIndexNodeLen(meta.sourceAddress.size(), level);
+
+    start = std::chrono::high_resolution_clock::now();
+    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+    end = std::chrono::high_resolution_clock::now();
+    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     if(index->id == IndexType::SRCIP){
         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
         node->init(*(u_int32_t*)(meta.sourceAddress.c_str()), value, level);
@@ -232,10 +311,17 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
         node->init(*(IPv6Address*)(meta.sourceAddress.c_str()), value, level);
     }
+
+    start = std::chrono::high_resolution_clock::now();
+    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
     
-    if(!(*(this->indexRings))[0]->put((void*)index)){
+    if(!this->indexRing->put((void*)index)){
         return false;
     }
+
+    end = std::chrono::high_resolution_clock::now();
+    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
 
     // index = new Index();
     // // index->key =  *(u_int32_t*)(meta.destinationAddress.c_str());
@@ -244,14 +330,27 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     // index->ts = ts;
     // index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
     // index->len = meta.destinationAddress.size();
+    start = std::chrono::high_resolution_clock::now();
 
     index = new Index();
     index->ts = ts;
     index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
     index->disk_block_id = value / this->block_size;
+
+    end = std::chrono::high_resolution_clock::now();
+    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     level = SkipList::randomLevel(meta.destinationAddress.size()*8);
     index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
+
+    start = std::chrono::high_resolution_clock::now();
+    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+    end = std::chrono::high_resolution_clock::now();
+    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     if(index->id == IndexType::DSTIP){
         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
         node->init(*(u_int32_t*)(meta.destinationAddress.c_str()), value, level);
@@ -259,9 +358,18 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
         node->init(*(IPv6Address*)(meta.destinationAddress.c_str()), value, level);
     }
-    if(!(*(this->indexRings))[0]->put((void*)index)){
+
+    start = std::chrono::high_resolution_clock::now();
+    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+    if(!this->indexRing->put((void*)index)){
         return false;
     }
+
+    end = std::chrono::high_resolution_clock::now();
+    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    start = std::chrono::high_resolution_clock::now();
 
     index = new Index();
     // index->key = meta.sourcePort;
@@ -270,15 +378,35 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->ts = ts;
     index->id = IndexType::SRCPORT;
     index->disk_block_id = value / this->block_size;
-    // index->len = sizeof(meta.sourcePort);
+    
+    end = std::chrono::high_resolution_clock::now();
+    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     level = SkipList::randomLevel(sizeof(meta.sourcePort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
+
+    start = std::chrono::high_resolution_clock::now();
+    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+    end = std::chrono::high_resolution_clock::now();
+    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.sourcePort, value, level);
-    if(!(*(this->indexRings))[0]->put((void*)index)){
+
+    start = std::chrono::high_resolution_clock::now();
+    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+    if(!this->indexRing->put((void*)index)){
         return false;
     }
+
+    end = std::chrono::high_resolution_clock::now();
+    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    start = std::chrono::high_resolution_clock::now();
 
     index = new Index();
     // index->key = meta.destinationPort;
@@ -291,14 +419,35 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->ts = ts;
     index->id = IndexType::DSTPORT;
     index->disk_block_id = value / this->block_size;
+
+    end = std::chrono::high_resolution_clock::now();
+    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
+
+    start = std::chrono::high_resolution_clock::now();
+    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+    end = std::chrono::high_resolution_clock::now();
+    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.destinationPort, value, level);
-    if(!(*(this->indexRings))[0]->put((void*)index)){
+
+    start = std::chrono::high_resolution_clock::now();
+    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+    if(!this->indexRing->put((void*)index)){
         return false;
     }
+
+    end = std::chrono::high_resolution_clock::now();
+    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    start = std::chrono::high_resolution_clock::now();
 
     if (meta.sourceAddress.size() == 4){
         index = new Index();
@@ -314,15 +463,33 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index->ts = ts;
         index->id = IndexType::QUARTURPLEIPv4;
         index->disk_block_id = value / this->block_size;
-        // index->len = sizeof(ipv4Turple);
+
+        end = std::chrono::high_resolution_clock::now();
+        this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
         level = SkipList::randomLevel(sizeof(ipv4Turple)*8);
         index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
+
+        start = std::chrono::high_resolution_clock::now();
+        this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+        end = std::chrono::high_resolution_clock::now();
+        this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
         SkipListNode<QuarTurpleIPv4,u_int64_t>* node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)index->node;
         node->init(ipv4Turple, value, level);
-        if(!(*(this->indexRings))[0]->put((void*)index)){
+
+        start = std::chrono::high_resolution_clock::now();
+        this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+        if(!this->indexRing->put((void*)index)){
             return false;
         }
+
+        end = std::chrono::high_resolution_clock::now();
+        this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }else{
         index = new Index();
         // index->key = meta.destinationPort;
@@ -337,15 +504,33 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index->ts = ts;
         index->id = IndexType::QUARTURPLEIPv6;
         index->disk_block_id = value / this->block_size;
+
+        end = std::chrono::high_resolution_clock::now();
+        this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         // index->len = sizeof(ipv6Turple);
         level = SkipList::randomLevel(sizeof(ipv6Turple)*8);
         index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);
+
+        start = std::chrono::high_resolution_clock::now();
+        this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+        end = std::chrono::high_resolution_clock::now();
+        this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
         SkipListNode<QuarTurpleIPv6,u_int64_t>* node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)index->node;
         node->init(ipv6Turple, value, level);
-        if(!(*(this->indexRings))[0]->put((void*)index)){
+
+        start = std::chrono::high_resolution_clock::now();
+        this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+        if(!this->indexRing->put((void*)index)){
             return false;
         }
+
+        end = std::chrono::high_resolution_clock::now();
+        this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
     return true;
 }
@@ -418,6 +603,8 @@ int DPDKReader::run(){
     u_int64_t index_time = 0;
     u_int64_t delete_time = 0;
     u_int64_t total_time = 0;
+
+    this->writeCell = this->diskWriteCell->fetch_add(1);
     
     while(true){
         auto wait_start = std::chrono::high_resolution_clock::now();
@@ -541,6 +728,7 @@ int DPDKReader::run(){
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps.\n",this->duration_time,pkt_count,this->byteLen,index_count,(double)this->byteLen/(double)this->duration_time/125.0);
     printf("DPDK Reader log: wait time %lu us, read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",wait_time,read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
+    printf("DPDK Reader log: creat time %lu us, cal time %lu us, allocate time %lu us, init time %lu us ,put time %lu us\n",this->create_time,this->cal_time,this->allocate_time,this->init_time,this->put_time);
     return 0;
 }
 
