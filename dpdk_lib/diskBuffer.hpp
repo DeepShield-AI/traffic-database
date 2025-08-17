@@ -58,12 +58,19 @@ public:
             printf("Disk buffer error: index %lu out of bounds!\n", index);
         }
     }
-    void setBloomFilterCol(u_int64_t disk_block_id, u_int64_t col){
+    void setBloomFilterWritingCol(u_int64_t disk_block_id, u_int64_t col){
         if (disk_block_id >= block_num){
             printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
             return;
         }
         this->disk_metas[disk_block_id].bloomFilterMeta.setWritingCol(col);
+    }
+    void setBloomFilterReadingCol(u_int64_t disk_block_id, u_int64_t col){
+        if (disk_block_id >= block_num){
+            printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
+            return;
+        }
+        this->disk_metas[disk_block_id].bloomFilterMeta.setReadingCol(col);
     }
     void clearPacketCount(u_int64_t disk_block_id){
         if (disk_block_id < block_num) {
@@ -87,6 +94,27 @@ public:
         } else {
             printf("Disk buffer error: disk_block_id %lu out of bounds!\n", disk_block_id);
         }
+    }
+    bool checkKey(u_int64_t disk_block_id, void* key, IndexType type){
+        if (disk_block_id >= block_num) {
+            printf("Disk buffer error: checking disk_block_id %lu out of bounds!\n", disk_block_id);
+            return false;
+        }
+        // if (this->disk_metas[disk_block_id].packet_count == 0){
+        //     return false;
+        // }
+        printf("check index type %u in disk id %lu\n",type,disk_block_id);
+        if (type == IndexType::SRCIP || type == IndexType::DSTIP){
+            return this->disk_metas[disk_block_id].bloomFilterMeta.getIPv4(*(u_int32_t*)key,type);
+        }
+        if (type == IndexType::SRCPORT || type == IndexType::DSTPORT){
+            return this->disk_metas[disk_block_id].bloomFilterMeta.getPort(*(u_int16_t*)key,type);
+        }
+        if (type == IndexType::SRCIPv6 || type == IndexType::DSTIPv6){
+            return this->disk_metas[disk_block_id].bloomFilterMeta.getIPv6(*(IPv6Address*)key,type);
+        }
+        printf("Disk buffer error: checking with error type %u!\n",type);
+        return false;
     }
 };
 

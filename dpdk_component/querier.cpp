@@ -18,15 +18,15 @@ const char leftBracket[] = "({[\"";
 const char rightBracket[] = ")}]\"";
 const std::string opt[] = {"==", "!=", ">=", "<=", "contains", ">", "<"};
 
-u_int32_t blockSearch(std::vector<StorageMeta>* storageMetas, u_int64_t time, u_int32_t index_type){
-    for(int i=0;i<storageMetas[index_type].size();++i){
-        if((*storageMetas)[i].time_end < time){
-            continue;
-        }
-        return i;
-    }
-    return storageMetas->size();
-}
+// u_int32_t blockSearch(std::vector<StorageMeta>* storageMetas, u_int64_t time, u_int32_t index_type){
+//     for(int i=0;i<storageMetas[index_type].size();++i){
+//         if((*storageMetas)[i].time_end < time){
+//             continue;
+//         }
+//         return i;
+//     }
+//     return storageMetas->size();
+// }
 
 template <class KeyType>
 std::list<u_int64_t> binarySearch(char* index, u_int32_t index_len, KeyType key){
@@ -537,95 +537,102 @@ std::list<std::string> Querier::decomposeExpression(){
     return this->tree.getExpList();
 }
 std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
-    std::ifstream indexFile(index_name[key.cachePos],std::ios::binary);
+    // std::ifstream indexFile(index_name[key.cachePos],std::ios::binary);
+    if(this->diskBuffer->checkKey(0,(void*)key.key.c_str(),(IndexType)key.cachePos)){
+        printf("Contain.\n");
+    }else{
+        printf("Not contain.\n");
+    }
     std::list<Answer> ret = std::list<Answer>();
-    if(!indexFile.is_open()){
-        std::cerr << "Querier error: getPointerByFlowMetaIndex to non-exist file name " << index_name[key.cachePos] << "!" << std::endl;
-        return ret;
-    }
-
-    u_int32_t first_id = blockSearch(this->storageMetas,this->startTime,key.cachePos);
-
-    for(u_int32_t i=first_id;i<this->storageMetas->size();++i){
-
-        if((*(this->storageMetas))[i].time_start > this->endTime){
-            continue;
-        }
-
-        indexFile.seekg(this->storageMetas[i][key.cachePos].index_offset,std::ios::beg);
-        u_int32_t len = this->storageMetas[i][key.cachePos].index_end - this->storageMetas[i][key.cachePos].index_offset;
-        char* index = new char[len];
-        indexFile.read(index,len);
-        std::list<u_int64_t> tmp;
-        if(key.key.size()==1){
-            u_int8_t real_key = *(u_int8_t*)(&key.key[0]);
-            tmp = binarySearch(index,len,real_key);
-        }else if(key.key.size()==2){
-            u_int16_t real_key = *(u_int16_t*)(&key.key[0]);
-            tmp = binarySearch(index,len,real_key);
-        }else if(key.key.size()==4){
-            u_int32_t real_key = *(u_int32_t*)(&key.key[0]);
-            tmp = binarySearch(index,len,real_key);
-        }else if(key.key.size()==8){
-            u_int64_t real_key = *(u_int64_t*)(&key.key[0]);
-            tmp = binarySearch(index,len,real_key);
-        }else{
-            std::cerr << "Querier error: getPointerByFlowMetaIndex with error key size " << key.key.size() << "!" << std::endl;
-            tmp = std::list<u_int64_t>();
-        }
-        ret.push_back(Answer{.block_id = i, .pointers = tmp});
-        delete[] index;
-        // std::cout << "block id: " << i << ", list size: " << tmp.size() << std::endl;
-    }
     return ret;
+    // if(!indexFile.is_open()){
+    //     std::cerr << "Querier error: getPointerByFlowMetaIndex to non-exist file name " << index_name[key.cachePos] << "!" << std::endl;
+    //     return ret;
+    // }
+
+    // u_int32_t first_id = blockSearch(this->storageMetas,this->startTime,key.cachePos);
+
+    // for(u_int32_t i=first_id;i<this->storageMetas->size();++i){
+
+    //     if((*(this->storageMetas))[i].time_start > this->endTime){
+    //         continue;
+    //     }
+
+    //     indexFile.seekg(this->storageMetas[i][key.cachePos].index_offset,std::ios::beg);
+    //     u_int32_t len = this->storageMetas[i][key.cachePos].index_end - this->storageMetas[i][key.cachePos].index_offset;
+    //     char* index = new char[len];
+    //     indexFile.read(index,len);
+    //     std::list<u_int64_t> tmp;
+    //     if(key.key.size()==1){
+    //         u_int8_t real_key = *(u_int8_t*)(&key.key[0]);
+    //         tmp = binarySearch(index,len,real_key);
+    //     }else if(key.key.size()==2){
+    //         u_int16_t real_key = *(u_int16_t*)(&key.key[0]);
+    //         tmp = binarySearch(index,len,real_key);
+    //     }else if(key.key.size()==4){
+    //         u_int32_t real_key = *(u_int32_t*)(&key.key[0]);
+    //         tmp = binarySearch(index,len,real_key);
+    //     }else if(key.key.size()==8){
+    //         u_int64_t real_key = *(u_int64_t*)(&key.key[0]);
+    //         tmp = binarySearch(index,len,real_key);
+    //     }else{
+    //         std::cerr << "Querier error: getPointerByFlowMetaIndex with error key size " << key.key.size() << "!" << std::endl;
+    //         tmp = std::list<u_int64_t>();
+    //     }
+    //     ret.push_back(Answer{.block_id = i, .pointers = tmp});
+    //     delete[] index;
+    //     // std::cout << "block id: " << i << ", list size: " << tmp.size() << std::endl;
+    // }
+    // return ret;
     // return (*(this->flowMetaIndexCaches))[key.cachePos]->findByKey(key.key);
 }
 std::list<Answer> Querier::getPointerByFlowMetaRange(AtomKey startKey,AtomKey endKey){
-    std::ifstream indexFile(index_name[startKey.cachePos],std::ios::binary);
+    // std::ifstream indexFile(index_name[startKey.cachePos],std::ios::binary);
     std::list<Answer> ret = std::list<Answer>();
-    if(!indexFile.is_open()){
-        std::cerr << "Querier error: getPointerByFlowMetaIndexRange to non-exist file name " << index_name[startKey.cachePos] << "!" << std::endl;
-        return ret;
-    }
-
-    u_int32_t first_id = blockSearch(this->storageMetas,this->startTime,startKey.cachePos);
-
-    for(u_int32_t i=0;i<this->storageMetas->size();++i){
-
-        if((*(this->storageMetas))[i].time_start > this->endTime){
-            continue;
-        }
-
-        indexFile.seekg(this->storageMetas[i][startKey.cachePos].index_offset,std::ios::beg);
-        u_int32_t len = this->storageMetas[i][startKey.cachePos].index_end - this->storageMetas[i][startKey.cachePos].index_offset;
-        char* index = new char[len];
-        indexFile.read(index,len);
-        std::list<u_int64_t> tmp;
-        if(startKey.key.size()==1 && endKey.key.size()==1){
-            u_int8_t real_s_key = *(u_int8_t*)(&startKey.key[0]);
-            u_int8_t real_e_key = *(u_int8_t*)(&endKey.key[0]);
-            tmp = binarySearchRange(index,len,real_s_key,real_e_key);
-        }else if(startKey.key.size()==2 && endKey.key.size()==2){
-            u_int16_t real_s_key = *(u_int16_t*)(&startKey.key[0]);
-            u_int16_t real_e_key = *(u_int16_t*)(&endKey.key[0]);
-            tmp = binarySearchRange(index,len,real_s_key,real_e_key);
-        }else if(startKey.key.size()==4 && endKey.key.size()==4){
-            u_int32_t real_s_key = *(u_int32_t*)(&startKey.key[0]);
-            u_int32_t real_e_key = *(u_int32_t*)(&endKey.key[0]);
-            tmp = binarySearchRange(index,len,real_s_key,real_e_key);
-        }else if(startKey.key.size()==8 && endKey.key.size()==8){
-            u_int64_t real_s_key = *(u_int64_t*)(&startKey.key[0]);
-            u_int64_t real_e_key = *(u_int64_t*)(&endKey.key[0]);
-            tmp = binarySearchRange(index,len,real_s_key,real_e_key);
-        }else{
-            std::cerr << "Querier error: getPointerByFlowMetaIndexRange with error key size " << startKey.key.size() << " & " <<endKey.key.size() << "!" << std::endl;
-            tmp = std::list<u_int64_t>();
-        }
-        ret.push_back(Answer{.block_id = i, .pointers = tmp});
-        delete[] index;
-        // std::cout << "block id: " << i << ", list size: " << tmp.size() << std::endl;
-    }
     return ret;
+    // if(!indexFile.is_open()){
+    //     std::cerr << "Querier error: getPointerByFlowMetaIndexRange to non-exist file name " << index_name[startKey.cachePos] << "!" << std::endl;
+    //     return ret;
+    // }
+
+    // u_int32_t first_id = blockSearch(this->storageMetas,this->startTime,startKey.cachePos);
+
+    // for(u_int32_t i=0;i<this->storageMetas->size();++i){
+
+    //     if((*(this->storageMetas))[i].time_start > this->endTime){
+    //         continue;
+    //     }
+
+    //     indexFile.seekg(this->storageMetas[i][startKey.cachePos].index_offset,std::ios::beg);
+    //     u_int32_t len = this->storageMetas[i][startKey.cachePos].index_end - this->storageMetas[i][startKey.cachePos].index_offset;
+    //     char* index = new char[len];
+    //     indexFile.read(index,len);
+    //     std::list<u_int64_t> tmp;
+    //     if(startKey.key.size()==1 && endKey.key.size()==1){
+    //         u_int8_t real_s_key = *(u_int8_t*)(&startKey.key[0]);
+    //         u_int8_t real_e_key = *(u_int8_t*)(&endKey.key[0]);
+    //         tmp = binarySearchRange(index,len,real_s_key,real_e_key);
+    //     }else if(startKey.key.size()==2 && endKey.key.size()==2){
+    //         u_int16_t real_s_key = *(u_int16_t*)(&startKey.key[0]);
+    //         u_int16_t real_e_key = *(u_int16_t*)(&endKey.key[0]);
+    //         tmp = binarySearchRange(index,len,real_s_key,real_e_key);
+    //     }else if(startKey.key.size()==4 && endKey.key.size()==4){
+    //         u_int32_t real_s_key = *(u_int32_t*)(&startKey.key[0]);
+    //         u_int32_t real_e_key = *(u_int32_t*)(&endKey.key[0]);
+    //         tmp = binarySearchRange(index,len,real_s_key,real_e_key);
+    //     }else if(startKey.key.size()==8 && endKey.key.size()==8){
+    //         u_int64_t real_s_key = *(u_int64_t*)(&startKey.key[0]);
+    //         u_int64_t real_e_key = *(u_int64_t*)(&endKey.key[0]);
+    //         tmp = binarySearchRange(index,len,real_s_key,real_e_key);
+    //     }else{
+    //         std::cerr << "Querier error: getPointerByFlowMetaIndexRange with error key size " << startKey.key.size() << " & " <<endKey.key.size() << "!" << std::endl;
+    //         tmp = std::list<u_int64_t>();
+    //     }
+    //     ret.push_back(Answer{.block_id = i, .pointers = tmp});
+    //     delete[] index;
+    //     // std::cout << "block id: " << i << ", list size: " << tmp.size() << std::endl;
+    // }
+    // return ret;
 }
 std::list<Answer> Querier::searchExpression(std::list<std::string> exp_list){
     std::stack<std::list<Answer>> before_lists = std::stack<std::list<Answer>>();
@@ -785,8 +792,8 @@ void Querier::outputPacketToFile(std::list<Answer> flowHeadList){
     //     std::cerr << "Querier error: outputPacketToFile to non-exist file name " << this->data_name << "!" << std::endl;
     //     return;
     // }
-    outputFile.write(this->pcapHeader.c_str(),this->pcapHeader.size());
-    printf("size:%u.\n",this->pcapHeader.size());
+    // outputFile.write(this->pcapHeader.c_str(),this->pcapHeader.size());
+    // printf("size:%u.\n",this->pcapHeader.size());
 
     // u_int64_t pointerSize = this->getFileSize(pointerFd);
     // u_int64_t dataSize = this->getFileSize(dataFd);
@@ -826,7 +833,7 @@ void Querier::outputPacketToFile(std::list<Answer> flowHeadList){
             u_int16_t data_id = value >> ((sizeof(value) - sizeof(data_id))*8);
             int in = 0;
             for(auto id:data_id_list){
-                if(data_id == data_id){
+                if(id == data_id){
                     break;
                 }
                 in++;
@@ -910,6 +917,7 @@ bool Querier::runUnit(){
     // std::cout << "Querier log: runUnit." <<std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
+    this->packet_count = 0;
     
     std::list<std::string> exp_list = this->decomposeExpression();
     // std::cout << this->expression <<std::endl;
@@ -919,12 +927,12 @@ bool Querier::runUnit(){
     }
     std::list<Answer> flow_header_list = this->searchExpression(exp_list);
     
-    this->outputPacketToFile(flow_header_list);
+    // this->outputPacketToFile(flow_header_list);
     auto end = std::chrono::high_resolution_clock::now();
 
     u_int64_t duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-    printf("Querier log: query done, find %llu packets with %llu us.\n",this->packet_count,duration);
+    printf("Querier log: query done, find %lu packets with %llu us.\n",this->packet_count,duration);
     return true;
 }
 
@@ -946,20 +954,20 @@ void Querier::run(){
     std::string end_time = std::string();
     while(true){
         // std::getline(std::cin, filename);
-        filename = "./data/output/pcap.pcap"; // just as test
-        if(filename == "q"){
-            break;
-        }
+        // filename = "./data/output/pcap.pcap"; // just as test
+        // if(filename == "q"){
+        //     break;
+        // }
         // std::getline(std::cin, start_time);
-        std::cout << start_time <<std::endl;
-        if(start_time == "q"){
-            break;
-        }
+        // std::cout << start_time <<std::endl;
+        // if(start_time == "q"){
+        //     break;
+        // }
         // std::getline(std::cin, end_time);
-        std::cout << end_time <<std::endl;
-        if(end_time == "q"){
-            break;
-        }
+        // std::cout << end_time <<std::endl;
+        // if(end_time == "q"){
+        //     break;
+        // }
         std::getline(std::cin, expression);
         std::cout << expression <<std::endl;
         if(expression == "q"){

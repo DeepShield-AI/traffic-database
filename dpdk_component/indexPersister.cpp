@@ -93,7 +93,7 @@ void IndexPersister::persistMeta(IndexBufferMeta* meta){
         current_offset = new_offset;
     }
 
-    this->diskBuffer->setBloomFilterCol(meta->disk_block_id, meta->bloomFilterMeta.getWritingCol());
+    this->diskBuffer->setBloomFilterReadingCol(meta->disk_block_id, meta->bloomFilterMeta.getWritingCol());
 }
 void IndexPersister::clearMeta(IndexBufferMeta* meta){
     this->diskBuffer->clearPacketCount(meta->disk_block_id);

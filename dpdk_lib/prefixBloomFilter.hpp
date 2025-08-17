@@ -45,9 +45,9 @@ private:
         }
         return true;
     }
-    bool getBloom(const std::string& prefix, u_int64_t offset, u_int8_t byte) const {
+    bool getBloom(const std::string& prefix, u_int64_t offset, u_int8_t byte, u_int64_t bloom_len) const {
         for (size_t i = 0; i < this->k; ++i){
-            size_t hash_value = hashFunction(prefix, i);
+            size_t hash_value = hashFunction(prefix, i) % bloom_len;
             u_int64_t bit_pos = byte * SLICE_VALUE_COUNT + hash_value;
 
             if (!this->bitmap->get(bit_pos + offset, this->reading_col)){
@@ -105,17 +105,20 @@ private:
         if (!this->bitmap->get(bit_pos + offset, this->reading_col)){
             return false;
         }
+        printf("check a\n");
         bit_pos = ((ip >> (8 * (sizeof(ip) - 3))) & 0xFF * SLICE_VALUE_COUNT) + ((ip >> (8 * (sizeof(ip) - 4))) & 0xFF);
-        if (!this->bitmap->get(bit_pos + offset, this->reading_col)){
+        if (!this->bitmap->get(bit_pos + offset +SLICE_VALUE_COUNT * SLICE_VALUE_COUNT, this->reading_col)){
             return false;
         }
+        printf("check b\n");
         for (int i = sizeof(ip) - 3; i >= 0; --i) {
             uint8_t byte = (ip >> (8 * i)) & 0xFF;
             u_int32_t prefix = ip >> (8 * (i + 1));
             std::string prefix_str = std::string((char*)&prefix, sizeof(ip));
-            if (!this->getBloom(prefix_str, offset + SLICE_VALUE_COUNT * SLICE_VALUE_COUNT * 2 + SLICE_VALUE_COUNT * IPV4_BLOOM_LEN * (sizeof(ip) - i - 3), byte)){
+            if (!this->getBloom(prefix_str, offset + SLICE_VALUE_COUNT * SLICE_VALUE_COUNT * 2 + SLICE_VALUE_COUNT * IPV4_BLOOM_LEN * (sizeof(ip) - i - 3), byte, IPV4_BLOOM_LEN)){
                 return false;
             }
+            printf("check %u\n",i);
         }
         return true;
     }
@@ -128,7 +131,7 @@ private:
             uint8_t byte = ((ip >> (8 * i))).low & 0xFF;
             IPv6Address prefix = ip >> (8 * (i + 1));
             std::string prefix_str = std::string((char*)&prefix, sizeof(ip));
-            if (!this->getBloom(prefix_str, offset + SLICE_VALUE_COUNT * SLICE_VALUE_COUNT + SLICE_VALUE_COUNT * IPV4_BLOOM_LEN * (sizeof(ip) - i - 3), byte)){
+            if (!this->getBloom(prefix_str, offset + SLICE_VALUE_COUNT * SLICE_VALUE_COUNT + SLICE_VALUE_COUNT * IPV4_BLOOM_LEN * (sizeof(ip) - i - 3), byte, IPV6_BLOOM_LEN)){
                 return false;
             }
         }
@@ -240,6 +243,7 @@ public:
             printf("PrefixBloomFilter error: bitmap is not initialized while getPort!\n");
             return false;
         }
+        printf("check port %u\n",port);
         if (type == IndexType::SRCPORT){
             return this->bitmap->get((u_int64_t)port, this->reading_col);
         }
@@ -254,6 +258,7 @@ public:
             printf("PrefixBloomFilter error: bitmap is not initialized while getIPv4!\n");
             return false;
         }
+        printf("check ip %u.%u.%u.%u\n",(ip >> 24),(ip>>16)&0xff,(ip>>8)&0xff,ip&0xff);
         if (type == IndexType::SRCIP){
             return this->getIPv4(ip, (u_int64_t)PORT_BIT_LEN * 2);
         }

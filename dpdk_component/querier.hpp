@@ -9,6 +9,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include "../dpdk_lib/header.hpp"
+#include "../dpdk_lib/util.hpp"
+#include "../dpdk_lib/diskBuffer.hpp"
 // #include "../lib/shareBuffer.hpp"
 // #include "../lib/arrayList.hpp"
 // #include "storage.hpp"
@@ -55,7 +57,7 @@ public:
 class Querier{
     std::string expression;
     std::string outputFilename;
-    std::string pcapHeader;
+    // std::string pcapHeader;
 
     u_int64_t startTime;
     u_int64_t endTime;
@@ -78,6 +80,8 @@ class Querier{
     
     QueryTree tree;
 
+    DiskBuffer* diskBuffer;
+
     void intersect(std::list<u_int64_t>& la, std::list<u_int64_t>& lb);
     void join(std::list<u_int64_t>& la, std::list<u_int64_t>& lb);
     void intersect(std::list<Answer>& la, std::list<Answer>& lb);
@@ -93,15 +97,15 @@ class Querier{
     void outputPacketToFile(std::list<Answer> flowHeadList);
     bool runUnit();
 public:
-    Querier(std::vector<StorageMeta>* storageMetas, std::string pcapHeader){
+    Querier(DiskBuffer* diskBuffer):diskBuffer(diskBuffer){
         // std::cout << "Querier construct." <<std::endl;
         // this->packetBuffer = packetBuffer;
         // this->packetPointer = packetPointer;
         // this->flowMetaIndexCaches = flowMetaIndexCaches;
         this->expression = std::string();
         this->outputFilename = std::string();
-        this->pcapHeader = pcapHeader;
-        this->storageMetas = storageMetas;
+        // this->pcapHeader = pcapHeader;
+        // this->storageMetas = storageMetas;
         this->tree = QueryTree();
         // std::cout << "Querier construct end." <<std::endl;
     }

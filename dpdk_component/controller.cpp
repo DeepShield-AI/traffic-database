@@ -72,9 +72,9 @@ void Controller::threadsRun(){
     // t.join();
 }
 
-// void Controller::queryThreadRun(){
-//     this->querierThread = new std::thread(&Querier::run,this->querier);
-// }
+void Controller::queryThreadRun(){
+    this->querierThread = new std::thread(&Querier::run,this->querier);
+}
 
 void Controller::threadsStop(){
     for(auto r:this->readers){
@@ -343,12 +343,12 @@ void Controller::clear(){
     //     delete this->indexBuffers;
     //     this->indexBuffers = nullptr;
     // }
-    // if(this->querier!=nullptr){
-    //     delete this->querier;
-    // }
-    // if(this->querierThread!=nullptr){
-    //     delete this->querierThread;
-    // }
+    if(this->querier!=nullptr){
+        delete this->querier;
+    }
+    if(this->querierThread!=nullptr){
+        delete this->querierThread;
+    }
 }
 
 void Controller::init(InitData init_data){
@@ -560,7 +560,7 @@ void Controller::init(InitData init_data){
 
     // this->pcapHeader = init_data.pcap_header;
 
-    // this->querier = new Querier(this->storageMetas,init_data.pcap_header);
+    this->querier = new Querier(this->diskMeta);
 }
 
 void Controller::bindCore(u_int32_t cpu){
@@ -616,6 +616,10 @@ void Controller::run(){
 
     std::cin>>stop;
     
-    // this->querierThread->join();
+    
     this->threadsStop();
+
+    this->queryThreadRun();
+
+    this->querierThread->join();
 }

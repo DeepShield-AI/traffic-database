@@ -13,7 +13,7 @@
 
 // #include "storage.hpp"
 // #include "truncateChecker.hpp"
-// #include "querier.hpp"
+#include "querier.hpp"
 // #include "directStorage.hpp"
 // #include "indexStorage.hpp"
 
@@ -139,11 +139,11 @@ private:
     // std::vector<DirectStorage*> directStorages;
     // std::vector<std::thread*> directStorageThreads;
 
-    // Querier* querier;
-    // std::thread* querierThread;
+    Querier* querier;
+    std::thread* querierThread;
 
     void threadsRun();
-    // void queryThreadRun();
+    void queryThreadRun();
     void threadsStop();
     void clear();
 
@@ -190,8 +190,8 @@ public:
         // this->checker = nullptr;
         // this->storageThread = nullptr;
         // this->checkThread = nullptr;
-        // this->querier = nullptr;
-        // this->querierThread = nullptr;
+        this->querier = nullptr;
+        this->querierThread = nullptr;
         // this->directStorages = std::vector<DirectStorage*>();
         // this->directStorageThreads = std::vector<std::thread*>();
         // this->indexStorages = std::vector<IndexStorage*>();

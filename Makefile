@@ -10,7 +10,7 @@ TARGET = dpdkControllerTest
 TEST_SRCS = dpdkControllerTest.cpp
 # COMPONENT_SRCS = controller.cpp dpdkReader.cpp indexGenerator.cpp storage.cpp truncateChecker.cpp querier.cpp directStorage.cpp
 # COMPONENT_SRCS = controller.cpp dpdkReader.cpp directStorage.cpp indexGenerator.cpp indexStorage.cpp 
-COMPONENT_SRCS = controller.cpp dpdkReader.cpp diskManager.cpp indexGenerator.cpp indexPersister.cpp memoryManager.cpp 
+COMPONENT_SRCS = controller.cpp dpdkReader.cpp diskManager.cpp indexGenerator.cpp indexPersister.cpp memoryManager.cpp querier.cpp
 SRCS = $(addprefix $(TEST_PATH), $(TEST_SRCS)) $(addprefix $(COMPONENT_PATH), $(COMPONENT_SRCS))
 # TEST_OBJS = $(TEST_SRCS:.cpp=.o)
 # COMPONENT_OBJS = $(COMPONENT_SRCS:.cpp=.o)

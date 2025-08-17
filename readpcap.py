@@ -18,7 +18,7 @@ def read_pcap(file_path):
 
         endian = '<'
         count = 0
-        f.read(1024*1024*256)
+        
         # 逐个读取数据包
         while True:
             count += 1
