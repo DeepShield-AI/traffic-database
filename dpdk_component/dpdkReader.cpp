@@ -280,7 +280,6 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     u_int32_t level = 0;
     Index* index = nullptr;
 
-    auto start = std::chrono::high_resolution_clock::now();
     index = new Index();
     // index->key = *(u_int32_t*)(meta.sourceAddress.c_str());
     // index->key = meta.sourceAddress;
@@ -289,20 +288,11 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->id = meta.sourceAddress.size() == 4? IndexType::SRCIP:IndexType::SRCIPv6;
     index->disk_block_id = value / this->block_size;
 
-    auto end = std::chrono::high_resolution_clock::now();
-    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
     // index->len = meta.sourceAddress.size();
     level = SkipList::randomLevel(meta.sourceAddress.size()*8);
     index->len = this->calIndexNodeLen(meta.sourceAddress.size(), level);
 
-    start = std::chrono::high_resolution_clock::now();
-    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-    end = std::chrono::high_resolution_clock::now();
-    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     if(index->id == IndexType::SRCIP){
         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
@@ -311,16 +301,10 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
         node->init(*(IPv6Address*)(meta.sourceAddress.c_str()), value, level);
     }
-
-    start = std::chrono::high_resolution_clock::now();
-    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
     
     if(!this->indexRing->put((void*)index)){
         return false;
     }
-
-    end = std::chrono::high_resolution_clock::now();
-    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 
     // index = new Index();
@@ -330,26 +314,16 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     // index->ts = ts;
     // index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
     // index->len = meta.destinationAddress.size();
-    start = std::chrono::high_resolution_clock::now();
 
     index = new Index();
     index->ts = ts;
     index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
     index->disk_block_id = value / this->block_size;
 
-    end = std::chrono::high_resolution_clock::now();
-    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
     level = SkipList::randomLevel(meta.destinationAddress.size()*8);
     index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
 
-    start = std::chrono::high_resolution_clock::now();
-    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-    end = std::chrono::high_resolution_clock::now();
-    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     if(index->id == IndexType::DSTIP){
         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
@@ -359,17 +333,9 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         node->init(*(IPv6Address*)(meta.destinationAddress.c_str()), value, level);
     }
 
-    start = std::chrono::high_resolution_clock::now();
-    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     if(!this->indexRing->put((void*)index)){
         return false;
     }
-
-    end = std::chrono::high_resolution_clock::now();
-    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-    start = std::chrono::high_resolution_clock::now();
 
     index = new Index();
     // index->key = meta.sourcePort;
@@ -378,35 +344,18 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->ts = ts;
     index->id = IndexType::SRCPORT;
     index->disk_block_id = value / this->block_size;
-    
-    end = std::chrono::high_resolution_clock::now();
-    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     level = SkipList::randomLevel(sizeof(meta.sourcePort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
 
-    start = std::chrono::high_resolution_clock::now();
-    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-    end = std::chrono::high_resolution_clock::now();
-    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.sourcePort, value, level);
 
-    start = std::chrono::high_resolution_clock::now();
-    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     if(!this->indexRing->put((void*)index)){
         return false;
     }
-
-    end = std::chrono::high_resolution_clock::now();
-    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-    start = std::chrono::high_resolution_clock::now();
 
     index = new Index();
     // index->key = meta.destinationPort;
@@ -420,34 +369,17 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->id = IndexType::DSTPORT;
     index->disk_block_id = value / this->block_size;
 
-    end = std::chrono::high_resolution_clock::now();
-    this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
     level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
 
-    start = std::chrono::high_resolution_clock::now();
-    this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-    end = std::chrono::high_resolution_clock::now();
-    this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.destinationPort, value, level);
 
-    start = std::chrono::high_resolution_clock::now();
-    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
     if(!this->indexRing->put((void*)index)){
         return false;
     }
-
-    end = std::chrono::high_resolution_clock::now();
-    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-    start = std::chrono::high_resolution_clock::now();
 
     if (meta.sourceAddress.size() == 4){
         index = new Index();
@@ -464,32 +396,18 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index->id = IndexType::QUARTURPLEIPv4;
         index->disk_block_id = value / this->block_size;
 
-        end = std::chrono::high_resolution_clock::now();
-        this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
         level = SkipList::randomLevel(sizeof(ipv4Turple)*8);
         index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
 
-        start = std::chrono::high_resolution_clock::now();
-        this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-        end = std::chrono::high_resolution_clock::now();
-        this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
         SkipListNode<QuarTurpleIPv4,u_int64_t>* node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)index->node;
         node->init(ipv4Turple, value, level);
-
-        start = std::chrono::high_resolution_clock::now();
-        this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
 
         if(!this->indexRing->put((void*)index)){
             return false;
         }
 
-        end = std::chrono::high_resolution_clock::now();
-        this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }else{
         index = new Index();
         // index->key = meta.destinationPort;
@@ -505,35 +423,280 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index->id = IndexType::QUARTURPLEIPv6;
         index->disk_block_id = value / this->block_size;
 
-        end = std::chrono::high_resolution_clock::now();
-        this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         // index->len = sizeof(ipv6Turple);
         level = SkipList::randomLevel(sizeof(ipv6Turple)*8);
         index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);
 
-        start = std::chrono::high_resolution_clock::now();
-        this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-        end = std::chrono::high_resolution_clock::now();
-        this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
         SkipListNode<QuarTurpleIPv6,u_int64_t>* node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)index->node;
         node->init(ipv6Turple, value, level);
 
-        start = std::chrono::high_resolution_clock::now();
-        this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
-
         if(!this->indexRing->put((void*)index)){
             return false;
         }
-
-        end = std::chrono::high_resolution_clock::now();
-        this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
     return true;
 }
+
+// bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
+//     u_int32_t level = 0;
+//     Index* index = nullptr;
+
+//     auto start = std::chrono::high_resolution_clock::now();
+//     index = new Index();
+//     // index->key = *(u_int32_t*)(meta.sourceAddress.c_str());
+//     // index->key = meta.sourceAddress;
+//     // index->value = value;
+//     index->ts = ts;
+//     index->id = meta.sourceAddress.size() == 4? IndexType::SRCIP:IndexType::SRCIPv6;
+//     index->disk_block_id = value / this->block_size;
+
+//     auto end = std::chrono::high_resolution_clock::now();
+//     this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     // index->len = meta.sourceAddress.size();
+//     level = SkipList::randomLevel(meta.sourceAddress.size()*8);
+//     index->len = this->calIndexNodeLen(meta.sourceAddress.size(), level);
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     if(index->id == IndexType::SRCIP){
+//         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
+//         node->init(*(u_int32_t*)(meta.sourceAddress.c_str()), value, level);
+//     }else{
+//         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
+//         node->init(*(IPv6Address*)(meta.sourceAddress.c_str()), value, level);
+//     }
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+    
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+
+//     // index = new Index();
+//     // // index->key =  *(u_int32_t*)(meta.destinationAddress.c_str());
+//     // index->key = meta.destinationAddress;
+//     // index->value = value;
+//     // index->ts = ts;
+//     // index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
+//     // index->len = meta.destinationAddress.size();
+//     start = std::chrono::high_resolution_clock::now();
+
+//     index = new Index();
+//     index->ts = ts;
+//     index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
+//     index->disk_block_id = value / this->block_size;
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     level = SkipList::randomLevel(meta.destinationAddress.size()*8);
+//     index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     if(index->id == IndexType::DSTIP){
+//         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
+//         node->init(*(u_int32_t*)(meta.destinationAddress.c_str()), value, level);
+//     }else{
+//         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
+//         node->init(*(IPv6Address*)(meta.destinationAddress.c_str()), value, level);
+//     }
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     start = std::chrono::high_resolution_clock::now();
+
+//     index = new Index();
+//     // index->key = meta.sourcePort;
+//     // index->key = std::string((char*)&(meta.sourcePort),sizeof(meta.sourcePort));
+//     // index->value = value;
+//     index->ts = ts;
+//     index->id = IndexType::SRCPORT;
+//     index->disk_block_id = value / this->block_size;
+    
+//     end = std::chrono::high_resolution_clock::now();
+//     this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     level = SkipList::randomLevel(sizeof(meta.sourcePort)*8);
+//     index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
+//     node->init(meta.sourcePort, value, level);
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     start = std::chrono::high_resolution_clock::now();
+
+//     index = new Index();
+//     // index->key = meta.destinationPort;
+//     // index->key = std::string((char*)&(meta.destinationPort),sizeof(meta.destinationPort));
+//     // index->value = value;
+//     // index->ts = ts;
+//     // index->id = IndexType::DSTPORT;
+//     // index->len = sizeof(meta.sourcePort);
+
+//     index->ts = ts;
+//     index->id = IndexType::DSTPORT;
+//     index->disk_block_id = value / this->block_size;
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
+//     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
+//     node->init(meta.destinationPort, value, level);
+
+//     start = std::chrono::high_resolution_clock::now();
+//     this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     end = std::chrono::high_resolution_clock::now();
+//     this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//     start = std::chrono::high_resolution_clock::now();
+
+//     if (meta.sourceAddress.size() == 4){
+//         index = new Index();
+//         // index->key = meta.destinationPort;
+//         QuarTurpleIPv4 ipv4Turple = {
+//             .dstport = meta.destinationPort,
+//             .srcport = meta.sourcePort,
+//             .dstip = *(u_int32_t*)(meta.destinationAddress.c_str()),
+//             .srcip = *(u_int32_t*)(meta.sourceAddress.c_str()),
+//         };
+//         // index->key = std::string((char*)&(ipv4Turple),sizeof(ipv4Turple));
+//         // index->value = value;
+//         index->ts = ts;
+//         index->id = IndexType::QUARTURPLEIPv4;
+//         index->disk_block_id = value / this->block_size;
+
+//         end = std::chrono::high_resolution_clock::now();
+//         this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//         level = SkipList::randomLevel(sizeof(ipv4Turple)*8);
+//         index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
+
+//         start = std::chrono::high_resolution_clock::now();
+//         this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//         end = std::chrono::high_resolution_clock::now();
+//         this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//         SkipListNode<QuarTurpleIPv4,u_int64_t>* node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)index->node;
+//         node->init(ipv4Turple, value, level);
+
+//         start = std::chrono::high_resolution_clock::now();
+//         this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//         if(!this->indexRing->put((void*)index)){
+//             return false;
+//         }
+
+//         end = std::chrono::high_resolution_clock::now();
+//         this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+//     }else{
+//         index = new Index();
+//         // index->key = meta.destinationPort;
+//         QuarTurpleIPv6 ipv6Turple = {
+//             .dstport = meta.destinationPort,
+//             .srcport = meta.sourcePort,
+//             .dstip = *(IPv6Address*)(meta.destinationAddress.c_str()),
+//             .srcip = *(IPv6Address*)(meta.sourceAddress.c_str()),
+//         };
+//         // index->key = std::string((char*)&(ipv6Turple),sizeof(ipv6Turple));
+//         // index->value = value;
+//         index->ts = ts;
+//         index->id = IndexType::QUARTURPLEIPv6;
+//         index->disk_block_id = value / this->block_size;
+
+//         end = std::chrono::high_resolution_clock::now();
+//         this->create_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+//         // index->len = sizeof(ipv6Turple);
+//         level = SkipList::randomLevel(sizeof(ipv6Turple)*8);
+//         index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);
+
+//         start = std::chrono::high_resolution_clock::now();
+//         this->cal_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//         end = std::chrono::high_resolution_clock::now();
+//         this->allocate_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+//         SkipListNode<QuarTurpleIPv6,u_int64_t>* node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)index->node;
+//         node->init(ipv6Turple, value, level);
+
+//         start = std::chrono::high_resolution_clock::now();
+//         this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
+//         if(!this->indexRing->put((void*)index)){
+//             return false;
+//         }
+
+//         end = std::chrono::high_resolution_clock::now();
+//         this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+//     }
+//     return true;
+// }
 
 void DPDKReader::bindCore(u_int32_t cpu){
     cpu_set_t cpuset;
@@ -726,7 +889,7 @@ int DPDKReader::run(){
     auto end = std::chrono::high_resolution_clock::now();
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps.\n",this->duration_time,pkt_count,this->byteLen,index_count,(double)this->byteLen/(double)this->duration_time/125.0);
+    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps.\n",this->duration_time,pkt_count,this->byteLen,index_count,((double)this->byteLen + (double)this->eth_header_len * (double)pkt_count)/(double)this->duration_time/125.0);
     printf("DPDK Reader log: wait time %lu us, read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",wait_time,read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     printf("DPDK Reader log: creat time %lu us, cal time %lu us, allocate time %lu us, init time %lu us ,put time %lu us\n",this->create_time,this->cal_time,this->allocate_time,this->init_time,this->put_time);
     return 0;

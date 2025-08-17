@@ -45,7 +45,8 @@ private:
     u_int64_t* block_disk_id; // which disk block this buffer block corresponds to
     u_int64_t* start_times;
     u_int64_t* end_times;
-    std::atomic_uint64_t* packet_counts;
+    // std::atomic_uint64_t* packet_counts;
+    u_int64_t* packet_counts;
     // std::vector<BlockCheckThreadMata> thread_metas;
     std::vector<u_int64_t> disk_write_ids;
     std::vector<u_int64_t> block_check_ids;
@@ -112,7 +113,8 @@ public:
             this->start_times[i] = std::numeric_limits<uint64_t>::max();
         }
         this->end_times = new u_int64_t[this->total_block_num]();
-        this->packet_counts = new std::atomic_uint64_t[this->total_block_num]();
+        // this->packet_counts = new std::atomic_uint64_t[this->total_block_num]();
+        this->packet_counts = new u_int64_t[this->total_block_num * this->rss_num]();
         this->disk_write_ids = std::vector<u_int64_t>();
         this->block_check_ids = std::vector<u_int64_t>();
     }
@@ -180,6 +182,12 @@ public:
             if(new_data) this->start_times[block_id] = std::min(this->start_times[block_id],ts);
         }
 
+        if ((block_offset + len) % (this->block_size/this->rss_num) == 0){
+            // printf("new block\n");
+            if(new_data) this->end_times[block_id] = ts;
+            if(new_data) this->start_times[ (block_id + 1)% this->total_block_num] = std::min(this->start_times[(block_id + 1)% this->total_block_num],ts);
+        }
+
         if (block_pos + len > this->buffer_size){
             // printf("new buffer\n");
             u_int64_t tmp = this->buffer_size - block_pos;
@@ -189,7 +197,7 @@ public:
             if(new_data){
                 this->disk_write_ids[thread_id] = disk_id;
                 if (new_index){
-                    this->packet_counts[(disk_pos / this->block_size) % this->total_block_num] ++;
+                    this->packet_counts[((disk_pos / this->block_size) % this->total_block_num) + this->total_block_num * thread_id] ++;
                 }
             }
             return true;
@@ -199,7 +207,7 @@ public:
         if(new_data){
             this->disk_write_ids[thread_id] = disk_id;
             if(new_index){
-                this->packet_counts[(disk_pos / this->block_size) % this->disk_block_num] ++;
+                this->packet_counts[((disk_pos / this->block_size) % this->total_block_num) + this->total_block_num * thread_id] ++;
             }
         }
         return true;
@@ -234,11 +242,16 @@ public:
         block->start_time = this->start_times[block->block_id];
         block->end_time = this->end_times[block->block_id];
         block->write_pos = this->block_disk_id[block->block_id];
-        block->packet_count = this->packet_counts[block->block_id].load();
+        block->packet_count = 0;
+        for (u_int64_t i = 0; i< this->rss_num; ++i){
+            block->packet_count += this->packet_counts[block->block_id + this->total_block_num * i];
+        }
         block->buffer = this->buffer_blocks + block->block_id * this->block_size;
         // u_int64_t block_check_id = this->block_check_ids[thread_id];
 
-        this->packet_counts[block->block_id] = 0; // reset packet count for next use
+        for (u_int64_t i = 0; i< this->rss_num; ++i){
+            this->packet_counts[block->block_id + this->total_block_num * i] = 0;
+        }
 
         this->block_check_ids[thread_id] += this->block_check_ids.size();
         this->block_check_ids[thread_id] %= this->total_block_num;
