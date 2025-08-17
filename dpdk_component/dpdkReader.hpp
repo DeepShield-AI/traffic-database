@@ -30,7 +30,7 @@
 #include <arpa/inet.h>
 
 
-#define BURST_SIZE 32
+// #define BURST_SIZE 32
 
 
 struct PacketMeta{

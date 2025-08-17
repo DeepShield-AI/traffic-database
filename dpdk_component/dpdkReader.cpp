@@ -787,7 +787,7 @@ int DPDKReader::run(){
             start = std::chrono::high_resolution_clock::now();
             has_start=true;
         }
-        int err = 0;
+        // int err = 0;
         for(int i=0;i<nb_rx;++i){
             pkt_count ++;
             auto total_start = std::chrono::high_resolution_clock::now();
@@ -796,7 +796,7 @@ int DPDKReader::run(){
             this->readPacket(bufs[i],ts,&meta);
             if(meta.data == nullptr){
                 std::cout << "DPDK Reader log: read over." << std::endl;
-                err = 1;
+                // err = 1;
                 break;
             }
 
@@ -875,9 +875,9 @@ int DPDKReader::run(){
             total_time += std::chrono::duration_cast<std::chrono::microseconds>(total_end - total_start).count();
         }
         nb_rx = 0;
-        if(err){
-            break;
-        }
+        // if(err){
+        //     break;
+        // }
         if(this->stop){
             std::cout << "DPDK Reader log: asynchronous stop." << std::endl;
             break;

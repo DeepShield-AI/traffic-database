@@ -69,13 +69,13 @@ static struct rte_eth_conf port_conf = {
 	.txmode = {
 		.mq_mode = RTE_ETH_MQ_TX_NONE,
 	},
-    .rx_adv_conf = {
-        .rss_conf = {
-            .rss_key = symmetric_rss_key,  // Use symmetric RSS key
-            .rss_key_len = sizeof(symmetric_rss_key),
-            .rss_hf = ETH_RSS_IP | ETH_RSS_TCP | ETH_RSS_UDP,  // Hash on IP, TCP, and UDP
-        },
-    },
+    // .rx_adv_conf = {
+    //     .rss_conf = {
+    //         .rss_key = symmetric_rss_key,  // Use symmetric RSS key
+    //         .rss_key_len = sizeof(symmetric_rss_key),
+    //         .rss_hf = ETH_RSS_IP | ETH_RSS_TCP | ETH_RSS_UDP,  // Hash on IP, TCP, and UDP
+    //     },
+    // },
 };
 // static struct rte_eth_conf port_conf = {
 // 	.rxmode = {
