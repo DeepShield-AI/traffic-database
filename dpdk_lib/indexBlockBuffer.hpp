@@ -136,6 +136,10 @@ public:
             return true;
         }
 
+        // if(len == 4 && thread_id == 0){
+        //     printf("%u.%u.%u.%u\n",(u_int8_t)data[0],(u_int8_t)data[1],(u_int8_t)data[2],(u_int8_t)data[3]);
+        // }
+
         memcpy(this->buffer_blocks + block_pos, data, len);
         this->disk_write_ids[thread_id] = disk_id;
         return true;

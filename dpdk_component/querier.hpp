@@ -11,6 +11,7 @@
 #include "../dpdk_lib/header.hpp"
 #include "../dpdk_lib/util.hpp"
 #include "../dpdk_lib/diskBuffer.hpp"
+#include "../dpdk_lib/diskAgent.hpp"
 // #include "../lib/shareBuffer.hpp"
 // #include "../lib/arrayList.hpp"
 // #include "storage.hpp"
@@ -80,7 +81,13 @@ class Querier{
     
     QueryTree tree;
 
+    char* indexBuffer;
+    char* dataBuffer;
+
     DiskBuffer* diskBuffer;
+
+    DiskAgent* indexAgent;
+    DiskAgent* dataAgent;    
 
     void intersect(std::list<u_int64_t>& la, std::list<u_int64_t>& lb);
     void join(std::list<u_int64_t>& la, std::list<u_int64_t>& lb);
@@ -97,7 +104,8 @@ class Querier{
     void outputPacketToFile(std::list<Answer> flowHeadList);
     bool runUnit();
 public:
-    Querier(DiskBuffer* diskBuffer):diskBuffer(diskBuffer){
+    Querier(DiskBuffer* diskBuffer, DiskAgent* indexAgent, DiskAgent* dataAgent):
+        diskBuffer(diskBuffer),indexAgent(indexAgent),dataAgent(dataAgent){
         // std::cout << "Querier construct." <<std::endl;
         // this->packetBuffer = packetBuffer;
         // this->packetPointer = packetPointer;
@@ -107,6 +115,19 @@ public:
         // this->pcapHeader = pcapHeader;
         // this->storageMetas = storageMetas;
         this->tree = QueryTree();
+        // this->indexBuffer = new char[this->indexAgent->getBlockSize()*2];
+        // this->dataBuffer = new char[this->dataAgent->getBlockSize()];
+
+        if (posix_memalign((void**)&(this->indexBuffer), 4096, this->indexAgent->getBlockSize()*2)) {
+            perror("posix_memalign");
+            exit(1);
+        }
+        memset(this->indexBuffer,0,this->indexAgent->getBlockSize()*3);
+        if (posix_memalign((void**)&(this->dataBuffer), 4096, this->dataAgent->getBlockSize()*2)) {
+            perror("posix_memalign");
+            exit(1);
+        }
+        memset(this->dataBuffer,0,this->dataAgent->getBlockSize()*3);
         // std::cout << "Querier construct end." <<std::endl;
     }
     ~Querier()=default;

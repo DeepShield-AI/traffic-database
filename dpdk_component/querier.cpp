@@ -28,18 +28,72 @@ const std::string opt[] = {"==", "!=", ">=", "<=", "contains", ">", "<"};
 //     return storageMetas->size();
 // }
 
+void printPacket(char* data, u_int64_t len){
+    uint8_t version = (*(u_int8_t*)data >> 4) & 0x0F;
+    if(version == 4){
+        const struct ip_header* ip_protocol = (const struct ip_header *)(data);
+        const u_int16_t* sport = (const u_int16_t*)(data + ip_protocol->ip_header_length * 4);
+        const u_int16_t* dport = sport + 1;
+        u_int32_t srcip = htonl(ip_protocol->ip_source_address);
+        u_int32_t dstip = htonl(ip_protocol->ip_destination_address);
+        printf("%u.%u.%u.%u:%u->%u.%u.%u.%u:%u\n",
+            (srcip >> 24) & 0xff,(srcip >> 16) & 0xff,(srcip >> 8) & 0xff,srcip & 0xff, *sport,
+            (dstip >> 24) & 0xff,(dstip >> 16) & 0xff,(dstip >> 8) & 0xff,dstip & 0xff, *dport);
+    }
+}
+
+u_int64_t readPacket(u_int64_t offset, char* buffer, u_int64_t cell_size){
+    u_int64_t cell_pos = offset % cell_size;
+    char* packet = nullptr;
+    u_int64_t packet_len = 0;
+    u_int64_t next = 0;
+    if (cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) > cell_size){
+        u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
+        u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
+        u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t);
+        pcap_header header;
+        memcpy(&header,buffer + offset,tmp_len);
+        memcpy((char*)&header + tmp_len,buffer + cell_tail,sizeof(pcap_header)-tmp_len);
+        packet_len = header.caplen;
+        packet = buffer + cell_tail + sizeof(pcap_header) - tmp_len;
+        next = header.len;
+    }else{
+        pcap_header header;
+        memcpy(&header,buffer + cell_pos,sizeof(pcap_header));
+        packet_len = header.caplen;
+        next = header.len;
+        if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
+            packet = new char[packet_len];
+            u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
+            u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
+            u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t) - sizeof(pcap_header);
+            memcpy(packet,buffer+offset,tmp_len);
+            memcpy(packet,buffer+cell_tail,packet_len - tmp_len);
+        }else{
+            packet = buffer + offset;
+        }
+    }
+    printPacket(packet,packet_len);
+    if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) <= cell_size && cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
+        delete packet;
+    }
+}
+
 template <class KeyType>
-std::list<u_int64_t> binarySearch(char* index, u_int32_t index_len, KeyType key){
+std::list<u_int64_t> binarySearch(char* index, u_int64_t index_len, KeyType key){
     std::list<u_int64_t> ret = std::list<u_int64_t>();
-    u_int32_t ele_len = sizeof(KeyType) + sizeof(u_int64_t);
-    u_int32_t left = 0;
-    u_int32_t right = index_len/ele_len;
+    u_int64_t ele_len = sizeof(KeyType) + sizeof(u_int64_t);
+    u_int64_t left = 0;
+    u_int64_t right = index_len/ele_len;
 
     while (left < right) {
-        u_int32_t mid = left + (right - left) / 2;
+        u_int64_t mid = left + (right - left) / 2;
 
         KeyType key_mid = *(KeyType*)(index + mid * ele_len);
+        // printf("mid: %lu\n",mid);
+        // printf("%u.%u.%u.%u\n",(key_mid >> 24) & 0xff, (key_mid >> 16) & 0xff, (key_mid >> 8) & 0xff,key_mid & 0xff);
         if (key_mid < key) {
+            // printf("<\n");
             left = mid + 1;
         } else {
             right = mid;
@@ -537,13 +591,85 @@ std::list<std::string> Querier::decomposeExpression(){
     return this->tree.getExpList();
 }
 std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
+    std::list<Answer> ret = std::list<Answer>();
     // std::ifstream indexFile(index_name[key.cachePos],std::ios::binary);
-    if(this->diskBuffer->checkKey(0,(void*)key.key.c_str(),(IndexType)key.cachePos)){
+    if(this->diskBuffer->checkKey(0,(void*)(&key.key[0]),(IndexType)key.cachePos)){
         printf("Contain.\n");
     }else{
         printf("Not contain.\n");
+        return ret;
     }
-    std::list<Answer> ret = std::list<Answer>();
+    u_int64_t index_start = this->diskBuffer->getDiskMeta(0)->disk_index_meta[key.cachePos * 2];
+    u_int64_t index_end = this->diskBuffer->getDiskMeta(0)->disk_index_meta[key.cachePos * 2 + 1];
+    printf("Index start: %lu, index end: %lu.\n",index_start,index_end);
+
+    u_int64_t index_start_id = index_start/this->indexAgent->getBlockSize();
+    u_int64_t index_end_id = index_end/this->indexAgent->getBlockSize();
+
+    if(index_end_id > index_start_id + 1){
+        printf("Index is too long!\n");
+        return ret;
+    }
+    
+    if(!this->indexAgent->read(this->indexBuffer,index_start_id)){
+        printf("Read fail!\n");
+        return ret;
+    }
+    if(index_end_id != index_start_id){
+        if(!this->indexAgent->read(this->indexBuffer + this->indexAgent->getBlockSize(),index_end_id)){
+            printf("Read fail!\n");
+            return ret;
+        }
+    }
+
+    // printf("%u\n",this->indexBuffer[0]);
+    // for(u_int64_t i = 0; i<100;++i){
+    //     printf("%u.%u.%u.%u\n",(u_int8_t)(this->indexBuffer[0 + i*12]),(u_int8_t)(this->indexBuffer[1+i*12]),(u_int8_t)(this->indexBuffer[2+i*12]),(u_int8_t)(this->indexBuffer[3+i*12]));
+    // }
+
+    std::list<u_int64_t> tmp;
+    if(key.cachePos == SRCIP || DSTIP){
+        tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((u_int32_t*)(&key.key[0])));
+    }else if(key.cachePos == SRCPORT || DSTPORT){
+        tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((u_int16_t*)(&key.key[0])));
+    // }else if(key.cachePos == SRCIPv6 || DSTIPv6){
+    //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((IPv6Address*)(&key.key[0])));
+    }
+
+    // for(auto pos: tmp){
+    //     printf("%lu ",pos);
+    // }
+    // printf("\n");
+
+    for(auto pos: tmp){
+        u_int64_t offset = pos;
+        u_int64_t disk_id = offset / this->dataAgent->getBlockSize();
+        for(u_int64_t i = 0 ;i<3;++i){
+            if(!this->indexAgent->read(this->dataBuffer + this->dataAgent->getBlockSize(),disk_id + i)){
+                printf("Read fail!\n");
+                return ret;
+            }
+        }
+        u_int64_t new_disk_id = disk_id;
+        while(true){
+            if(new_disk_id != disk_id){
+                for(u_int64_t i = 0 ;i<3;++i){
+                    if(!this->indexAgent->read(this->dataBuffer + this->dataAgent->getBlockSize(),disk_id + i)){
+                        printf("Read fail!\n");
+                        return ret;
+                    }
+                }
+                new_disk_id = disk_id;
+            }
+            u_int64_t diff = readPacket(offset,this->dataBuffer,this->dataAgent->getBlockSize()/4);
+            if(diff == std::numeric_limits<uint32_t>::max() || diff == 0){
+                break;
+            }
+            offset = offset + diff;
+            new_disk_id = offset / this->dataAgent->getBlockSize();
+        }
+    }
+
     return ret;
     // if(!indexFile.is_open()){
     //     std::cerr << "Querier error: getPointerByFlowMetaIndex to non-exist file name " << index_name[key.cachePos] << "!" << std::endl;

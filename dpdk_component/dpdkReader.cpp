@@ -294,6 +294,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
 
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
 
+    // printf("node len %lu\n",index->len);
     if(index->id == IndexType::SRCIP){
         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
         node->init(*(u_int32_t*)(meta.sourceAddress.c_str()), value, level);
@@ -324,7 +325,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
 
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
+    // printf("node len %lu\n",index->len);
     if(index->id == IndexType::DSTIP){
         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
         node->init(*(u_int32_t*)(meta.destinationAddress.c_str()), value, level);
@@ -349,7 +350,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
 
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
+    // printf("node len %lu\n",index->len);
     SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.sourcePort, value, level);
 
@@ -373,7 +374,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
 
     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
+    // printf("node len %lu\n",index->len);
     node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
     node->init(meta.destinationPort, value, level);
 
@@ -400,7 +401,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
 
         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
+        // printf("node len %lu\n",index->len);
         SkipListNode<QuarTurpleIPv4,u_int64_t>* node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)index->node;
         node->init(ipv4Turple, value, level);
 
@@ -428,7 +429,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t 
         index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);
 
         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
+        // printf("node len %lu\n",index->len);
         SkipListNode<QuarTurpleIPv6,u_int64_t>* node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)index->node;
         node->init(ipv6Turple, value, level);
 

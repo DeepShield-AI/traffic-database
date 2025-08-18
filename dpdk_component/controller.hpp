@@ -141,6 +141,8 @@ private:
 
     Querier* querier;
     std::thread* querierThread;
+    DiskAgent* querierIndexAgent;
+    DiskAgent* querierDataAgent;
 
     void threadsRun();
     void queryThreadRun();

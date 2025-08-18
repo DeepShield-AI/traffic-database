@@ -77,6 +77,7 @@ public:
     u_int32_t getBlockSize() const { return this->block_size; }
     u_int64_t getBlockNum() const { return this->block_num; }
     u_int64_t getDiskSize() const { return this->disk_size; }
+    u_int64_t getBasicOffset() const { return this->basic_offset; }
     
     bool kernel_run(u_int32_t cpu_core) {
         this->params.sq_thread_cpu = cpu_core;
@@ -167,23 +168,29 @@ public:
         }
 
         u_int64_t offset = id * this->block_size;
-        io_uring_prep_read(sqe, this->disk_fd, buffer, this->block_size, offset);
+
+        // printf("read offset %lu\n",offset + this->basic_offset);
+
+        // printf("sqe: %lu, disk_fd: %d, buffer: %lu, blocksize: %lu.\n",(u_int64_t)sqe,this->disk_fd,(u_int64_t)buffer,this->block_size);
+
+        io_uring_prep_read(sqe, this->disk_fd, buffer, this->block_size, offset + this->basic_offset);
         sqe->user_data = id;
 
         int ret = io_uring_submit(ring);
         if (ret < 0) {
-            printf("Disk agent error: io_uring_submit (read) failed:!\n");
+            printf("Disk agent error: io_uring_submit (read) failed!\n");
             return false;
         }
 
-        struct io_uring_cqe* cqe;
+        struct io_uring_cqe* cqe = nullptr;
         ret = io_uring_wait_cqe(ring, &cqe);
         if (ret < 0 || cqe->res < 0) {
-            printf("Disk agent error: io_uring read failed!\n");
+            printf("Disk agent error: io_uring read failed:ret=%d cqe->res=%d (%s)!\n",ret, cqe->res, strerror(-cqe->res));
             return false;
         }
 
         io_uring_cqe_seen(ring, cqe);
+        // printf("read offset %lu done\n",offset + this->basic_offset);
         return true;
     }
     bool jobFinished(){

@@ -28,7 +28,7 @@ void Controller::threadsRun(){
         ia->kernel_run(this->index_kernel_core_id_list[index]);
         index ++;
     }
-
+    sleep(1);
     for(auto dm: this->dataMemoryManagers){
         std::thread* t = new std::thread(&MemoryManager::run,dm);
         this->dataMemoryManagerThreads.push_back(t);
@@ -37,7 +37,7 @@ void Controller::threadsRun(){
         std::thread* t = new std::thread(&MemoryManager::run,im);
         this->indexMemoryManagerThreads.push_back(t);
     }
-
+    sleep(1);
     for(auto dd: this->dataDiskManagers){
         std::thread* t = new std::thread(&DiskManager::run,dd);
         this->dataDiskManagerThreads.push_back(t);
@@ -46,17 +46,17 @@ void Controller::threadsRun(){
         std::thread* t = new std::thread(&DiskManager::run,id);
         this->indexDiskManagerThreads.push_back(t);
     }
-
+    sleep(1);
     for(auto ip: this->indexPersisters){
         std::thread* t = new std::thread(&IndexPersister::run, ip);
         this->indexPersisterThreads.push_back(t);
     }
-
+    sleep(1);
     for(auto ig:this->indexGenerators){
         std::thread* t = new std::thread(&IndexGenerator::run,ig);
         this->indexGeneratorThreads.push_back(t);
     }
-
+    sleep(1);
     unsigned lcore_id;
     u_int16_t queue_id = 0;
     RTE_LCORE_FOREACH_WORKER(lcore_id) {
@@ -67,12 +67,14 @@ void Controller::threadsRun(){
             rte_exit(EXIT_FAILURE, "Error launching lcore %u\n", lcore_id);
         }
     }
-    
+    sleep(1);
     // readers[0]->asynchronousStop();
     // t.join();
 }
 
 void Controller::queryThreadRun(){
+    this->querierIndexAgent->kernel_run(90);
+    this->querierDataAgent->kernel_run(92);
     this->querierThread = new std::thread(&Querier::run,this->querier);
 }
 
@@ -345,6 +347,8 @@ void Controller::clear(){
     // }
     if(this->querier!=nullptr){
         delete this->querier;
+        delete this->querierIndexAgent;
+        delete this->querierDataAgent;
     }
     if(this->querierThread!=nullptr){
         delete this->querierThread;
@@ -560,7 +564,10 @@ void Controller::init(InitData init_data){
 
     // this->pcapHeader = init_data.pcap_header;
 
-    this->querier = new Querier(this->diskMeta);
+    // this->querierDataAgent = new DiskAgent(init_data.data_disk_size, init_data.data_block_size, init_data.data_disk_offset, this->data_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
+    // this->querierIndexAgent = new DiskAgent(init_data.index_disk_size, init_data.index_block_size, init_data.index_disk_offset, this->index_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
+
+    // this->querier = new Querier(this->diskMeta,this->querierIndexAgent,this->querierDataAgent);
 }
 
 void Controller::bindCore(u_int32_t cpu){
@@ -619,7 +626,7 @@ void Controller::run(){
     
     this->threadsStop();
 
-    this->queryThreadRun();
+    // this->queryThreadRun();
 
-    this->querierThread->join();
+    // this->querierThread->join();
 }

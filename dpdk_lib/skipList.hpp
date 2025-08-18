@@ -77,20 +77,24 @@ public:
     
     // std::mutex mutex;
 
-    SkipListNode(KeyType key, ValueType val, u_int32_t level):
-        key(key),value(value),level(level) {
+    SkipListNode(KeyType key, ValueType val, u_int32_t lev):
+        key(key),value(val),level(lev) {
         for(u_int32_t i = 0; i<level; ++i){
             this->next[i]=nullptr;
         }
     }
     ~SkipListNode()=default;
-    void init(KeyType key, ValueType val, u_int32_t level){
+    void init(KeyType key, ValueType val, u_int32_t lev){
         this->key = key;
-        this->value = value;
-        this->level = level;
+        // if(value > 1024lu*1024lu*1024lu*256lu && value != std::numeric_limits<uint32_t>::max()){
+            
+        // }
+        this->value = val;
+        this->level = lev;
         // for(u_int32_t i = 0; i<level; ++i){
         //     this->next[i]=nullptr;
         // }
+        // printf("offset:%lu.\n",this->value);
     }
 };
 

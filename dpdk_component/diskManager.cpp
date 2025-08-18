@@ -23,6 +23,11 @@ void DiskManager::addBlock(void* block){
         IndexBlock* index_block = (IndexBlock*)block;
         u_int32_t agent_id = index_block->block_id % this->agents.size();
 
+        // for(u_int64_t i = 0; i<100;++i){
+        //     printf("%u.%u.%u.%u ",(u_int8_t)(index_block->buffer[3 + i*12]),(u_int8_t)(index_block->buffer[2+i*12]),(u_int8_t)(index_block->buffer[1+i*12]),(u_int8_t)(index_block->buffer[0+i*12]));
+        //     printf("%lu\n",*(u_int64_t*)(index_block->buffer + 4 + i*12));
+        // }
+
         this->agents[agent_id]->asyncWrite(index_block->buffer, index_block->block_id, index_block->write_pos);
     }
 }
