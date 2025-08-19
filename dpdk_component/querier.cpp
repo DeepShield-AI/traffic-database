@@ -29,7 +29,8 @@ const std::string opt[] = {"==", "!=", ">=", "<=", "contains", ">", "<"};
 // }
 
 void printPacket(char* data, u_int64_t len){
-    uint8_t version = (*(u_int8_t*)data >> 4) & 0x0F;
+    uint8_t version = ((*(u_int8_t*)data) >> 4) & 0x0F;
+    // printf("version: %u\n",version);
     if(version == 4){
         const struct ip_header* ip_protocol = (const struct ip_header *)(data);
         const u_int16_t* sport = (const u_int16_t*)(data + ip_protocol->ip_header_length * 4);
@@ -37,8 +38,8 @@ void printPacket(char* data, u_int64_t len){
         u_int32_t srcip = htonl(ip_protocol->ip_source_address);
         u_int32_t dstip = htonl(ip_protocol->ip_destination_address);
         printf("%u.%u.%u.%u:%u->%u.%u.%u.%u:%u\n",
-            (srcip >> 24) & 0xff,(srcip >> 16) & 0xff,(srcip >> 8) & 0xff,srcip & 0xff, *sport,
-            (dstip >> 24) & 0xff,(dstip >> 16) & 0xff,(dstip >> 8) & 0xff,dstip & 0xff, *dport);
+            (srcip >> 24) & 0xff,(srcip >> 16) & 0xff,(srcip >> 8) & 0xff,srcip & 0xff, htons(*sport),
+            (dstip >> 24) & 0xff,(dstip >> 16) & 0xff,(dstip >> 8) & 0xff,dstip & 0xff, htons(*dport));
     }
 }
 
@@ -47,6 +48,7 @@ u_int64_t readPacket(u_int64_t offset, char* buffer, u_int64_t cell_size){
     char* packet = nullptr;
     u_int64_t packet_len = 0;
     u_int64_t next = 0;
+    // printf("cell pos:%lu\n",cell_pos);
     if (cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) > cell_size){
         u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
         u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
@@ -59,24 +61,27 @@ u_int64_t readPacket(u_int64_t offset, char* buffer, u_int64_t cell_size){
         next = header.len;
     }else{
         pcap_header header;
-        memcpy(&header,buffer + cell_pos,sizeof(pcap_header));
+        // printf("offset: %lu\n",offset);
+        memcpy(&header,buffer + offset,sizeof(pcap_header));
         packet_len = header.caplen;
+        // printf("len:%lu\n",packet_len);
         next = header.len;
         if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
             packet = new char[packet_len];
             u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
             u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
             u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t) - sizeof(pcap_header);
-            memcpy(packet,buffer+offset,tmp_len);
+            memcpy(packet,buffer+offset + sizeof(pcap_header),tmp_len);
             memcpy(packet,buffer+cell_tail,packet_len - tmp_len);
         }else{
-            packet = buffer + offset;
+            packet = buffer + offset + sizeof(pcap_header);
         }
     }
     printPacket(packet,packet_len);
     if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) <= cell_size && cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
         delete packet;
     }
+    return next;
 }
 
 template <class KeyType>
@@ -636,16 +641,16 @@ std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
     //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((IPv6Address*)(&key.key[0])));
     }
 
-    // for(auto pos: tmp){
-    //     printf("%lu ",pos);
-    // }
-    // printf("\n");
+    for(auto pos: tmp){
+        printf("%lu ",pos);
+    }
+    printf("\n");
 
     for(auto pos: tmp){
         u_int64_t offset = pos;
         u_int64_t disk_id = offset / this->dataAgent->getBlockSize();
         for(u_int64_t i = 0 ;i<3;++i){
-            if(!this->indexAgent->read(this->dataBuffer + this->dataAgent->getBlockSize(),disk_id + i)){
+            if(!this->dataAgent->read(this->dataBuffer + this->dataAgent->getBlockSize() * i,disk_id + i)){
                 printf("Read fail!\n");
                 return ret;
             }
@@ -654,14 +659,15 @@ std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
         while(true){
             if(new_disk_id != disk_id){
                 for(u_int64_t i = 0 ;i<3;++i){
-                    if(!this->indexAgent->read(this->dataBuffer + this->dataAgent->getBlockSize(),disk_id + i)){
+                    if(!this->dataAgent->read(this->dataBuffer + this->dataAgent->getBlockSize() * i,disk_id + i)){
                         printf("Read fail!\n");
                         return ret;
                     }
                 }
                 new_disk_id = disk_id;
             }
-            u_int64_t diff = readPacket(offset,this->dataBuffer,this->dataAgent->getBlockSize()/4);
+            u_int64_t diff = readPacket(offset % this->dataAgent->getBlockSize(),this->dataBuffer,this->dataAgent->getBlockSize()/4);
+            printf("Diff: %lu\n",diff);
             if(diff == std::numeric_limits<uint32_t>::max() || diff == 0){
                 break;
             }
@@ -981,7 +987,7 @@ void Querier::outputPacketToFile(std::list<Answer> flowHeadList){
             char* data_ele = data_buffer_list[in] + offset;
             pcap_header* pheader = (pcap_header*)data_ele;
 
-            printf("offset:%llu\n",offset);
+            printf("offset:%lu\n",offset);
 
             u_int64_t ti = ((u_int64_t)(pheader->ts_h) << 32) + (u_int64_t)(pheader->ts_l);
             if( ti >= this->startTime && ti <= this->endTime){
@@ -1058,7 +1064,7 @@ bool Querier::runUnit(){
 
     u_int64_t duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-    printf("Querier log: query done, find %lu packets with %llu us.\n",this->packet_count,duration);
+    printf("Querier log: query done, find %lu packets with %lu us.\n",this->packet_count,duration);
     return true;
 }
 

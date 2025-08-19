@@ -3,6 +3,12 @@
 #include <unordered_map>
 #include <string>
 #include <chrono>
+// #include "util.hpp"
+
+struct FlowAttr{
+    u_int64_t lastOffset;
+    u_int64_t ts;
+};
 
 struct FlowMetadata{
     std::string sourceAddress;
@@ -19,11 +25,6 @@ struct FlowMetadata{
         return sourceAddress == f.sourceAddress && destinationAddress == f.destinationAddress && 
                 sourcePort == f.sourcePort && destinationPort == f.destinationPort;
     }
-};
-
-struct FlowAttr{
-    u_int64_t lastOffset;
-    u_int64_t ts;
 };
 
 class PacketAggregator{

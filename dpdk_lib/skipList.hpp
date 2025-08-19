@@ -47,56 +47,56 @@ private:
     std::atomic<bool> flag; // 原子变量表示锁的状态
 };
 
-// template <class KeyType, class ValueType>
-// class SkipListNode{
-// public:
-//     KeyType key;
-//     ValueType value;
-//     std::vector<SkipListNode*> next;
-//     SpinLock mutex;
-//     // std::mutex mutex;
-
-//     SkipListNode(KeyType key, ValueType val, int level) : next(level, nullptr){
-//         this->key = key;
-//         this->value = val;
-//     }
-//     ~SkipListNode(){
-//         this->next.clear();
-//     }
-// };
-
 template <class KeyType, class ValueType>
 class SkipListNode{
 public:
-    ValueType value;
     KeyType key;
+    ValueType value;
+    std::vector<SkipListNode*> next;
     SpinLock mutex;
-    u_int32_t level;
-    // std::vector<SkipListNode*> next;
-    SkipListNode* next[1];
-    
     // std::mutex mutex;
 
-    SkipListNode(KeyType key, ValueType val, u_int32_t lev):
-        key(key),value(val),level(lev) {
-        for(u_int32_t i = 0; i<level; ++i){
-            this->next[i]=nullptr;
-        }
-    }
-    ~SkipListNode()=default;
-    void init(KeyType key, ValueType val, u_int32_t lev){
+    SkipListNode(KeyType key, ValueType val, int level) : next(level, nullptr){
         this->key = key;
-        // if(value > 1024lu*1024lu*1024lu*256lu && value != std::numeric_limits<uint32_t>::max()){
-            
-        // }
         this->value = val;
-        this->level = lev;
-        // for(u_int32_t i = 0; i<level; ++i){
-        //     this->next[i]=nullptr;
-        // }
-        // printf("offset:%lu.\n",this->value);
+    }
+    ~SkipListNode(){
+        this->next.clear();
     }
 };
+
+// template <class KeyType, class ValueType>
+// class SkipListNode{
+// public:
+//     ValueType value;
+//     KeyType key;
+//     SpinLock mutex;
+//     u_int32_t level;
+//     std::vector<SkipListNode*> next;
+//     // SkipListNode* next[1];
+    
+//     // std::mutex mutex;
+
+//     SkipListNode(KeyType key, ValueType val, u_int32_t lev):
+//         key(key),value(val),level(lev) {
+//         for(u_int32_t i = 0; i<level; ++i){
+//             this->next[i]=nullptr;
+//         }
+//     }
+//     ~SkipListNode()=default;
+//     void init(KeyType key, ValueType val, u_int32_t lev){
+//         this->key = key;
+//         // if(value > 1024lu*1024lu*1024lu*256lu && value != std::numeric_limits<uint32_t>::max()){
+            
+//         // }
+//         this->value = val;
+//         this->level = lev;
+//         // for(u_int32_t i = 0; i<level; ++i){
+//         //     this->next[i]=nullptr;
+//         // }
+//         // printf("offset:%lu.\n",this->value);
+//     }
+// };
 
 // template <class KeyType, class ValueType>
 class SkipList{
@@ -112,41 +112,41 @@ class SkipList{
     // std::atomic_uint32_t writeThreadCount;
     // std::atomic_uint32_t readThreadCount;
 
-    // void* newNode(std::string key, u_int64_t value, u_int32_t level){
-    //     void* pointer = nullptr;
-    //     if(this->keyLen == 1){
-    //         u_int8_t* real_key= (u_int8_t*)&(key[0]);
-    //         SkipListNode<u_int8_t,u_int64_t>* p = new SkipListNode<u_int8_t,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else if(this->keyLen == 2){
-    //         u_int16_t* real_key= (u_int16_t*)&(key[0]);
-    //         SkipListNode<u_int16_t,u_int64_t>* p = new SkipListNode<u_int16_t,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else if(this->keyLen == 4){
-    //         u_int32_t* real_key= (u_int32_t*)&(key[0]);
-    //         SkipListNode<u_int32_t,u_int64_t>* p = new SkipListNode<u_int32_t,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else if(this->keyLen == 8){
-    //         u_int64_t* real_key= (u_int64_t*)&(key[0]);
-    //         SkipListNode<u_int64_t,u_int64_t>* p = new SkipListNode<u_int64_t,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else if(this->keyLen == 12){
-    //         QuarTurpleIPv4* real_key= (QuarTurpleIPv4*)&(key[0]);
-    //         SkipListNode<QuarTurpleIPv4,u_int64_t>* p = new SkipListNode<QuarTurpleIPv4,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else if(this->keyLen == 16){
-    //         IPv6Address* real_key= (IPv6Address*)&(key[0]);
-    //         SkipListNode<IPv6Address,u_int64_t>* p = new SkipListNode<IPv6Address,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else if(this->keyLen == 40){
-    //         QuarTurpleIPv6* real_key= (QuarTurpleIPv6*)&(key[0]);
-    //         SkipListNode<QuarTurpleIPv6,u_int64_t>* p = new SkipListNode<QuarTurpleIPv6,u_int64_t>(*real_key,value,level);
-    //         pointer = (void*)p;
-    //     }else{
-    //         std::cerr << "Skip list error: newNode with undifined ele_len!" << std::endl;
-    //     }
-    //     return pointer;
-    // }
+    void* newNode(std::string key, u_int64_t value, u_int32_t level){
+        void* pointer = nullptr;
+        if(this->keyLen == 1){
+            u_int8_t* real_key= (u_int8_t*)&(key[0]);
+            SkipListNode<u_int8_t,u_int64_t>* p = new SkipListNode<u_int8_t,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else if(this->keyLen == 2){
+            u_int16_t* real_key= (u_int16_t*)&(key[0]);
+            SkipListNode<u_int16_t,u_int64_t>* p = new SkipListNode<u_int16_t,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else if(this->keyLen == 4){
+            u_int32_t* real_key= (u_int32_t*)&(key[0]);
+            SkipListNode<u_int32_t,u_int64_t>* p = new SkipListNode<u_int32_t,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else if(this->keyLen == 8){
+            u_int64_t* real_key= (u_int64_t*)&(key[0]);
+            SkipListNode<u_int64_t,u_int64_t>* p = new SkipListNode<u_int64_t,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else if(this->keyLen == 12){
+            QuarTurpleIPv4* real_key= (QuarTurpleIPv4*)&(key[0]);
+            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = new SkipListNode<QuarTurpleIPv4,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else if(this->keyLen == 16){
+            IPv6Address* real_key= (IPv6Address*)&(key[0]);
+            SkipListNode<IPv6Address,u_int64_t>* p = new SkipListNode<IPv6Address,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else if(this->keyLen == 40){
+            QuarTurpleIPv6* real_key= (QuarTurpleIPv6*)&(key[0]);
+            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = new SkipListNode<QuarTurpleIPv6,u_int64_t>(*real_key,value,level);
+            pointer = (void*)p;
+        }else{
+            std::cerr << "Skip list error: newNode with undifined ele_len!" << std::endl;
+        }
+        return pointer;
+    }
     void deleteNode(void* node){
         if(this->keyLen == 1){
             SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
@@ -300,34 +300,34 @@ class SkipList{
         }
         return value;
     }
-    u_int32_t getLevel(void* node){
-        u_int32_t level;
-        if(this->keyLen == 1){
-            SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
-            level = p->level;
-        }else if(this->keyLen == 2){
-            SkipListNode<u_int16_t,u_int64_t>* p = (SkipListNode<u_int16_t,u_int64_t>*)node;
-            level = p->level;
-        }else if(this->keyLen == 4){
-            SkipListNode<u_int32_t,u_int64_t>* p = (SkipListNode<u_int32_t,u_int64_t>*)node;
-            level = p->level;
-        }else if(this->keyLen == 8){
-            SkipListNode<u_int64_t,u_int64_t>* p = (SkipListNode<u_int64_t,u_int64_t>*)node;
-            level = p->level;
-        }else if(this->keyLen == 12){
-            SkipListNode<QuarTurpleIPv4,u_int64_t>* p = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)node;
-            level = p->level;
-        }else if(this->keyLen == 16){
-            SkipListNode<IPv6Address,u_int64_t>* p = (SkipListNode<IPv6Address,u_int64_t>*)node;
-            level = p->level;
-        }else if(this->keyLen == 40){
-            SkipListNode<QuarTurpleIPv6,u_int64_t>* p = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)node;
-            level = p->level;
-        }else{
-            std::cerr << "Skip list error: getLevel with undifined ele_len!" << std::endl;
-        }
-        return level;
-    }
+    // u_int32_t getLevel(void* node){
+    //     u_int32_t level;
+    //     if(this->keyLen == 1){
+    //         SkipListNode<u_int8_t,u_int64_t>* p = (SkipListNode<u_int8_t,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else if(this->keyLen == 2){
+    //         SkipListNode<u_int16_t,u_int64_t>* p = (SkipListNode<u_int16_t,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else if(this->keyLen == 4){
+    //         SkipListNode<u_int32_t,u_int64_t>* p = (SkipListNode<u_int32_t,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else if(this->keyLen == 8){
+    //         SkipListNode<u_int64_t,u_int64_t>* p = (SkipListNode<u_int64_t,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else if(this->keyLen == 12){
+    //         SkipListNode<QuarTurpleIPv4,u_int64_t>* p = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else if(this->keyLen == 16){
+    //         SkipListNode<IPv6Address,u_int64_t>* p = (SkipListNode<IPv6Address,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else if(this->keyLen == 40){
+    //         SkipListNode<QuarTurpleIPv6,u_int64_t>* p = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)node;
+    //         level = p->level;
+    //     }else{
+    //         std::cerr << "Skip list error: getLevel with undifined ele_len!" << std::endl;
+    //     }
+    //     return level;
+    // }
     int compareNodeKey(void* node, std::string key){
         if(this->keyLen == 1){
             u_int8_t* real_key= (u_int8_t*)&(key[0]);
@@ -578,8 +578,8 @@ public:
         this->nodeNum = 0;
     }
 
-    // SkipList(u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen) : maxLevel(maxLvl), level(0), nodeNum(0), keyLen(keyLen), valueLen(valueLen) {
-    //     // this->head = newNode(std::string(this->keyLen,0),0,this->maxLevel);
+    // SkipList(u_int32_t maxLvl, u_int32_t keyLen, u_int32_t valueLen) : maxLevel(maxLvl), now_level(0), nodeNum(0), keyLen(keyLen), valueLen(valueLen) {
+    //     this->head = newNode(std::string(this->keyLen,0),0,this->maxLevel);
     //     this->head = nullptr;
     //     // this->writeThreadCount = 0;
     //     // this->readThreadCount = 0;
@@ -673,109 +673,48 @@ public:
         this->maxLevel = maxLvl;
         this->keyLen = keyLen;
         this->valueLen = valueLen;
+        this->head = newNode(std::string(this->keyLen,0),0,this->maxLevel);
     }
-    bool insert(void* newNode){
-        // printf("insert one\n");
-        if (this->head == nullptr){
-            printf("Skip list error: insert when head is nullptr!\n");
-            return true;
-        }
-        if(newNode == nullptr){
-            std::cerr << "Skip list error: insert with nullptr!" <<std::endl;
-            return true;
-        }
-
-        // printf("value: %lu\n",this->getValue(newNode));
-
-        u_int64_t now_node_num = this->nodeNum++;
-
-        // printf("nodenum: %lu\n",now_node_num);
-        
-        u_int32_t newLevel = this->getLevel(newNode);
-        // u_int32_t newLevel = this->randomGetLevel(this->maxLevel);
-
-        // printf("newlevel: %lu\n",newLevel);
-
-        void* curr = this->head;
-        std::vector<void*> update(maxLevel, nullptr);
-        u_int32_t nowLevel = this->now_level;
-        for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
-            while (this->getNext(curr,i) != nullptr && this->compareNode(this->getNext(curr,i),newNode)<0){
-                curr = this->getNext(curr,i);
-            }
-            update[i] = curr;
-        }
-
-        // printf("a\n");
-
-        // insert
-        for(int i=0; i<newLevel; ++i){
-            while(true){
-                // std::cout << "Skip list log: level " << i << std::endl;
-                this->lockNode(update[i]);
-                if(this->getNext(update[i],i) != nullptr && this->compareNode(this->getNext(update[i],i),newNode)<0){// there may be new node inserted.
-                    this->unlockNode(update[i]);
-                    update[i] = this->getNext(update[i],i);
-                    continue;
-                }else{
-                    this->putNext(newNode,i,this->getNext(update[i],i));
-                    this->putNext(update[i],i,newNode);
-                    this->unlockNode(update[i]);
-                    break;
-                }
-            }
-        }
-
-        // printf("b\n");
-
-        u_int32_t curLevel = this->now_level.load();
-        while (curLevel < newLevel) {// CAS update level
-            if (this->now_level.compare_exchange_strong(curLevel, newLevel)) {
-                break;
-            }else{
-                curLevel = this->now_level.load();
-            }
-        }
-
-        // printf("c\n");
-        return true;
-    }
-    // bool insert(std::string key, u_int64_t value, u_int64_t maxNode){
-    //     // construct new node
-    //     if(key.size()!=this->keyLen){
-    //         printf("Skip list error: insert with wrong key length %lu-%u!\n",key.size(),this->keyLen);
-    //         // std::cerr << "Skip list error: insert with wrong key length!" <<std::endl;
+    // bool insert(void* newNode){
+    //     // printf("insert one\n");
+    //     if (this->head == nullptr){
+    //         printf("Skip list error: insert when head is nullptr!\n");
+    //         return true;
+    //     }
+    //     if(newNode == nullptr){
+    //         std::cerr << "Skip list error: insert with nullptr!" <<std::endl;
     //         return true;
     //     }
 
-    //     // printf("put one.\n");
-        
+    //     // printf("value: %lu\n",this->getValue(newNode));
+
     //     u_int64_t now_node_num = this->nodeNum++;
-    //     if(now_node_num > maxNode){
-    //         this->nodeNum--;
-    //         return false;
-    //     }
 
-    //     int newLevel = randomLevel();
-    //     void* newNode = this->newNode(key,value,newLevel);
+    //     // printf("nodenum: %lu\n",now_node_num);
+        
+    //     u_int32_t newLevel = this->getLevel(newNode);
+    //     // u_int32_t newLevel = this->randomGetLevel(this->maxLevel);
 
-    //     // get last nodes
+    //     // printf("newlevel: %lu\n",newLevel);
+
     //     void* curr = this->head;
     //     std::vector<void*> update(maxLevel, nullptr);
-    //     u_int32_t nowLevel = this->level;
+    //     u_int32_t nowLevel = this->now_level;
     //     for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
-    //         while (this->getNext(curr,i) != nullptr && this->compareNodeKey(this->getNext(curr,i),key)<0){
+    //         while (this->getNext(curr,i) != nullptr && this->compareNode(this->getNext(curr,i),newNode)<0){
     //             curr = this->getNext(curr,i);
     //         }
     //         update[i] = curr;
     //     }
+
+    //     // printf("a\n");
 
     //     // insert
     //     for(int i=0; i<newLevel; ++i){
     //         while(true){
     //             // std::cout << "Skip list log: level " << i << std::endl;
     //             this->lockNode(update[i]);
-    //             if(this->getNext(update[i],i) != nullptr && this->compareNodeKey(this->getNext(update[i],i),key)<0){// there may be new node inserted.
+    //             if(this->getNext(update[i],i) != nullptr && this->compareNode(this->getNext(update[i],i),newNode)<0){// there may be new node inserted.
     //                 this->unlockNode(update[i]);
     //                 update[i] = this->getNext(update[i],i);
     //                 continue;
@@ -788,18 +727,82 @@ public:
     //         }
     //     }
 
-    //     // this->nodeNum++;
+    //     // printf("b\n");
 
-    //     u_int32_t curLevel = this->level.load();
+    //     u_int32_t curLevel = this->now_level.load();
     //     while (curLevel < newLevel) {// CAS update level
-    //         if (this->level.compare_exchange_strong(curLevel, newLevel)) {
+    //         if (this->now_level.compare_exchange_strong(curLevel, newLevel)) {
     //             break;
     //         }else{
-    //             curLevel = this->level.load();
+    //             curLevel = this->now_level.load();
     //         }
     //     }
+
+    //     // printf("c\n");
     //     return true;
     // }
+    bool insert(std::string& key, u_int64_t value){
+        // construct new node
+        if(key.size()!=this->keyLen){
+            printf("Skip list error: insert with wrong key length %lu-%u!\n",key.size(),this->keyLen);
+            // std::cerr << "Skip list error: insert with wrong key length!" <<std::endl;
+            return true;
+        }
+
+        // printf("put one.\n");
+        
+        u_int64_t now_node_num = this->nodeNum++;
+        // if(now_node_num > maxNode){
+        //     this->nodeNum--;
+        //     return false;
+        // }
+
+        int newLevel = randomLevel(this->maxLevel);
+        void* newNode = this->newNode(key,value,newLevel);
+
+        // printf("after new.\n");
+
+        // get last nodes
+        void* curr = this->head;
+        std::vector<void*> update(maxLevel, nullptr);
+        u_int32_t nowLevel = this->now_level;
+        for (int i = nowLevel > newLevel ? nowLevel - 1: newLevel -1; i >= 0; i--) {
+            while (this->getNext(curr,i) != nullptr && this->compareNodeKey(this->getNext(curr,i),key)<0){
+                curr = this->getNext(curr,i);
+            }
+            update[i] = curr;
+        }
+
+        // insert
+        for(int i=0; i<newLevel; ++i){
+            while(true){
+                // std::cout << "Skip list log: level " << i << std::endl;
+                this->lockNode(update[i]);
+                if(this->getNext(update[i],i) != nullptr && this->compareNodeKey(this->getNext(update[i],i),key)<0){// there may be new node inserted.
+                    this->unlockNode(update[i]);
+                    update[i] = this->getNext(update[i],i);
+                    continue;
+                }else{
+                    this->putNext(newNode,i,this->getNext(update[i],i));
+                    this->putNext(update[i],i,newNode);
+                    this->unlockNode(update[i]);
+                    break;
+                }
+            }
+        }
+
+        // this->nodeNum++;
+
+        u_int32_t curLevel = this->now_level.load();
+        while (curLevel < newLevel) {// CAS update level
+            if (this->now_level.compare_exchange_strong(curLevel, newLevel)) {
+                break;
+            }else{
+                curLevel = this->now_level.load();
+            }
+        }
+        return true;
+    }
     std::list<u_int32_t> findByKey(std::string key){
         if (this->head == nullptr){
             printf("Skip list error: findByKey when head is nullptr!\n");
@@ -873,17 +876,25 @@ public:
     void writeNode(IndexBlockBuffer* buffer, u_int64_t thread_id, u_int64_t disk_pos){
         u_int64_t offset = 0;
         // u_int64_t now_count = 0;
+        void* last_node = this->head;
         for(auto node = this->getNext(head,0); node!=nullptr; node = this->getNext(node,0)){
+            if(last_node != this->head && last_node != nullptr){
+                this->deleteNode(last_node);
+            }
             std::string key = this->getKey(node);
             buffer->writeBlock(&(key[0]),this->keyLen,disk_pos + offset,thread_id);
             offset += this->keyLen;
             u_int64_t value = this->getValue(node);
             buffer->writeBlock((char*)&value,this->valueLen,disk_pos + offset,thread_id);
             offset += this->valueLen;
+            last_node = node;
             // now_count++;
             // if(now_count >= node_count){
             //     break;
             // }
+        }
+        if(last_node != this->head && last_node != nullptr){
+            this->deleteNode(last_node);
         }
     }
     void clear(){

@@ -122,8 +122,8 @@ public:
             perror("posix_memalign");
             exit(1);
         }
-        memset(this->indexBuffer,0,this->indexAgent->getBlockSize()*3);
-        if (posix_memalign((void**)&(this->dataBuffer), 4096, this->dataAgent->getBlockSize()*2)) {
+        memset(this->indexBuffer,0,this->indexAgent->getBlockSize()*2);
+        if (posix_memalign((void**)&(this->dataBuffer), 4096, this->dataAgent->getBlockSize()*3)) {
             perror("posix_memalign");
             exit(1);
         }

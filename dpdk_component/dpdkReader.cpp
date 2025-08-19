@@ -277,168 +277,180 @@ u_int64_t DPDKReader::calIndexNodeLen(u_int32_t key_len, u_int32_t level){
 }
 
 bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
-    u_int32_t level = 0;
-    Index* index = nullptr;
-
-    index = new Index();
-    // index->key = *(u_int32_t*)(meta.sourceAddress.c_str());
-    // index->key = meta.sourceAddress;
-    // index->value = value;
+    Index* index = new Index();
     index->ts = ts;
-    index->id = meta.sourceAddress.size() == 4? IndexType::SRCIP:IndexType::SRCIPv6;
+    index->position = value;
+    index->meta = meta;
     index->disk_block_id = value / this->block_size;
-
-    // index->len = meta.sourceAddress.size();
-    level = SkipList::randomLevel(meta.sourceAddress.size()*8);
-    index->len = this->calIndexNodeLen(meta.sourceAddress.size(), level);
-
-    index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-
-    // printf("node len %lu\n",index->len);
-    if(index->id == IndexType::SRCIP){
-        SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
-        node->init(*(u_int32_t*)(meta.sourceAddress.c_str()), value, level);
-    }else{
-        SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
-        node->init(*(IPv6Address*)(meta.sourceAddress.c_str()), value, level);
-    }
-    
     if(!this->indexRing->put((void*)index)){
         return false;
-    }
-
-
-    // index = new Index();
-    // // index->key =  *(u_int32_t*)(meta.destinationAddress.c_str());
-    // index->key = meta.destinationAddress;
-    // index->value = value;
-    // index->ts = ts;
-    // index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
-    // index->len = meta.destinationAddress.size();
-
-    index = new Index();
-    index->ts = ts;
-    index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
-    index->disk_block_id = value / this->block_size;
-
-    level = SkipList::randomLevel(meta.destinationAddress.size()*8);
-    index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
-
-    index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-    // printf("node len %lu\n",index->len);
-    if(index->id == IndexType::DSTIP){
-        SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
-        node->init(*(u_int32_t*)(meta.destinationAddress.c_str()), value, level);
-    }else{
-        SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
-        node->init(*(IPv6Address*)(meta.destinationAddress.c_str()), value, level);
-    }
-
-    if(!this->indexRing->put((void*)index)){
-        return false;
-    }
-
-    index = new Index();
-    // index->key = meta.sourcePort;
-    // index->key = std::string((char*)&(meta.sourcePort),sizeof(meta.sourcePort));
-    // index->value = value;
-    index->ts = ts;
-    index->id = IndexType::SRCPORT;
-    index->disk_block_id = value / this->block_size;
-
-    level = SkipList::randomLevel(sizeof(meta.sourcePort)*8);
-    index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
-
-    index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-    // printf("node len %lu\n",index->len);
-    SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
-    node->init(meta.sourcePort, value, level);
-
-    if(!this->indexRing->put((void*)index)){
-        return false;
-    }
-
-    index = new Index();
-    // index->key = meta.destinationPort;
-    // index->key = std::string((char*)&(meta.destinationPort),sizeof(meta.destinationPort));
-    // index->value = value;
-    // index->ts = ts;
-    // index->id = IndexType::DSTPORT;
-    // index->len = sizeof(meta.sourcePort);
-
-    index->ts = ts;
-    index->id = IndexType::DSTPORT;
-    index->disk_block_id = value / this->block_size;
-
-    level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
-    index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
-
-    index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-    // printf("node len %lu\n",index->len);
-    node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
-    node->init(meta.destinationPort, value, level);
-
-    if(!this->indexRing->put((void*)index)){
-        return false;
-    }
-
-    if (meta.sourceAddress.size() == 4){
-        index = new Index();
-        // index->key = meta.destinationPort;
-        QuarTurpleIPv4 ipv4Turple = {
-            .dstport = meta.destinationPort,
-            .srcport = meta.sourcePort,
-            .dstip = *(u_int32_t*)(meta.destinationAddress.c_str()),
-            .srcip = *(u_int32_t*)(meta.sourceAddress.c_str()),
-        };
-        // index->key = std::string((char*)&(ipv4Turple),sizeof(ipv4Turple));
-        // index->value = value;
-        index->ts = ts;
-        index->id = IndexType::QUARTURPLEIPv4;
-        index->disk_block_id = value / this->block_size;
-
-        level = SkipList::randomLevel(sizeof(ipv4Turple)*8);
-        index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
-
-        index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-        // printf("node len %lu\n",index->len);
-        SkipListNode<QuarTurpleIPv4,u_int64_t>* node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)index->node;
-        node->init(ipv4Turple, value, level);
-
-        if(!this->indexRing->put((void*)index)){
-            return false;
-        }
-
-    }else{
-        index = new Index();
-        // index->key = meta.destinationPort;
-        QuarTurpleIPv6 ipv6Turple = {
-            .dstport = meta.destinationPort,
-            .srcport = meta.sourcePort,
-            .dstip = *(IPv6Address*)(meta.destinationAddress.c_str()),
-            .srcip = *(IPv6Address*)(meta.sourceAddress.c_str()),
-        };
-        // index->key = std::string((char*)&(ipv6Turple),sizeof(ipv6Turple));
-        // index->value = value;
-        index->ts = ts;
-        index->id = IndexType::QUARTURPLEIPv6;
-        index->disk_block_id = value / this->block_size;
-
-        // index->len = sizeof(ipv6Turple);
-        level = SkipList::randomLevel(sizeof(ipv6Turple)*8);
-        index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);
-
-        index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
-        // printf("node len %lu\n",index->len);
-        SkipListNode<QuarTurpleIPv6,u_int64_t>* node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)index->node;
-        node->init(ipv6Turple, value, level);
-
-        if(!this->indexRing->put((void*)index)){
-            return false;
-        }
     }
     return true;
 }
+
+// bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
+//     u_int32_t level = 0;
+//     Index* index = nullptr;
+
+//     index = new Index();
+//     // index->key = *(u_int32_t*)(meta.sourceAddress.c_str());
+//     // index->key = meta.sourceAddress;
+//     // index->value = value;
+//     index->ts = ts;
+//     index->id = meta.sourceAddress.size() == 4? IndexType::SRCIP:IndexType::SRCIPv6;
+//     index->disk_block_id = value / this->block_size;
+
+//     // index->len = meta.sourceAddress.size();
+//     level = SkipList::randomLevel(meta.sourceAddress.size()*8);
+//     index->len = this->calIndexNodeLen(meta.sourceAddress.size(), level);
+
+//     // index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+
+//     // printf("node len %lu\n",index->len);
+//     if(index->id == IndexType::SRCIP){
+//         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
+//         node->init(*(u_int32_t*)(meta.sourceAddress.c_str()), value, level);
+//     }else{
+//         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
+//         node->init(*(IPv6Address*)(meta.sourceAddress.c_str()), value, level);
+//     }
+    
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+
+//     // index = new Index();
+//     // // index->key =  *(u_int32_t*)(meta.destinationAddress.c_str());
+//     // index->key = meta.destinationAddress;
+//     // index->value = value;
+//     // index->ts = ts;
+//     // index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
+//     // index->len = meta.destinationAddress.size();
+
+//     index = new Index();
+//     index->ts = ts;
+//     index->id = meta.destinationAddress.size() == 4? IndexType::DSTIP:IndexType::DSTIPv6;
+//     index->disk_block_id = value / this->block_size;
+
+//     level = SkipList::randomLevel(meta.destinationAddress.size()*8);
+//     index->len = this->calIndexNodeLen(meta.destinationAddress.size(), level);
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+//     // printf("node len %lu\n",index->len);
+//     if(index->id == IndexType::DSTIP){
+//         SkipListNode<u_int32_t,u_int64_t>* node = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
+//         node->init(*(u_int32_t*)(meta.destinationAddress.c_str()), value, level);
+//     }else{
+//         SkipListNode<IPv6Address,u_int64_t>* node = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
+//         node->init(*(IPv6Address*)(meta.destinationAddress.c_str()), value, level);
+//     }
+
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     index = new Index();
+//     // index->key = meta.sourcePort;
+//     // index->key = std::string((char*)&(meta.sourcePort),sizeof(meta.sourcePort));
+//     // index->value = value;
+//     index->ts = ts;
+//     index->id = IndexType::SRCPORT;
+//     index->disk_block_id = value / this->block_size;
+
+//     level = SkipList::randomLevel(sizeof(meta.sourcePort)*8);
+//     index->len = this->calIndexNodeLen(sizeof(meta.sourcePort), level);
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+//     // printf("node len %lu\n",index->len);
+//     SkipListNode<u_int16_t,u_int64_t>* node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
+//     node->init(meta.sourcePort, value, level);
+
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     index = new Index();
+//     // index->key = meta.destinationPort;
+//     // index->key = std::string((char*)&(meta.destinationPort),sizeof(meta.destinationPort));
+//     // index->value = value;
+//     // index->ts = ts;
+//     // index->id = IndexType::DSTPORT;
+//     // index->len = sizeof(meta.sourcePort);
+
+//     index->ts = ts;
+//     index->id = IndexType::DSTPORT;
+//     index->disk_block_id = value / this->block_size;
+
+//     level = SkipList::randomLevel(sizeof(meta.destinationPort)*8);
+//     index->len = this->calIndexNodeLen(sizeof(meta.destinationPort), level);
+
+//     index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+//     // printf("node len %lu\n",index->len);
+//     node = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
+//     node->init(meta.destinationPort, value, level);
+
+//     if(!this->indexRing->put((void*)index)){
+//         return false;
+//     }
+
+//     if (meta.sourceAddress.size() == 4){
+//         index = new Index();
+//         // index->key = meta.destinationPort;
+//         QuarTurpleIPv4 ipv4Turple = {
+//             .dstport = meta.destinationPort,
+//             .srcport = meta.sourcePort,
+//             .dstip = *(u_int32_t*)(meta.destinationAddress.c_str()),
+//             .srcip = *(u_int32_t*)(meta.sourceAddress.c_str()),
+//         };
+//         // index->key = std::string((char*)&(ipv4Turple),sizeof(ipv4Turple));
+//         // index->value = value;
+//         index->ts = ts;
+//         index->id = IndexType::QUARTURPLEIPv4;
+//         index->disk_block_id = value / this->block_size;
+
+//         level = SkipList::randomLevel(sizeof(ipv4Turple)*8);
+//         index->len = this->calIndexNodeLen(sizeof(ipv4Turple), level);
+
+//         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+//         // printf("node len %lu\n",index->len);
+//         SkipListNode<QuarTurpleIPv4,u_int64_t>* node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)index->node;
+//         node->init(ipv4Turple, value, level);
+
+//         if(!this->indexRing->put((void*)index)){
+//             return false;
+//         }
+
+//     }else{
+//         index = new Index();
+//         // index->key = meta.destinationPort;
+//         QuarTurpleIPv6 ipv6Turple = {
+//             .dstport = meta.destinationPort,
+//             .srcport = meta.sourcePort,
+//             .dstip = *(IPv6Address*)(meta.destinationAddress.c_str()),
+//             .srcip = *(IPv6Address*)(meta.sourceAddress.c_str()),
+//         };
+//         // index->key = std::string((char*)&(ipv6Turple),sizeof(ipv6Turple));
+//         // index->value = value;
+//         index->ts = ts;
+//         index->id = IndexType::QUARTURPLEIPv6;
+//         index->disk_block_id = value / this->block_size;
+
+//         // index->len = sizeof(ipv6Turple);
+//         level = SkipList::randomLevel(sizeof(ipv6Turple)*8);
+//         index->len = this->calIndexNodeLen(sizeof(ipv6Turple), level);
+
+//         index->node = this->indexMemoryPool->allocate(index->len,value/this->block_size);
+//         // printf("node len %lu\n",index->len);
+//         SkipListNode<QuarTurpleIPv6,u_int64_t>* node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)index->node;
+//         node->init(ipv6Turple, value, level);
+
+//         if(!this->indexRing->put((void*)index)){
+//             return false;
+//         }
+//     }
+//     return true;
+// }
 
 // bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
 //     u_int32_t level = 0;

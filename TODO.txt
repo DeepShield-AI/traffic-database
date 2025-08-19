@@ -51,9 +51,16 @@ Bloom filter实现(完成)
 控制器与组件组装（完成）
 
 整体测试
-    内存池大小不匹配且无报错（完成）
 
 当前mmap方法并非分配大页内存
+
+skiplist改回最初版本
+    阶段一：DPDKReader提供索引键值，IndexGenerator创建node并排序，IndexPersister回收（完成并测试，4捕获线程13Gbps，8捕获线程20Gbps）
+    阶段二：DPDKReader提供聚合后首个数据包位置，IndexGenerator解析并创建node并排序，IndexPersister回收
+    阶段三：DPDKReader提供聚合后首个数据包位置，IndexGenerator解析并创建索引键值，IndexPersister排序并回收
+    阶段四：DPDKReader提供聚合后首个数据包位置，IndexGenerator解析、聚合并创建索引键值，IndexPersister排序并回收
+
+完善queier
 
 固定时间点/固定大小的链表截断——磁盘回收大小/时间范围与截断大小应该相同（与位图索引的检索失效区域也相同？），如一次回收1K个数据块（1GB），而非一个一个数据块回收?（不需要）
     或：大数据块+块间前向链表？

@@ -6,6 +6,12 @@ Index* IndexGenerator::readIndexFromBuffer(){
     return index;
 }
 void IndexGenerator::putIndexToCache(Index* index){
+
+    // printf("ready to put\n");
+
+    while(!this->indexBuffer->insert(index->meta, index->position, index->disk_block_id , index->ts)){
+        printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
+    }
     
     // while(true){
         // if(index->id != 0){
@@ -23,9 +29,9 @@ void IndexGenerator::putIndexToCache(Index* index){
         // }
         // auto start = std::chrono::high_resolution_clock::now();
         
-    while(!this->indexBuffer->insert(index->node, index->disk_block_id, (IndexType)(index->id), index->ts)){
-        printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
-    }
+    // while(!this->indexBuffer->insert(index->node, index->disk_block_id, (IndexType)(index->id), index->ts)){
+    //     printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
+    // }
 
     // printf("Insert type %u succeed.\n",index->id);
 
@@ -107,8 +113,9 @@ void IndexGenerator::run(){
         }
 
         this->putIndexToCache(data);
-        
+        // printf("Index generator log: put one.\n");
         delete data;
+        // printf("Index generator log: delete one.\n");
 
         count++;
         end = std::chrono::high_resolution_clock::now();

@@ -28,7 +28,7 @@ void Controller::threadsRun(){
         ia->kernel_run(this->index_kernel_core_id_list[index]);
         index ++;
     }
-    sleep(1);
+    // sleep(1);
     for(auto dm: this->dataMemoryManagers){
         std::thread* t = new std::thread(&MemoryManager::run,dm);
         this->dataMemoryManagerThreads.push_back(t);
@@ -37,7 +37,7 @@ void Controller::threadsRun(){
         std::thread* t = new std::thread(&MemoryManager::run,im);
         this->indexMemoryManagerThreads.push_back(t);
     }
-    sleep(1);
+    // sleep(1);
     for(auto dd: this->dataDiskManagers){
         std::thread* t = new std::thread(&DiskManager::run,dd);
         this->dataDiskManagerThreads.push_back(t);
@@ -46,17 +46,17 @@ void Controller::threadsRun(){
         std::thread* t = new std::thread(&DiskManager::run,id);
         this->indexDiskManagerThreads.push_back(t);
     }
-    sleep(1);
+    // sleep(1);
     for(auto ip: this->indexPersisters){
         std::thread* t = new std::thread(&IndexPersister::run, ip);
         this->indexPersisterThreads.push_back(t);
     }
-    sleep(1);
+    // sleep(1);
     for(auto ig:this->indexGenerators){
         std::thread* t = new std::thread(&IndexGenerator::run,ig);
         this->indexGeneratorThreads.push_back(t);
     }
-    sleep(1);
+    // sleep(1);
     unsigned lcore_id;
     u_int16_t queue_id = 0;
     RTE_LCORE_FOREACH_WORKER(lcore_id) {
@@ -67,7 +67,7 @@ void Controller::threadsRun(){
             rte_exit(EXIT_FAILURE, "Error launching lcore %u\n", lcore_id);
         }
     }
-    sleep(1);
+    // sleep(1);
     // readers[0]->asynchronousStop();
     // t.join();
 }
@@ -298,16 +298,16 @@ void Controller::clear(){
         this->indexRings = nullptr;
     }
 
-    if(this->indexMemoryPools!=nullptr){
-        for(auto imp:(*(this->indexMemoryPools))){
-            if(imp!=nullptr){
-                delete imp;
-                imp = nullptr;
-            }
-        }
-        delete this->indexMemoryPools;
-        this->indexMemoryPools = nullptr;
-    }
+    // if(this->indexMemoryPools!=nullptr){
+    //     for(auto imp:(*(this->indexMemoryPools))){
+    //         if(imp!=nullptr){
+    //             delete imp;
+    //             imp = nullptr;
+    //         }
+    //     }
+    //     delete this->indexMemoryPools;
+    //     this->indexMemoryPools = nullptr;
+    // }
 
     if(this->dpdk!=nullptr){
         delete this->dpdk;
@@ -413,10 +413,10 @@ void Controller::init(InitData init_data){
     // PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
     // this->indexRings->push_back(ir);
 
-    for (u_int32_t i=0; i<init_data.nb_rx; ++i){
-        MemoryPool* mp = new MemoryPool(init_data.memory_pool_capacity_each, init_data.memory_pool_list_len_each);
-        this->indexMemoryPools->push_back(mp);
-    }
+    // for (u_int32_t i=0; i<init_data.nb_rx; ++i){
+    //     MemoryPool* mp = new MemoryPool(init_data.memory_pool_capacity_each, init_data.memory_pool_list_len_each);
+    //     this->indexMemoryPools->push_back(mp);
+    // }
 
     this->bitmap = new BitMap((PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2, init_data.data_disk_size / init_data.data_block_size, init_data.bitmap_backup_col_num);
 
@@ -520,9 +520,9 @@ void Controller::init(InitData init_data){
     for(u_int32_t i=0; i<init_data.index_persist_thread_num; ++i){
         IndexPersister* ip;
         if (init_data.bind_core){
-            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexMemoryPools, this->indexWritePos, init_data.bind_core, init_data.persisting_core_id_list[i]);
+            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexWritePos, init_data.bind_core, init_data.persisting_core_id_list[i]);
         }else{
-            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexMemoryPools, this->indexWritePos);
+            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexWritePos);
         }
         this->indexPersisters.push_back(ip);
     }
@@ -547,9 +547,9 @@ void Controller::init(InitData init_data){
         DPDKReader* reader;
         if (init_data.bind_core){
             // reader = new DPDKReader(init_data.pcap_header_len,init_data.eth_header_len,dpdk,this->indexRings,0,i,init_data.file_capacity,buffer, init_data.bind_core, init_data.packet_core_id_list[i]);
-            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, init_data.data_block_size/init_data.nb_rx, this->dpdk, (*(this->indexRings))[i], this->dataBlockBuffer, this->dataWritePos, (*(this->indexMemoryPools))[i], 0, i, init_data.delay_threshold * init_data.data_block_size, init_data.bind_core, init_data.packet_core_id_list[i]);
+            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, init_data.data_block_size/init_data.nb_rx, this->dpdk, (*(this->indexRings))[i], this->dataBlockBuffer, this->dataWritePos, 0, i, init_data.delay_threshold * init_data.data_block_size, init_data.bind_core, init_data.packet_core_id_list[i]);
         }else{
-            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, init_data.data_block_size/init_data.nb_rx, this->dpdk, (*(this->indexRings))[i], this->dataBlockBuffer, this->dataWritePos, (*(this->indexMemoryPools))[i], 0, i, init_data.delay_threshold * init_data.data_block_size);
+            reader = new DPDKReader(init_data.eth_header_len, init_data.data_disk_size, init_data.data_block_size, init_data.data_block_size/init_data.nb_rx, this->dpdk, (*(this->indexRings))[i], this->dataBlockBuffer, this->dataWritePos, 0, i, init_data.delay_threshold * init_data.data_block_size);
         }
         this->readers.push_back(reader);
     }
@@ -564,10 +564,12 @@ void Controller::init(InitData init_data){
 
     // this->pcapHeader = init_data.pcap_header;
 
-    // this->querierDataAgent = new DiskAgent(init_data.data_disk_size, init_data.data_block_size, init_data.data_disk_offset, this->data_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
-    // this->querierIndexAgent = new DiskAgent(init_data.index_disk_size, init_data.index_block_size, init_data.index_disk_offset, this->index_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
-
-    // this->querier = new Querier(this->diskMeta,this->querierIndexAgent,this->querierDataAgent);
+    this->querierDataAgent = new DiskAgent(init_data.data_disk_size, init_data.data_block_size, init_data.data_disk_offset, this->data_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
+    // printf("a\n");
+    this->querierIndexAgent = new DiskAgent(init_data.index_disk_size, init_data.index_block_size, init_data.index_disk_offset, this->index_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
+    // printf("b\n");
+    this->querier = new Querier(this->diskMeta,this->querierIndexAgent,this->querierDataAgent);
+    // printf("c\n");
 }
 
 void Controller::bindCore(u_int32_t cpu){
@@ -626,7 +628,7 @@ void Controller::run(){
     
     this->threadsStop();
 
-    // this->queryThreadRun();
+    this->queryThreadRun();
 
-    // this->querierThread->join();
+    this->querierThread->join();
 }

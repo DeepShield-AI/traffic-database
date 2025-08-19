@@ -7,12 +7,12 @@
 #include <atomic>
 
 // #include "../dpdk_lib/memoryBuffer.hpp"
+#include "../dpdk_lib/packetAggregator.hpp"
 #include "../dpdk_lib/header.hpp"
-#include "../dpdk_lib/util.hpp"
+// #include "../dpdk_lib/util.hpp"
 #include "../dpdk_lib/dpdk.hpp"
 // #include "../dpdk_lib/pointerRingBuffer.hpp"
 #include "../dpdk_lib/singleRingBuffer.hpp"
-#include "../dpdk_lib/packetAggregator.hpp"
 #include "../dpdk_lib/diskAgent.hpp"
 #include "../dpdk_lib/dataBlockbuffer.hpp"
 #include "../dpdk_lib/memoryPool.hpp"
@@ -64,7 +64,7 @@ class DPDKReader{
     std::atomic_uint_fast64_t* diskWriteCell;
     u_int64_t writeCell;
     u_int64_t writeOffset;
-    MemoryPool* indexMemoryPool;
+    // MemoryPool* indexMemoryPool;
 
     std::atomic_bool stop;
 
@@ -97,8 +97,8 @@ class DPDKReader{
     void bindCore(u_int32_t cpu);
 
 public:
-    DPDKReader(u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, u_int64_t cell_size, DPDK* dpdk, PointerRingBuffer* ring,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, MemoryPool* indexMemoryPool, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core = false, u_int32_t core_id = 0):
-    eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),cell_size(cell_size),cell_num(disk_size/cell_size),dpdk(dpdk),indexRing(ring),block_buffer(block_buffer),diskWriteCell(diskWritePos),indexMemoryPool(indexMemoryPool),port_id(port_id),rx_id(rx_id){
+    DPDKReader(u_int32_t eth_header_len, u_int64_t disk_size, u_int64_t block_size, u_int64_t cell_size, DPDK* dpdk, PointerRingBuffer* ring,DataBlockBuffer* block_buffer, std::atomic_uint_fast64_t* diskWritePos, u_int16_t port_id, u_int16_t rx_id, u_int64_t capacity, bool bind_core = false, u_int32_t core_id = 0):
+    eth_header_len(eth_header_len),disk_size(disk_size),block_size(block_size),block_num(disk_size/block_size),cell_size(cell_size),cell_num(disk_size/cell_size),dpdk(dpdk),indexRing(ring),block_buffer(block_buffer),diskWriteCell(diskWritePos),port_id(port_id),rx_id(rx_id){
         if(this->cell_num & (this->cell_num - 1)){
             printf("DPDK reader error: cell number %lu is not power of 2!\n",this->cell_num);
             this->packetAggregator = nullptr;

@@ -242,12 +242,11 @@ struct IndexTMP{
 struct Index{
     u_int64_t ts;
     u_int64_t disk_block_id;
-    void* node;
-    u_int8_t id;
-    u_int8_t len;
-    u_int16_t padding1;
-    u_int32_t padding2;
-    u_int64_t padding3[4];
+    u_int64_t position;
+    FlowMetadata meta;
+    // u_int16_t padding1;
+    // u_int32_t padding2;
+    // u_int64_t padding3[4];
 };
 
 struct HilbertMeta{

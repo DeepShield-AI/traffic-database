@@ -97,9 +97,9 @@ void IndexPersister::persistMeta(IndexBufferMeta* meta){
 }
 void IndexPersister::clearMeta(IndexBufferMeta* meta){
     this->diskBuffer->clearPacketCount(meta->disk_block_id);
-    for(auto pool : *(this->memoryPools)){
-        pool->recycle(meta->disk_block_id);
-    }
+    // for(auto pool : *(this->memoryPools)){
+    //     pool->recycle(meta->disk_block_id);
+    // }
     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
         meta->skiplists[type].clear();
     }
