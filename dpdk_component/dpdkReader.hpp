@@ -93,7 +93,7 @@ class DPDKReader{
     u_int64_t calDiff(u_int64_t offset, u_int64_t last_offset);
     u_int64_t calIndexNodeLen(u_int32_t key_len, u_int32_t level);
 
-    bool writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts);
+    bool writeIndexToRing(u_int64_t value, FlowMetadata& meta, u_int64_t ts);
     void bindCore(u_int32_t cpu);
 
 public:

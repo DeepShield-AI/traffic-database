@@ -276,7 +276,7 @@ u_int64_t DPDKReader::calIndexNodeLen(u_int32_t key_len, u_int32_t level){
     return len;
 }
 
-bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata meta, u_int64_t ts){
+bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata& meta, u_int64_t ts){
     Index* index = new Index();
     index->ts = ts;
     index->position = value;

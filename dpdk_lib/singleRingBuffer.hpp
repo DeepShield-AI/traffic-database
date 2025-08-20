@@ -93,7 +93,9 @@ public:
             printf("ring buffer wait\n");
         } // wait util not writed
 
-        this->pointers[pos] = data;
+        u_int64_t real_pos = (pos % (this->capacity_ / 8)) * 8 + pos / (this->capacity_ / 8);
+
+        this->pointers[real_pos] = data;
         // printf("node pos insert:%lu\n",(u_int64_t)index->node);
         // this->signalBuffer_[pos] = true;
         this->writePos ++;
@@ -120,7 +122,9 @@ public:
         //     return nullptr;
         // }
 
-        void* data = this->pointers[pos];
+        u_int64_t real_pos = (pos % (this->capacity_ / 8)) * 8 + pos / (this->capacity_ / 8);
+
+        void* data = this->pointers[real_pos];
 
         // Index* index = (Index*)data;
         // printf("node pos get:%lu\n",(u_int64_t)index->node);
