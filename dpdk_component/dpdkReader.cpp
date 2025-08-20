@@ -278,7 +278,7 @@ u_int64_t DPDKReader::calIndexNodeLen(u_int32_t key_len, u_int32_t level){
 
 bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata& meta, u_int64_t ts){
 
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
 
     Index* index = new Index();
     index->ts = ts;
@@ -286,14 +286,14 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata& meta, u_int64_t
     index->meta = meta;
     index->disk_block_id = value / this->block_size;
 
-    auto end = std::chrono::high_resolution_clock::now();
-    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    // auto end = std::chrono::high_resolution_clock::now();
+    // this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     if(!this->indexRing->put((void*)index)){
         return false;
     }
-    start = std::chrono::high_resolution_clock::now();
-    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+    // start = std::chrono::high_resolution_clock::now();
+    // this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
 
     return true;
 }
@@ -793,15 +793,15 @@ int DPDKReader::run(){
     this->writeCell = this->diskWriteCell->fetch_add(1);
     
     while(true){
-        auto wait_start = std::chrono::high_resolution_clock::now();
+        // auto wait_start = std::chrono::high_resolution_clock::now();
         ts = rte_rdtsc();
         
         nb_rx = this->dpdk->getRXBurst(bufs,this->port_id,this->rx_id);
-        auto wait_end = std::chrono::high_resolution_clock::now();
+        // auto wait_end = std::chrono::high_resolution_clock::now();
 
-        if (has_start){
-            wait_time += std::chrono::duration_cast<std::chrono::microseconds>(wait_end - wait_start).count();
-        }
+        // if (has_start){
+        //     wait_time += std::chrono::duration_cast<std::chrono::microseconds>(wait_end - wait_start).count();
+        // }
         
         if(nb_rx == 0 && !(this->stop)){
             continue;
@@ -813,9 +813,9 @@ int DPDKReader::run(){
         // int err = 0;
         for(int i=0;i<nb_rx;++i){
             pkt_count ++;
-            auto total_start = std::chrono::high_resolution_clock::now();
+            // auto total_start = std::chrono::high_resolution_clock::now();
 
-            auto read_start = std::chrono::high_resolution_clock::now();
+            // auto read_start = std::chrono::high_resolution_clock::now();
             this->readPacket(bufs[i],ts,&meta);
             if(meta.data == nullptr){
                 std::cout << "DPDK Reader log: read over." << std::endl;
@@ -836,10 +836,10 @@ int DPDKReader::run(){
                 continue;
             }
 
-            auto read_end = std::chrono::high_resolution_clock::now();
-            read_time += std::chrono::duration_cast<std::chrono::microseconds>(read_end - read_start).count();
+            // auto read_end = std::chrono::high_resolution_clock::now();
+            // read_time += std::chrono::duration_cast<std::chrono::microseconds>(read_end - read_start).count();
 
-            auto analysis_start = std::chrono::high_resolution_clock::now();
+            // auto analysis_start = std::chrono::high_resolution_clock::now();
             FlowMetadata flow_meta = this->getFlowMetaData(meta);
             if(flow_meta.sourceAddress.size() == 0){
                 printf("DPDK Reader error: Non-IP L3 protocol!\n");
@@ -847,38 +847,38 @@ int DPDKReader::run(){
                 rte_pktmbuf_free(bufs[i]);
                 continue;
             }
-            auto analysis_end = std::chrono::high_resolution_clock::now();
-            analysis_time += std::chrono::duration_cast<std::chrono::microseconds>(analysis_end - analysis_start).count();
+            // auto analysis_end = std::chrono::high_resolution_clock::now();
+            // analysis_time += std::chrono::duration_cast<std::chrono::microseconds>(analysis_end - analysis_start).count();
 
-            auto aggregate_start = std::chrono::high_resolution_clock::now();
+            // auto aggregate_start = std::chrono::high_resolution_clock::now();
             u_int64_t last = this->packetAggregator->addPacket(flow_meta,_offset,ts, this->disk_size);
-            auto aggregate_end = std::chrono::high_resolution_clock::now();
-            aggregate_time += std::chrono::duration_cast<std::chrono::microseconds>(aggregate_end - aggregate_start).count();
+            // auto aggregate_end = std::chrono::high_resolution_clock::now();
+            // aggregate_time += std::chrono::duration_cast<std::chrono::microseconds>(aggregate_end - aggregate_start).count();
 
             
             if(last != std::numeric_limits<uint64_t>::max()){
                 // printf("%lu\n",last);
-                auto write_start = std::chrono::high_resolution_clock::now();
+                // auto write_start = std::chrono::high_resolution_clock::now();
                 this->writePacketToPacketBuffer(meta,ts,_offset,false);
-                auto write_end = std::chrono::high_resolution_clock::now();
+                // auto write_end = std::chrono::high_resolution_clock::now();
                 
                 u_int32_t diff = (u_int32_t)this->calDiff(_offset,last);
                 this->writeBefore((const char*)(&diff),sizeof(diff),last);
-                write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
+                // write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
             }else{
                 /* with index */
-                auto write_start = std::chrono::high_resolution_clock::now();
+                // auto write_start = std::chrono::high_resolution_clock::now();
                 this->writePacketToPacketBuffer(meta,ts,_offset,true);
-                auto write_end = std::chrono::high_resolution_clock::now();
-                write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
-                auto index_start = std::chrono::high_resolution_clock::now();
+                // auto write_end = std::chrono::high_resolution_clock::now();
+                // write_time += std::chrono::duration_cast<std::chrono::microseconds>(write_end - write_start).count();
+                // auto index_start = std::chrono::high_resolution_clock::now();
                 u_int64_t value = this->calValue(_offset);
                 if(!this->writeIndexToRing(value,flow_meta,ts)){
                     printf("DPDK Reader error: write index to ring failed!\n");
                 }
                 index_count++;
-                auto index_end = std::chrono::high_resolution_clock::now();
-                index_time += std::chrono::duration_cast<std::chrono::microseconds>(index_end - index_start).count();
+                // auto index_end = std::chrono::high_resolution_clock::now();
+                // index_time += std::chrono::duration_cast<std::chrono::microseconds>(index_end - index_start).count();
             }
             
 
@@ -888,14 +888,14 @@ int DPDKReader::run(){
 
             // printf("packet offset: %lu, l3 offset: %lu, l4 offset: %lu.\n",_offset,info->l3_offset,info->l4_offset);
             
-            auto delete_start = std::chrono::high_resolution_clock::now();
+            // auto delete_start = std::chrono::high_resolution_clock::now();
             meta.data = nullptr;
             rte_pktmbuf_free(bufs[i]);
-            auto delete_end = std::chrono::high_resolution_clock::now();
-            delete_time += std::chrono::duration_cast<std::chrono::microseconds>(delete_end - delete_start).count();
+            // auto delete_end = std::chrono::high_resolution_clock::now();
+            // delete_time += std::chrono::duration_cast<std::chrono::microseconds>(delete_end - delete_start).count();
 
-            auto total_end = std::chrono::high_resolution_clock::now();
-            total_time += std::chrono::duration_cast<std::chrono::microseconds>(total_end - total_start).count();
+            // auto total_end = std::chrono::high_resolution_clock::now();
+            // total_time += std::chrono::duration_cast<std::chrono::microseconds>(total_end - total_start).count();
         }
         nb_rx = 0;
         // if(err){
