@@ -277,14 +277,24 @@ u_int64_t DPDKReader::calIndexNodeLen(u_int32_t key_len, u_int32_t level){
 }
 
 bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata& meta, u_int64_t ts){
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     Index* index = new Index();
     index->ts = ts;
     index->position = value;
     index->meta = meta;
     index->disk_block_id = value / this->block_size;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
     if(!this->indexRing->put((void*)index)){
         return false;
     }
+    start = std::chrono::high_resolution_clock::now();
+    this->put_time += std::chrono::duration_cast<std::chrono::microseconds>(start - end).count();
+
     return true;
 }
 

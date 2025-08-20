@@ -7,6 +7,7 @@
 #include "packetAggregator.hpp"
 
 #define INDEX_NUM IndexType::TOTAL_INDEX
+#define RING_BUFFER_CAPICITY 1024lu*1024lu*32lu
 
 enum IndexType{
     SRCIP = 0,

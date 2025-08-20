@@ -7,6 +7,7 @@
 #include "header.hpp"
 #include "skipList.hpp"
 #include "util.hpp"
+#define CACHE_LINE_LEN 64
 
 // write Not covered, read covered
 class PointerRingBuffer{
@@ -16,8 +17,10 @@ private:
     // std::atomic_uint64_t readPos;
     // std::atomic_uint_fast64_t writePos;
     // std::atomic_uint_fast64_t readPos;
-    u_int64_t writePos;
-    u_int64_t readPos;
+    alignas(CACHE_LINE_LEN) u_int64_t writePos;
+    char writepadding[CACHE_LINE_LEN - sizeof(uint64_t)];
+    alignas(CACHE_LINE_LEN) u_int64_t readPos;
+    char readpadding[CACHE_LINE_LEN - sizeof(uint64_t)];
 
     void** pointers;
     // std::atomic_bool* signalBuffer_;
@@ -68,48 +71,33 @@ public:
         // delete this->signalBuffer_;
     }
     bool put(void* data){
-        if(this->pointers == nullptr){
-            printf("Pointer ring buffer error: put with null pointers!\n");
-            return false;
-        }
-
-        u_int64_t pos = this->writePos;// notice writePos is an automic variable
-        pos %= this->capacity_;
-        // printf("put at %llu.\n",pos);
-
-        // Index* index = (Index*)data;
-        // if (index->id == IndexType::SRCIP || index->id == IndexType::DSTIP){
-        //     SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
-        //     printf("node value insert: %lu\n",ipNode->value);
-        // } else if (index->id == IndexType::SRCPORT || index->id == IndexType::DSTPORT){
-        //     SkipListNode<u_int16_t,u_int64_t>* ipNode = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
-        //     printf("node value insert: %lu\n",ipNode->value);
-        // } else if (index->id == IndexType::SRCIPv6 || index->id == IndexType::DSTIPv6){
-        //     SkipListNode<IPv6Address,u_int64_t>* ipNode = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
-        //     printf("node value insert: %lu\n",ipNode->value);
+        // if(this->pointers == nullptr){
+        //     printf("Pointer ring buffer error: put with null pointers!\n");
+        //     return false;
         // }
+
+        u_int64_t pos = this->writePos;
+        pos &= this->capacity_ - 1;
         
         while(this->writePos == this->capacity_ - 1 + this->readPos){
             printf("ring buffer wait\n");
         } // wait util not writed
 
-        u_int64_t real_pos = (pos % (this->capacity_ / 8)) * 8 + pos / (this->capacity_ / 8);
+        u_int64_t real_pos = ((pos & ((this->capacity_ >> 3) - 1)) << 3) + pos / (this->capacity_ >> 3);
 
         this->pointers[real_pos] = data;
-        // printf("node pos insert:%lu\n",(u_int64_t)index->node);
-        // this->signalBuffer_[pos] = true;
         this->writePos ++;
 
         return true;
     }
     void* get(){
-        if(this->pointers == nullptr){
-            printf("Pointer ring buffer error: get with null pointers!\n");
-            return nullptr;
-        }
+        // if(this->pointers == nullptr){
+        //     printf("Pointer ring buffer error: get with null pointers!\n");
+        //     return nullptr;
+        // }
         
-        u_int64_t pos = this->readPos; // notice readPos is an automic variable
-        pos %= this->capacity_;
+        u_int64_t pos = this->readPos;
+        pos &= this->capacity_ - 1;
 
         while(this->writePos == this->readPos){
             if(this->stop){
@@ -117,30 +105,11 @@ public:
             }
         } // wait util writed
 
-        // printf("get at %llu.\n",pos);
-        // if(!this->stop){
-        //     return nullptr;
-        // }
-
-        u_int64_t real_pos = (pos % (this->capacity_ / 8)) * 8 + pos / (this->capacity_ / 8);
+        u_int64_t real_pos = ((pos & ((this->capacity_ >> 3) - 1)) << 3) + pos / (this->capacity_ >> 3);
 
         void* data = this->pointers[real_pos];
-
-        // Index* index = (Index*)data;
-        // printf("node pos get:%lu\n",(u_int64_t)index->node);
-        // if (index->id == IndexType::SRCIP || index->id == IndexType::DSTIP){
-        //     SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)index->node;
-        //     printf("node value get: %lu\n",ipNode->value);
-        // } else if (index->id == IndexType::SRCPORT || index->id == IndexType::DSTPORT){
-        //     SkipListNode<u_int16_t,u_int64_t>* ipNode = (SkipListNode<u_int16_t,u_int64_t>*)index->node;
-        //     printf("node value get: %lu\n",ipNode->value);
-        // } else if (index->id == IndexType::SRCIPv6 || index->id == IndexType::DSTIPv6){
-        //     SkipListNode<IPv6Address,u_int64_t>* ipNode = (SkipListNode<IPv6Address,u_int64_t>*)index->node;
-        //     printf("node value get: %lu\n",ipNode->value);
-        // }
         this->readPos ++;
-        // this->signalBuffer_[pos] = false;
-        
+ 
         return data;
     }
     bool initSucceed()const{
