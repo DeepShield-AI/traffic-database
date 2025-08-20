@@ -42,12 +42,12 @@ public:
             // this->signalBuffer_ = nullptr;
             return;
         }
-        this->pointers = new void*[this->capacity_];
-        // this->pointers = (void**)mmap(nullptr, this->capacity_ * sizeof(void*), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
-        // if (this->pointers == MAP_FAILED){
-        //     printf("Pointer ring buffer error: mmap failed for blocks!\n");
-        //     throw std::runtime_error("memory manager mmap failed");
-        // }
+        // this->pointers = new void*[this->capacity_];
+        this->pointers = (void**)mmap(nullptr, this->capacity_ * sizeof(void*), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
+        if (this->pointers == MAP_FAILED){
+            printf("Pointer ring buffer error: mmap failed for blocks!\n");
+            throw std::runtime_error("memory manager mmap failed");
+        }
         for(u_int32_t i = 0;i<this->capacity_;++i){
             this->pointers[i] = nullptr;
         }
