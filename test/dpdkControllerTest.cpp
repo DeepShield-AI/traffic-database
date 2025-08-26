@@ -23,6 +23,7 @@ u_int64_t index_disk_size = 256lu*1024lu*1024lu*1024lu;
 u_int64_t index_block_size = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_capacity = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_list_len_each = 1024;
+u_int64_t disk_read_size = 1024lu*1024lu*2lu;
 
 u_int64_t data_block_cache_num = 16;
 u_int64_t index_buffer_cache_num = 64;
@@ -114,6 +115,7 @@ int main(){
    init_data.data_block_size = data_block_size;
    init_data.index_disk_size = index_disk_size;
    init_data.index_block_size = index_block_size;
+   init_data.disk_read_size = disk_read_size;
 
    init_data.memory_pool_capacity_each = memory_pool_capacity/nb_rx;
    init_data.memory_pool_list_len_each = memory_pool_list_len_each;

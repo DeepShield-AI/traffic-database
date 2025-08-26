@@ -136,7 +136,7 @@ void DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts, u_int
                 }
             }
             // printf("a2\n");
-            u_int64_t next_pos = ((this->writeCell + this->cell_num - tmp_cell - 1) % this->cell_num) * this->cell_size;
+            u_int64_t next_pos = this->writeCell;
             while (!this->block_buffer->writeBlock((const char*)(&next_pos),sizeof(u_int64_t),_offset + tmp_len,this->thread_id,true,false,ts)){
                 printf("DPDK reader warning: write cell pointer to block buffer on %lu failed, retrying...\n", _offset);
             }
@@ -168,7 +168,7 @@ void DPDKReader::writePacketToPacketBuffer(PacketMeta& meta, u_int64_t ts, u_int
             }
         }
         // printf("d\n");
-        u_int64_t next_pos = ((this->writeCell + this->cell_num - tmp_cell - 1) % this->cell_num) * this->cell_size;
+        u_int64_t next_pos = this->writeCell;
         while (!this->block_buffer->writeBlock((const char*)(&next_pos),sizeof(u_int64_t),_offset + tmp_len,this->thread_id,true,false,ts)){
             printf("DPDK reader warning: write cell pointer to block buffer on %lu failed, retrying...\n", _offset);
         }

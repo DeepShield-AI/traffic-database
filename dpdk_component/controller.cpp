@@ -564,11 +564,11 @@ void Controller::init(InitData init_data){
 
     // this->pcapHeader = init_data.pcap_header;
 
-    this->querierDataAgent = new DiskAgent(init_data.data_disk_size, init_data.data_block_size, init_data.data_disk_offset, this->data_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
+    this->querierDataAgent = new DiskAgent(init_data.data_disk_size, init_data.data_block_size/init_data.nb_rx, init_data.data_disk_offset, this->data_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
     // printf("a\n");
-    this->querierIndexAgent = new DiskAgent(init_data.index_disk_size, init_data.index_block_size, init_data.index_disk_offset, this->index_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
+    this->querierIndexAgent = new DiskAgent(init_data.index_disk_size, init_data.disk_read_size, init_data.index_disk_offset, this->index_disk_fd, init_data.agent_ring_depth, init_data.agent_ring_idle_time);
     // printf("b\n");
-    this->querier = new Querier(this->diskMeta,this->querierIndexAgent,this->querierDataAgent);
+    this->querier = new Querier(this->diskMeta,this->querierIndexAgent,this->querierDataAgent,init_data.index_block_size,init_data.data_block_size,init_data.disk_read_size,init_data.data_block_size/init_data.nb_rx);
     // printf("c\n");
 }
 

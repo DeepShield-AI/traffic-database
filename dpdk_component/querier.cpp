@@ -28,65 +28,11 @@ const std::string opt[] = {"==", "!=", ">=", "<=", "contains", ">", "<"};
 //     return storageMetas->size();
 // }
 
-void printPacket(char* data, u_int64_t len){
-    uint8_t version = ((*(u_int8_t*)data) >> 4) & 0x0F;
-    // printf("version: %u\n",version);
-    if(version == 4){
-        const struct ip_header* ip_protocol = (const struct ip_header *)(data);
-        const u_int16_t* sport = (const u_int16_t*)(data + ip_protocol->ip_header_length * 4);
-        const u_int16_t* dport = sport + 1;
-        u_int32_t srcip = htonl(ip_protocol->ip_source_address);
-        u_int32_t dstip = htonl(ip_protocol->ip_destination_address);
-        printf("%u.%u.%u.%u:%u->%u.%u.%u.%u:%u\n",
-            (srcip >> 24) & 0xff,(srcip >> 16) & 0xff,(srcip >> 8) & 0xff,srcip & 0xff, htons(*sport),
-            (dstip >> 24) & 0xff,(dstip >> 16) & 0xff,(dstip >> 8) & 0xff,dstip & 0xff, htons(*dport));
-    }
-}
 
-u_int64_t readPacket(u_int64_t offset, char* buffer, u_int64_t cell_size){
-    u_int64_t cell_pos = offset % cell_size;
-    char* packet = nullptr;
-    u_int64_t packet_len = 0;
-    u_int64_t next = 0;
-    // printf("cell pos:%lu\n",cell_pos);
-    if (cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) > cell_size){
-        u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
-        u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
-        u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t);
-        pcap_header header;
-        memcpy(&header,buffer + offset,tmp_len);
-        memcpy((char*)&header + tmp_len,buffer + cell_tail,sizeof(pcap_header)-tmp_len);
-        packet_len = header.caplen;
-        packet = buffer + cell_tail + sizeof(pcap_header) - tmp_len;
-        next = header.len;
-    }else{
-        pcap_header header;
-        // printf("offset: %lu\n",offset);
-        memcpy(&header,buffer + offset,sizeof(pcap_header));
-        packet_len = header.caplen;
-        // printf("len:%lu\n",packet_len);
-        next = header.len;
-        if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
-            packet = new char[packet_len];
-            u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
-            u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
-            u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t) - sizeof(pcap_header);
-            memcpy(packet,buffer+offset + sizeof(pcap_header),tmp_len);
-            memcpy(packet,buffer+cell_tail,packet_len - tmp_len);
-        }else{
-            packet = buffer + offset + sizeof(pcap_header);
-        }
-    }
-    printPacket(packet,packet_len);
-    if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) <= cell_size && cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
-        delete packet;
-    }
-    return next;
-}
 
 template <class KeyType>
-std::list<u_int64_t> binarySearch(char* index, u_int64_t index_len, KeyType key){
-    std::list<u_int64_t> ret = std::list<u_int64_t>();
+void binarySearch(char* index, u_int64_t index_len, KeyType key, std::vector<u_int64_t>& ret){
+    // std::vector<u_int64_t> ret = std::vector<u_int64_t>();
     u_int64_t ele_len = sizeof(KeyType) + sizeof(u_int64_t);
     u_int64_t left = 0;
     u_int64_t right = index_len/ele_len;
@@ -112,7 +58,7 @@ std::list<u_int64_t> binarySearch(char* index, u_int64_t index_len, KeyType key)
         u_int64_t value = *(u_int64_t*)(index + left * ele_len + sizeof(KeyType));
         ret.push_back(value);
     }
-    return ret;
+    // return ret;
 }
 
 template <class KeyType>
@@ -251,6 +197,150 @@ enum LastType{
     COMMA, //next with value
     LAST_TYPE_NUM,
 };
+
+void printPacket(char* data, u_int64_t len){
+    uint8_t version = ((*(u_int8_t*)data) >> 4) & 0x0F;
+    // printf("version: %u\n",version);
+    if(version == 4){
+        const struct ip_header* ip_protocol = (const struct ip_header *)(data);
+        const u_int16_t* sport = (const u_int16_t*)(data + ip_protocol->ip_header_length * 4);
+        const u_int16_t* dport = sport + 1;
+        u_int32_t srcip = htonl(ip_protocol->ip_source_address);
+        u_int32_t dstip = htonl(ip_protocol->ip_destination_address);
+        printf("%u.%u.%u.%u:%u->%u.%u.%u.%u:%u\n",
+            (srcip >> 24) & 0xff,(srcip >> 16) & 0xff,(srcip >> 8) & 0xff,srcip & 0xff, htons(*sport),
+            (dstip >> 24) & 0xff,(dstip >> 16) & 0xff,(dstip >> 8) & 0xff,dstip & 0xff, htons(*dport));
+    }
+}
+
+u_int64_t readPacket(u_int64_t offset, char* buffer, u_int64_t cell_size){
+    u_int64_t cell_pos = offset % cell_size;
+    char* packet = nullptr;
+    u_int64_t packet_len = 0;
+    u_int64_t next = 0;
+    // printf("cell pos:%lu\n",cell_pos);
+    if (cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) > cell_size){
+        u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
+        u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
+        u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t);
+        pcap_header header;
+        memcpy(&header,buffer + offset,tmp_len);
+        memcpy((char*)&header + tmp_len,buffer + cell_tail,sizeof(pcap_header)-tmp_len);
+        packet_len = header.caplen;
+        packet = buffer + cell_tail + sizeof(pcap_header) - tmp_len;
+        next = header.len;
+    }else{
+        pcap_header header;
+        // printf("offset: %lu\n",offset);
+        memcpy(&header,buffer + offset,sizeof(pcap_header));
+        packet_len = header.caplen;
+        // printf("len:%lu\n",packet_len);
+        next = header.len;
+        if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
+            packet = new char[packet_len];
+            u_int64_t cell_tail_pos = offset / cell_size + cell_size - sizeof(u_int64_t);
+            u_int64_t cell_tail = *(u_int64_t*)(buffer + cell_tail_pos);
+            u_int64_t tmp_len = cell_size - cell_pos - sizeof(u_int64_t) - sizeof(pcap_header);
+            memcpy(packet,buffer+offset + sizeof(pcap_header),tmp_len);
+            memcpy(packet,buffer+cell_tail,packet_len - tmp_len);
+        }else{
+            packet = buffer + offset + sizeof(pcap_header);
+        }
+    }
+    printPacket(packet,packet_len);
+    if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) <= cell_size && cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > cell_size){
+        delete packet;
+    }
+    return next;
+}
+
+void Querier::readPackets(std::vector<u_int64_t>& offset_list){
+    u_int64_t total_len = offset_list.size();
+    u_int64_t now_id = 0;
+    u_int64_t buffer_len = this->dataBufferSize / this->cellSize;
+    u_int64_t now_buffer_id = 0;
+    u_int64_t next_buffer_id = 0;
+    u_int64_t last_cell_id = std::numeric_limits<u_int64_t>::max();
+    while (now_id < total_len){
+
+        auto offset = offset_list[now_id];
+
+        if (now_id + 1 < total_len && offset_list[now_id + 1] < offset){
+            offset_list[now_id] = offset_list[now_id + 1];
+            offset_list[now_id + 1] = offset;
+            offset = offset_list[now_id];
+        }
+
+        u_int64_t cell_pos = offset % this->cellSize;
+        char* packet = nullptr;
+        u_int64_t packet_len = 0;
+        u_int64_t next = 0;
+        u_int64_t cell_id = offset / this->cellSize;
+
+        if (last_cell_id != cell_id){
+            if (!this->dataAgent->read(this->dataBuffer + next_buffer_id * this->cellSize, cell_id)){
+                printf("Querier error: read data block %lu failed!\n", cell_id);
+                return;
+            }
+            last_cell_id = cell_id;
+            now_buffer_id = next_buffer_id;
+            next_buffer_id ++;
+            if (next_buffer_id >= buffer_len){
+                next_buffer_id = 0;
+            }   
+        }
+        
+        if (cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) > this->cellSize){
+            u_int64_t cell_tail_pos = this->cellSize - sizeof(u_int64_t);
+
+            u_int64_t cell_tail = *(u_int64_t*)(this->dataBuffer + now_buffer_id * this->cellSize + cell_tail_pos);
+            u_int64_t tmp_len = this->cellSize - cell_pos - sizeof(u_int64_t);
+            pcap_header header;
+
+            if (!this->dataAgent->read(this->dataBuffer + next_buffer_id * this->cellSize, cell_tail)){
+                printf("Querier error: read data block %lu failed!\n", cell_id);
+                return;
+            }
+
+            memcpy(&header, this->dataBuffer + now_buffer_id * this->cellSize + cell_pos,tmp_len);
+            memcpy((char*)&header + tmp_len, this->dataBuffer + next_buffer_id * this->cellSize,sizeof(pcap_header)-tmp_len);
+            packet_len = header.caplen;
+            packet = this->dataBuffer + next_buffer_id * this->cellSize + sizeof(pcap_header) - tmp_len;
+            next = header.len;
+        }else{
+            pcap_header header;
+            // printf("offset: %lu\n",offset);
+            memcpy(&header,this->dataBuffer + now_buffer_id * this->cellSize + cell_pos, sizeof(pcap_header));
+            packet_len = header.caplen;
+            // printf("len:%lu\n",packet_len);
+            next = header.len;
+            if(cell_pos + sizeof(pcap_header) + sizeof(u_int64_t) + packet_len > this->cellSize){
+                packet = new char[packet_len];
+                u_int64_t cell_tail_pos = this->cellSize - sizeof(u_int64_t);
+                u_int64_t cell_tail = *(u_int64_t*)(this->dataBuffer + now_buffer_id * this->cellSize + cell_tail_pos);
+                u_int64_t tmp_len = this->cellSize - cell_pos - sizeof(u_int64_t) - sizeof(pcap_header);
+
+                if (!this->dataAgent->read(this->dataBuffer + next_buffer_id * this->cellSize, cell_tail)){
+                    printf("Querier error: read data block %lu failed!\n", cell_id);
+                    return;
+                }
+
+                memcpy(packet,this->dataBuffer + now_buffer_id * this->cellSize + cell_pos + sizeof(pcap_header),tmp_len);
+                memcpy(packet,this->dataBuffer + next_buffer_id * this->cellSize,packet_len - tmp_len);
+            }else{
+                packet = this->dataBuffer + now_buffer_id * this->cellSize + cell_pos + sizeof(pcap_header);
+            }
+        }
+
+        printPacket(packet,packet_len);
+
+        if(next == 0 || next == std::numeric_limits<uint32_t>::max()){
+            now_id ++;
+            continue;
+        }
+        offset_list[now_id] = offset + next;
+    }
+}
 
 void QueryTree::clearTree(QueryTreeNode* node){
     if(node == nullptr){
@@ -595,52 +685,122 @@ std::list<std::string> Querier::decomposeExpression(){
     }
     return this->tree.getExpList();
 }
-std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
-    std::list<Answer> ret = std::list<Answer>();
-    // std::ifstream indexFile(index_name[key.cachePos],std::ios::binary);
-    if(this->diskBuffer->checkKey(0,(void*)(&key.key[0]),(IndexType)key.cachePos)){
-        printf("Contain.\n");
-    }else{
-        printf("Not contain.\n");
-        return ret;
-    }
-    u_int64_t index_start = this->diskBuffer->getDiskMeta(0)->disk_index_meta[key.cachePos * 2];
-    u_int64_t index_end = this->diskBuffer->getDiskMeta(0)->disk_index_meta[key.cachePos * 2 + 1];
-    printf("Index start: %lu, index end: %lu.\n",index_start,index_end);
 
-    u_int64_t index_start_id = index_start/this->indexAgent->getBlockSize();
-    u_int64_t index_end_id = index_end/this->indexAgent->getBlockSize();
+std::vector<u_int64_t> Querier::getIndexRange(AtomKey key){
+    std::vector<u_int64_t> index_list = std::vector<u_int64_t>();
+    for (u_int64_t i = 0; i<1; ++ i){
+        if(this->diskBuffer->checkKey(i,(void*)(&key.key[0]),(IndexType)key.cachePos)){
+            printf("Contain.\n");
+        }else{
+            printf("Not contain.\n");
+            continue;
+        }
+        index_list.push_back(this->diskBuffer->getDiskMeta(i)->disk_index_meta[key.cachePos * 2]);
+        index_list.push_back(this->diskBuffer->getDiskMeta(i)->disk_index_meta[key.cachePos * 2 + 1]);
+    }
+    return index_list;
+}
 
-    if(index_end_id > index_start_id + 1){
-        printf("Index is too long!\n");
-        return ret;
-    }
-    
-    if(!this->indexAgent->read(this->indexBuffer,index_start_id)){
-        printf("Read fail!\n");
-        return ret;
-    }
-    if(index_end_id != index_start_id){
-        if(!this->indexAgent->read(this->indexBuffer + this->indexAgent->getBlockSize(),index_end_id)){
-            printf("Read fail!\n");
-            return ret;
+std::vector<u_int64_t> Querier::getOffsetList(std::vector<u_int64_t>& index_list, AtomKey key){
+    std::vector<u_int64_t> offset_list = std::vector<u_int64_t>();
+    u_int64_t last_id = std::numeric_limits<u_int64_t>::max();
+    u_int64_t last_end = std::numeric_limits<u_int64_t>::max();
+    for (u_int64_t i=0;i<index_list.size();i+=2){
+        // u_int64_t count = 0;
+        // for(u_int64_t j = index_list[i]/this->readBlockSize;j<=index_list[i+1]/this->readBlockSize;++j){
+        //     if(last_id == j){
+        //         memcpy(this->indexBuffer + this->readBlockSize * count,this->indexBuffer + this->readBlockSize * last_end,this->readBlockSize);
+        //     }else{
+        //         if(!this->indexAgent->read(this->indexBuffer + this->readBlockSize * count,j)){
+        //             printf("Read fail!\n");
+        //             return offset_list;
+        //         }
+        //     }
+        //     count ++;
+        // }
+        printf("Index range: %lu - %lu\n",index_list[i],index_list[i+1]);
+        if (last_id == index_list[i]/this->readBlockSize){
+            memcpy(this->indexBuffer,this->indexBuffer + this->readBlockSize * last_end,this->readBlockSize);
+            last_id = index_list[i+1]/this->readBlockSize;
+            last_end = last_id - index_list[i]/this->readBlockSize;
+            if(last_end == 0){
+                continue;
+            }
+            if(!this->indexAgent->read(this->indexBuffer + this->readBlockSize, index_list[i]/this->readBlockSize + 1, last_id)){
+                printf("Read fail!\n");
+                return offset_list;
+            }
+        }else{
+            last_id = index_list[i+1]/this->readBlockSize;
+            last_end = last_id - index_list[i]/this->readBlockSize;
+            if(!this->indexAgent->read(this->indexBuffer, index_list[i]/this->readBlockSize, last_id)){
+                printf("Read fail!\n");
+                return offset_list;
+            }
+        }
+        if(key.cachePos == SRCIP || DSTIP){
+            binarySearch(this->indexBuffer + (index_list[i] % this->readBlockSize),index_list[i+1] - index_list[i],*((u_int32_t*)(&key.key[0])),offset_list);
+        }else if(key.cachePos == SRCPORT || DSTPORT){
+            binarySearch(this->indexBuffer + (index_list[i] % this->readBlockSize),index_list[i+1] - index_list[i],*((u_int16_t*)(&key.key[0])),offset_list);
+        // }else if(key.cachePos == SRCIPv6 || DSTIPv6){
+        //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((IPv6Address*)(&key.key[0])));
         }
     }
+    return offset_list;
+}
+
+std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
+    std::list<Answer> ret = std::list<Answer>();
+    auto start = std::chrono::high_resolution_clock::now();
+    // std::ifstream indexFile(index_name[key.cachePos],std::ios::binary);
+    
+    // u_int64_t index_start = this->diskBuffer->getDiskMeta(0)->disk_index_meta[key.cachePos * 2];
+    // u_int64_t index_end = this->diskBuffer->getDiskMeta(0)->disk_index_meta[key.cachePos * 2 + 1];
+    // printf("Index start: %lu, index end: %lu.\n",index_start,index_end);
+
+    // u_int64_t index_start_id = index_start/this->indexAgent->getBlockSize();
+    // u_int64_t index_end_id = index_end/this->indexAgent->getBlockSize();
+
+    auto index_list = this->getIndexRange(key);
+
+    std::vector<u_int64_t> tmp = this->getOffsetList(index_list,key);
+
+    // for (u_int64_t i=0;i<index_list.size();i+=2){
+    //     u_int64_t index_start_id = index_list[i]/this->indexAgent->getBlockSize();
+    //     u_int64_t index_end_id = index_list[i+1]/this->indexAgent->getBlockSize();
+    // }
+
+    // if(index_end_id > index_start_id + 1){
+    //     printf("Index is too long!\n");
+    //     return ret;
+    // }
+    
+    // if(!this->indexAgent->read(this->indexBuffer,index_start_id)){
+    //     printf("Read fail!\n");
+    //     return ret;
+    // }
+    // if(index_end_id != index_start_id){
+    //     if(!this->indexAgent->read(this->indexBuffer + this->indexAgent->getBlockSize(),index_end_id)){
+    //         printf("Read fail!\n");
+    //         return ret;
+    //     }
+    // }
 
     // printf("%u\n",this->indexBuffer[0]);
     // for(u_int64_t i = 0; i<100;++i){
     //     printf("%u.%u.%u.%u\n",(u_int8_t)(this->indexBuffer[0 + i*12]),(u_int8_t)(this->indexBuffer[1+i*12]),(u_int8_t)(this->indexBuffer[2+i*12]),(u_int8_t)(this->indexBuffer[3+i*12]));
     // }
 
-    std::list<u_int64_t> tmp;
-    if(key.cachePos == SRCIP || DSTIP){
-        tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((u_int32_t*)(&key.key[0])));
-    }else if(key.cachePos == SRCPORT || DSTPORT){
-        tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((u_int16_t*)(&key.key[0])));
-    // }else if(key.cachePos == SRCIPv6 || DSTIPv6){
-    //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((IPv6Address*)(&key.key[0])));
-    }
+    // std::list<u_int64_t> tmp;
+    // if(key.cachePos == SRCIP || DSTIP){
+    //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((u_int32_t*)(&key.key[0])));
+    // }else if(key.cachePos == SRCPORT || DSTPORT){
+    //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((u_int16_t*)(&key.key[0])));
+    // // }else if(key.cachePos == SRCIPv6 || DSTIPv6){
+    // //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((IPv6Address*)(&key.key[0])));
+    // }
 
+    sort(tmp.begin(),tmp.end());
     for(auto pos: tmp){
         printf("%lu ",pos);
     }
@@ -648,33 +808,45 @@ std::list<Answer> Querier::getPointerByFlowMetaIndex(AtomKey key){
 
     for(auto pos: tmp){
         u_int64_t offset = pos;
-        u_int64_t disk_id = offset / this->dataAgent->getBlockSize();
-        for(u_int64_t i = 0 ;i<3;++i){
-            if(!this->dataAgent->read(this->dataBuffer + this->dataAgent->getBlockSize() * i,disk_id + i)){
-                printf("Read fail!\n");
-                return ret;
-            }
-        }
-        u_int64_t new_disk_id = disk_id;
-        while(true){
-            if(new_disk_id != disk_id){
-                for(u_int64_t i = 0 ;i<3;++i){
-                    if(!this->dataAgent->read(this->dataBuffer + this->dataAgent->getBlockSize() * i,disk_id + i)){
-                        printf("Read fail!\n");
-                        return ret;
-                    }
-                }
-                new_disk_id = disk_id;
-            }
-            u_int64_t diff = readPacket(offset % this->dataAgent->getBlockSize(),this->dataBuffer,this->dataAgent->getBlockSize()/4);
-            printf("Diff: %lu\n",diff);
-            if(diff == std::numeric_limits<uint32_t>::max() || diff == 0){
-                break;
-            }
-            offset = offset + diff;
-            new_disk_id = offset / this->dataAgent->getBlockSize();
-        }
     }
+
+    this->readPackets(tmp);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    u_int64_t duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    printf("Querier log: query done, find %lu packets with %lu us.\n",this->packet_count,duration);
+
+    // for(auto pos: tmp){
+    //     u_int64_t offset = pos;
+    //     u_int64_t disk_id = offset / this->dataAgent->getBlockSize();
+    //     for(u_int64_t i = 0 ;i<3;++i){
+    //         if(!this->dataAgent->read(this->dataBuffer + this->dataAgent->getBlockSize() * i,disk_id + i)){
+    //             printf("Read fail!\n");
+    //             return ret;
+    //         }
+    //     }
+    //     u_int64_t new_disk_id = disk_id;
+    //     while(true){
+    //         if(new_disk_id != disk_id){
+    //             for(u_int64_t i = 0 ;i<3;++i){
+    //                 if(!this->dataAgent->read(this->dataBuffer + this->dataAgent->getBlockSize() * i,disk_id + i)){
+    //                     printf("Read fail!\n");
+    //                     return ret;
+    //                 }
+    //             }
+    //             new_disk_id = disk_id;
+    //         }
+    //         u_int64_t diff = readPacket(offset % this->dataAgent->getBlockSize(),this->dataBuffer,this->dataAgent->getBlockSize()/4);
+    //         printf("Diff: %lu\n",diff);
+    //         if(diff == std::numeric_limits<uint32_t>::max() || diff == 0){
+    //             break;
+    //         }
+    //         offset = offset + diff;
+    //         new_disk_id = offset / this->dataAgent->getBlockSize();
+    //     }
+    // }
 
     return ret;
     // if(!indexFile.is_open()){
@@ -1064,7 +1236,7 @@ bool Querier::runUnit(){
 
     u_int64_t duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-    printf("Querier log: query done, find %lu packets with %lu us.\n",this->packet_count,duration);
+    // printf("Querier log: query done, find %lu packets with %lu us.\n",this->packet_count,duration);
     return true;
 }
 

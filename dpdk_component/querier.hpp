@@ -64,6 +64,14 @@ class Querier{
     u_int64_t endTime;
     u_int64_t packet_count;
 
+    u_int64_t indexBlockSize;
+    u_int64_t dataBlockSize;
+    u_int64_t readBlockSize;
+    u_int64_t cellSize;
+
+    u_int64_t indexBufferSize;
+    u_int64_t dataBufferSize;
+
     // const std::string index_name[FLOW_META_INDEX_NUM] = {
     //     "./data/index/pcap.pcap_srcip_idx",
     //     "./data/index/pcap.pcap_dstip_idx",
@@ -95,6 +103,9 @@ class Querier{
     void join(std::list<Answer>& la, std::list<Answer>& lb);
 
     std::list<std::string> decomposeExpression();
+    std::vector<u_int64_t> getIndexRange(AtomKey key);
+    std::vector<u_int64_t> getOffsetList(std::vector<u_int64_t>& index_list, AtomKey key);
+    void readPackets(std::vector<u_int64_t>& offset_list);
     std::list<Answer> getPointerByFlowMetaIndex(AtomKey key);
     std::list<Answer> getPointerByFlowMetaRange(AtomKey startKey,AtomKey endKey);
     std::list<Answer> searchExpression(std::list<std::string> exp_list);
@@ -104,8 +115,8 @@ class Querier{
     void outputPacketToFile(std::list<Answer> flowHeadList);
     bool runUnit();
 public:
-    Querier(DiskBuffer* diskBuffer, DiskAgent* indexAgent, DiskAgent* dataAgent):
-        diskBuffer(diskBuffer),indexAgent(indexAgent),dataAgent(dataAgent){
+    Querier(DiskBuffer* diskBuffer, DiskAgent* indexAgent, DiskAgent* dataAgent, u_int64_t index_block_size, u_int64_t data_block_size, u_int64_t read_block_size, u_int64_t cell_size):
+        diskBuffer(diskBuffer),indexAgent(indexAgent),dataAgent(dataAgent),indexBlockSize(index_block_size),dataBlockSize(data_block_size),readBlockSize(read_block_size),cellSize(cell_size){
         // std::cout << "Querier construct." <<std::endl;
         // this->packetBuffer = packetBuffer;
         // this->packetPointer = packetPointer;
@@ -118,16 +129,19 @@ public:
         // this->indexBuffer = new char[this->indexAgent->getBlockSize()*2];
         // this->dataBuffer = new char[this->dataAgent->getBlockSize()];
 
-        if (posix_memalign((void**)&(this->indexBuffer), 4096, this->indexAgent->getBlockSize()*2)) {
+        this->indexBufferSize = this->indexBlockSize * 2;
+        this->dataBufferSize = this->dataBlockSize * 3;
+
+        if (posix_memalign((void**)&(this->indexBuffer), 4096, this->indexBufferSize)) {
             perror("posix_memalign");
             exit(1);
         }
-        memset(this->indexBuffer,0,this->indexAgent->getBlockSize()*2);
-        if (posix_memalign((void**)&(this->dataBuffer), 4096, this->dataAgent->getBlockSize()*3)) {
+        memset(this->indexBuffer,0,this->indexBufferSize);
+        if (posix_memalign((void**)&(this->dataBuffer), 4096, this->dataBufferSize)) {
             perror("posix_memalign");
             exit(1);
         }
-        memset(this->dataBuffer,0,this->dataAgent->getBlockSize()*3);
+        memset(this->dataBuffer,0,this->dataBufferSize);
         // std::cout << "Querier construct end." <<std::endl;
     }
     ~Querier()=default;
