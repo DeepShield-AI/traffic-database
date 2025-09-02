@@ -66,10 +66,10 @@ IndexBufferMeta* IndexPersister::checkAndGetMeta(){
         if (dstport_count < packet_count){
             continue;
         }
-        u_int64_t quartruple_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv4) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv6);
-        if (quartruple_count < packet_count){
-            continue;
-        }
+        // u_int64_t quartruple_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv4) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv6);
+        // if (quartruple_count < packet_count){
+        //     continue;
+        // }
 
         IndexBufferMeta* meta = this->indexBuffer->getIndexBufferMeta(this->index_block_buffer_thread_id);
         return meta;

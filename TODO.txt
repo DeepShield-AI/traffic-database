@@ -59,8 +59,8 @@ skiplist改回最初版本
     阶段二：DPDKReader提供聚合后首个数据包位置，IndexGenerator解析并创建node并排序，IndexPersister回收（不必要，瓶颈不在索引键值生成与复制，而是传递过程）
     阶段三：DPDKReader提供索引键值，IndexGenerator组建小顶堆，IndexPersister排序并回收
 
-DPDKReader提供索引键值，IndexGenerator组建小顶堆，IndexPersister排序并回收
-完善queier
+DPDKReader提供索引键值，IndexGenerator放入连续内存（不排序），IndexPersister排序并回收
+完善queier(基本完成，增加时间筛选即可，非必要)
 FloSIS流缓存方式实现
 不必要：Trie树等索引方式实现
 

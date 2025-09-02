@@ -16,8 +16,8 @@ enum IndexType{
     DSTPORT,
     SRCIPv6,
     DSTIPv6,
-    QUARTURPLEIPv4,
-    QUARTURPLEIPv6,
+    // QUARTURPLEIPv4,
+    // QUARTURPLEIPv6,
     TOTAL_INDEX,
 };
 

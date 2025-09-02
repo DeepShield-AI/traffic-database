@@ -61,13 +61,13 @@ struct IndexBufferMeta{
         // offset += IPV6_SKIPLISTNODE_HEAD_LEN;
         // this->skiplists[IndexType::DSTIPv6].addHead(dstIPv6Node);
 
-        this->skiplists[IndexType::QUARTURPLEIPv4].init(sizeof(QuarTurpleIPv4) * 8, sizeof(QuarTurpleIPv4), sizeof(u_int64_t));
+        // this->skiplists[IndexType::QUARTURPLEIPv4].init(sizeof(QuarTurpleIPv4) * 8, sizeof(QuarTurpleIPv4), sizeof(u_int64_t));
         // SkipListNode<QuarTurpleIPv4,u_int64_t>* quarTurpleIPv4Node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)(this->skiplistHeads + offset);
         // quarTurpleIPv4Node->init(QuarTurpleIPv4{0, 0, 0, 0}, 0, sizeof(QuarTurpleIPv4) * 8);
         // offset += QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN;
         // this->skiplists[IndexType::QUARTURPLEIPv4].addHead(quarTurpleIPv4Node);
 
-        this->skiplists[IndexType::QUARTURPLEIPv6].init(sizeof(QuarTurpleIPv6) * 8, sizeof(QuarTurpleIPv6), sizeof(u_int64_t));
+        // this->skiplists[IndexType::QUARTURPLEIPv6].init(sizeof(QuarTurpleIPv6) * 8, sizeof(QuarTurpleIPv6), sizeof(u_int64_t));
         // SkipListNode<QuarTurpleIPv6,u_int64_t>* quarTurpleIPv6Node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)(this->skiplistHeads + offset);
         // quarTurpleIPv6Node->init(QuarTurpleIPv6{0, 0, IPv6Address{0, 0}, IPv6Address{0, 0}}, 0, sizeof(QuarTurpleIPv6) * 8);
         // offset += QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN;
@@ -149,18 +149,18 @@ public:
                 return false;
             }
             // printf("e\n");
-            QuarTurpleIPv4 turple = {
-                .dstport = meta.destinationPort,
-                .srcport = meta.sourcePort,
-                .dstip = *dstip,
-                .srcip = *srcip,
-            };
-            // printf("f\n");
-            auto key = std::string((char*)(&turple),sizeof(turple));
-            if (!this->metas[buffer_meta_id].skiplists[IndexType::QUARTURPLEIPv4].insert(key,position)){
-                printf("Insert skiplist fail at IPv4turple.\n");
-                return false;
-            }
+            // QuarTurpleIPv4 turple = {
+            //     .dstport = meta.destinationPort,
+            //     .srcport = meta.sourcePort,
+            //     .dstip = *dstip,
+            //     .srcip = *srcip,
+            // };
+            // // printf("f\n");
+            // auto key = std::string((char*)(&turple),sizeof(turple));
+            // if (!this->metas[buffer_meta_id].skiplists[IndexType::QUARTURPLEIPv4].insert(key,position)){
+            //     printf("Insert skiplist fail at IPv4turple.\n");
+            //     return false;
+            // }
             // printf("g\n");
         }else if(meta.sourceAddress.size()==sizeof(IPv6Address) && meta.destinationAddress.size() == sizeof(IPv6Address)){
             IPv6Address* srcip = (IPv6Address*)(meta.sourceAddress.c_str());
@@ -181,17 +181,17 @@ public:
                 printf("Insert skiplist fail at dstIPv6.\n");
                 return false;
             }
-            QuarTurpleIPv6 turple = {
-                .dstport = meta.destinationPort,
-                .srcport = meta.sourcePort,
-                .dstip = *dstip,
-                .srcip = *srcip,
-            };
-            auto key = std::string((char*)(&turple),sizeof(turple));
-            if (!this->metas[buffer_meta_id].skiplists[IndexType::QUARTURPLEIPv6].insert(key,position)){
-                printf("Insert skiplist fail at IPv4turple.\n");
-                return false;
-            }
+            // QuarTurpleIPv6 turple = {
+            //     .dstport = meta.destinationPort,
+            //     .srcport = meta.sourcePort,
+            //     .dstip = *dstip,
+            //     .srcip = *srcip,
+            // };
+            // auto key = std::string((char*)(&turple),sizeof(turple));
+            // if (!this->metas[buffer_meta_id].skiplists[IndexType::QUARTURPLEIPv6].insert(key,position)){
+            //     printf("Insert skiplist fail at IPv4turple.\n");
+            //     return false;
+            // }
         }
 
         // printf("insert port\n");

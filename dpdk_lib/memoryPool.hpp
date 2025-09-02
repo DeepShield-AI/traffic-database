@@ -20,6 +20,7 @@ class MemoryPool{
 private:
     const u_int64_t capacity;
     const u_int64_t list_len;
+    const u_int64_t unit_len;
 
     // const u_int64_t disk_block_num;
     // const u_int64_t barraier_size;
@@ -29,6 +30,7 @@ private:
     NodeMeta* allocated_list;
     u_int64_t list_tail;
     u_int64_t list_head;
+    // u_int64_t empty_tail_len;
 
     void addNodeMeta(u_int64_t data_block_id, u_int64_t pool_offset){
         if(this->list_head == this->list_tail){
@@ -44,12 +46,16 @@ private:
     }
 
 public:
-    MemoryPool(u_int64_t capacity, u_int64_t list_len):
-        capacity(capacity),list_len(list_len){
-        this->buffer = (char*)mmap(nullptr, this->capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
-        if (this->buffer == MAP_FAILED){
-            printf("Memory pool error: mmap failed for blocks!\n");
-            throw std::runtime_error("memory manager mmap failed");
+    MemoryPool(char* buffer,u_int64_t capacity, u_int64_t list_len, u_int64_t uint_len):
+        buffer(buffer),capacity(capacity),list_len(list_len),unit_len(uint_len){
+        // this->buffer = (char*)mmap(nullptr, this->capacity, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
+        // if (this->buffer == MAP_FAILED){
+        //     printf("Memory pool error: mmap failed for blocks!\n");
+        //     throw std::runtime_error("memory manager mmap failed");
+        // }
+        if (capacity % unit_len != 0){
+            printf("Memory pool error: capacity not aligned with unit length!\n");
+            throw std::runtime_error("Memory pool capacity not aligned with unit length");
         }
         this->allocate_pos = 0;
         this->allocated_list = new NodeMeta[list_len];
@@ -60,14 +66,24 @@ public:
         };
         this->list_head = 0;
         this->list_tail = 1;
+        // this->empty_tail_len = 0;
     }
     ~MemoryPool(){
         delete[] this->allocated_list;
-        munmap(buffer,this->capacity);
+        // munmap(buffer,this->capacity);
     }
 
     char* allocate(u_int64_t len, u_int64_t disk_block_id){
+        
+        while(this->allocated_list[list_head].dirty){
+            if(this->list_head == this->list_tail){
+                break;
+            }
+            this->list_head = (this->list_head + 1) % this->list_len;
+        }
+
         if (this->allocate_pos + len > this->capacity){
+            // this->empty_tail_len = this->capacity - this->allocate_pos;
             // printf("new turn.\n");
             this->allocate_pos = 0;
         }
@@ -76,6 +92,7 @@ public:
         //     this->list_head = (this->list_head + 1) % this->list_len;
         // }
         auto barrier = this->allocated_list[list_head].start_offset;
+        // first allocation
         if (barrier == std::numeric_limits<uint64_t>::max() && this->allocate_pos + len <= this->capacity){
             this->allocated_list[list_head].data_block_id = disk_block_id;
             this->allocated_list[list_head].start_offset = this->allocate_pos;
@@ -98,6 +115,28 @@ public:
     }
     u_int64_t getListLen()const{
         return (this->list_tail + this->list_len - this->list_head) % this->list_len;
+    }
+    u_int64_t getLenOfDiskID(u_int64_t disk_block_id)const{
+        u_int64_t tmp_head = this->list_head;
+        u_int64_t total_len = 0;
+        for(u_int64_t count = 0; count < this->list_len; ++count){
+            if (tmp_head == this->list_tail){
+                break;
+            }
+            if(this->allocated_list[tmp_head].data_block_id == disk_block_id){
+                u_int64_t start_offset = this->allocated_list[tmp_head].start_offset;
+                u_int64_t end_offset = (tmp_head + 1 == this->list_tail) ? this->allocate_pos : this->allocated_list[(tmp_head + 1) % this->list_len].start_offset;
+                if (end_offset > start_offset){
+                    total_len += end_offset - start_offset;
+                }else{
+                    total_len += this->capacity - start_offset + end_offset;
+                }
+                
+                break;
+            }    
+            tmp_head = (tmp_head + 1) % this->list_len;
+        }
+        return total_len;
     }
     void recycle(u_int64_t disk_block_id){
         u_int64_t tmp_head = this->list_head;
