@@ -19,7 +19,7 @@ def read_pcap(file_path):
         endian = '<'
         count = 0
         
-        f.seek(319623293)
+        f.seek(451513936)
         
         # 逐个读取数据包
         while True:

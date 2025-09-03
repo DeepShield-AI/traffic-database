@@ -285,6 +285,7 @@ bool DPDKReader::writeIndexToRing(u_int64_t value, FlowMetadata& meta, u_int64_t
     index->position = value;
     index->meta = meta;
     index->disk_block_id = value / this->block_size;
+    index->rx_id = this->rx_id;
 
     // auto end = std::chrono::high_resolution_clock::now();
     // this->init_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

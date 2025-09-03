@@ -96,7 +96,7 @@ private:
 
     std::vector<PointerRingBuffer*>* indexRings;
     std::atomic_uint64_t* dataWritePos;
-    // std::vector<MemoryPool*>* indexMemoryPools;
+    std::vector<IndexMemoryPool*>* indexMemoryPools;
 
     IndexBuffer* indexBuffer;
     IndexBlockBuffer* indexBlockBuffer;
@@ -156,7 +156,7 @@ public:
     Controller(){
         this->indexRings = new std::vector<PointerRingBuffer*>();
         this->dataWritePos = new std::atomic_uint64_t(0);
-        // this->indexMemoryPools = new std::vector<MemoryPool*>();
+        this->indexMemoryPools = new std::vector<IndexMemoryPool*>();
     
         this->indexBuffer = nullptr;
         this->indexBlockBuffer = nullptr;

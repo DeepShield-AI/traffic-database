@@ -9,7 +9,7 @@ void IndexGenerator::putIndexToCache(Index* index){
 
     // printf("ready to put\n");
 
-    while(!this->indexBuffer->insert(index->meta, index->position, index->disk_block_id , index->ts)){
+    while(!this->indexBuffer->insert(index->meta, index->position, index->disk_block_id , index->ts, index->rx_id)){
         printf("Index generator warning: insert index with block id %lu to index buffer failed, try again.\n",index->disk_block_id);
     }
     

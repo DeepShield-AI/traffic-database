@@ -244,6 +244,7 @@ struct Index{
     u_int64_t ts;
     u_int64_t disk_block_id;
     u_int64_t position;
+    u_int64_t rx_id;
     FlowMetadata meta;
     // u_int16_t padding1;
     // u_int32_t padding2;

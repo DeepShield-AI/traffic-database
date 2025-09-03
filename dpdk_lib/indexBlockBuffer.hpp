@@ -19,6 +19,31 @@ struct IndexBlock{
     char* buffer; // Data buffer of the block
 };
 
+template<class KeyType>
+class __attribute__((packed)) Record{
+public:
+    KeyType key;
+    u_int64_t value;
+    bool operator<(const Record& other) const{
+        return key < other.key;
+    }
+    bool operator==(const Record& other) const{
+        return key == other.key;
+    }
+    bool operator!=(const Record& other) const{
+        return key != other.key;
+    }
+    bool operator<=(const Record& other) const{
+        return key <= other.key;
+    }
+    bool operator>(const Record& other) const{
+        return key > other.key;
+    }
+    bool operator>=(const Record& other) const{
+        return key >= other.key;
+    }
+};
+
 class IndexBlockBuffer{
 private:
     const u_int64_t total_block_num;
@@ -67,7 +92,8 @@ public:
             printf("Index block buffer error: buffer num %lu is too large!\n",this->total_block_num);
             throw std::runtime_error("block buffer number wrong");
         }
-        this->buffer_blocks = (char*)mmap(nullptr, this->buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
+        // one backup block
+        this->buffer_blocks = (char*)mmap(nullptr, this->buffer_size + this->block_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
         // printf("buffer size: %lu\n",this->buffer_size);
         if (this->buffer_blocks == MAP_FAILED){
             printf("Index block buffer error: mmap failed for blocks!\n");
@@ -84,7 +110,12 @@ public:
     }
     ~IndexBlockBuffer(){
         delete[] this->block_disk_id;
-        munmap(this->buffer_blocks, this->buffer_size);
+        munmap(this->buffer_blocks, this->buffer_size + this->block_size);
+    }
+    void Print(){
+        for(u_int64_t i = 0; i<100; ++i){
+            printf("%x",(u_int8_t)this->buffer_blocks[i]);
+        }
     }
     u_int64_t addWriteThread(){
         u_int64_t id = this->disk_write_ids.size();
@@ -143,6 +174,58 @@ public:
         memcpy(this->buffer_blocks + block_pos, data, len);
         this->disk_write_ids[thread_id] = disk_id;
         return true;
+    }
+    void sortIndex(u_int64_t start_pos, u_int64_t len, u_int64_t key_len){
+        u_int64_t block_pos = start_pos % this->buffer_size;
+
+        if (block_pos + len > this->buffer_size){
+            memcpy(this->buffer_blocks + this->buffer_size, this->buffer_blocks, len + block_pos - this->buffer_size);
+        }
+
+        u_int64_t record_size = key_len + sizeof(uint64_t);
+        u_int64_t num_records = len / record_size;
+
+        if (key_len == 2){
+            Record<u_int16_t>* record_list = (Record<u_int16_t>*)(this->buffer_blocks + block_pos);
+            
+            // for(u_int64_t i = 0; i<10;++i){
+            //     printf("%u %lu\n",record_list[i].key, record_list[i].value);
+            //     printf("port:%u pos:%lu\n",*(u_int16_t*)(this->buffer_blocks + block_pos + i * sizeof(Record<u_int16_t>)),*(u_int64_t*)(this->buffer_blocks + block_pos + sizeof(u_int16_t)));
+            // }
+            // printf("\n");
+            std::sort(record_list, record_list + num_records);
+            // for(u_int64_t i = 0; i<10;++i){
+            //     printf("%u %lu\n",record_list[i].key, record_list[i].value);
+            // }
+        } else if (key_len == 4){
+            Record<uint32_t>* record_list = (Record<uint32_t>*)(this->buffer_blocks + block_pos);
+            // printf("ip:%u pos:%lu\n",*(u_int32_t*)(this->buffer_blocks + block_pos),*(u_int64_t*)(this->buffer_blocks + block_pos + sizeof(u_int32_t)));
+            // for(u_int64_t i = 0; i<10;++i){
+            //     printf("%u %lu\n",record_list[i].key, record_list[i].value);
+            // }
+            // printf("\n");
+            std::sort(record_list, record_list + num_records);
+            // for(u_int64_t i = 0; i<10;++i){
+            //     printf("%u %lu\n",record_list[i].key, record_list[i].value);
+            // }
+        } else if (key_len == 16){
+            Record<IPv6Address>* record_list = (Record<IPv6Address>*)(this->buffer_blocks + block_pos);
+            // for(u_int64_t i = 0; i<10;++i){
+            //     printf("%lu %lu\n",record_list[i].key.high, record_list[i].value);
+            // }
+            // printf("\n");
+            std::sort(record_list, record_list + num_records);
+            // for(u_int64_t i = 0; i<10;++i){
+            //     printf("%lu %lu\n",record_list[i].key.high, record_list[i].value);
+            // }
+        } else {
+            throw std::runtime_error("Unsupported key_len");
+        }
+
+        if (block_pos + len > this->buffer_size){
+            memcpy(this->buffer_blocks, this->buffer_blocks + this->buffer_size, len + block_pos - this->buffer_size);
+        }
+
     }
     u_int64_t checkBlock(u_int64_t thread_id) const{
         u_int64_t block_check_id = this->block_check_ids[thread_id];

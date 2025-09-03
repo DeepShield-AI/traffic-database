@@ -2,7 +2,7 @@
 #define INDEX_BUFFER_HPP_
 
 #include <cmath>
-#include "skipList.hpp"
+#include "indexMemoryPool.hpp"
 #include "prefixBloomFilter.hpp"
 #include "util.hpp"
 
@@ -15,63 +15,14 @@
 
 struct IndexBufferMeta{
     PrefixBloomFilter bloomFilterMeta;
-    SkipList skiplists[IndexType::TOTAL_INDEX];
     // char skiplistHeads[SKIPLISTNODE_HEAD_LEN];
     u_int64_t disk_block_id;
+    std::atomic_uint64_t index_count;
     void init(BitMap* bitmap, size_t k, u_int64_t disk_block_num){
         this->bloomFilterMeta.init(bitmap, k);
         this->bloomFilterMeta.setWritingCol(disk_block_num);
         this->disk_block_id = disk_block_num;
-
-        u_int64_t offset = 0;
-        
-        this->skiplists[IndexType::SRCIP].init(sizeof(u_int32_t) * 8, sizeof(u_int32_t), sizeof(u_int64_t));
-        // SkipListNode<u_int32_t,u_int64_t>* srcIPNode = (SkipListNode<u_int32_t,u_int64_t>*)(this->skiplistHeads + offset);
-        // srcIPNode->init(0, 0, sizeof(u_int32_t) * 8);
-        // offset += IPV4_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::SRCIP].addHead(srcIPNode);
-
-        this->skiplists[IndexType::DSTIP].init(sizeof(u_int32_t) * 8, sizeof(u_int32_t), sizeof(u_int64_t));
-        // SkipListNode<u_int32_t,u_int64_t>* dstIPNode = (SkipListNode<u_int32_t,u_int64_t>*)(this->skiplistHeads + offset);
-        // dstIPNode->init(0, 0, sizeof(u_int32_t) * 8);
-        // offset += IPV4_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::DSTIP].addHead(dstIPNode);
-
-        this->skiplists[IndexType::SRCPORT].init(sizeof(u_int16_t) * 8, sizeof(u_int16_t), sizeof(u_int64_t));
-        // SkipListNode<u_int16_t,u_int64_t>* srcPortNode = (SkipListNode<u_int16_t,u_int64_t>*)(this->skiplistHeads + offset);
-        // srcPortNode->init(0, 0, sizeof(u_int16_t) * 8);
-        // offset += PORT_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::SRCPORT].addHead(srcPortNode);
-
-        this->skiplists[IndexType::DSTPORT].init(sizeof(u_int16_t) * 8, sizeof(u_int16_t), sizeof(u_int64_t));
-        // SkipListNode<u_int16_t,u_int64_t>* dstPortNode = (SkipListNode<u_int16_t,u_int64_t>*)(this->skiplistHeads + offset);
-        // dstPortNode->init(0, 0, sizeof(u_int16_t) * 8);
-        // offset += PORT_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::DSTPORT].addHead(dstPortNode);
-
-        this->skiplists[IndexType::SRCIPv6].init(sizeof(IPv6Address) * 8, sizeof(IPv6Address), sizeof(u_int64_t));
-        // SkipListNode<IPv6Address,u_int64_t>* srcIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)(this->skiplistHeads + offset);
-        // srcIPv6Node->init(IPv6Address{0, 0}, 0, sizeof(IPv6Address) * 8);
-        // offset += IPV6_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::SRCIPv6].addHead(srcIPv6Node);
-
-        this->skiplists[IndexType::DSTIPv6].init(sizeof(IPv6Address) * 8, sizeof(IPv6Address), sizeof(u_int64_t));
-        // SkipListNode<IPv6Address,u_int64_t>* dstIPv6Node = (SkipListNode<IPv6Address,u_int64_t>*)(this->skiplistHeads + offset);
-        // dstIPv6Node->init(IPv6Address{0, 0}, 0, sizeof(IPv6Address) * 8);
-        // offset += IPV6_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::DSTIPv6].addHead(dstIPv6Node);
-
-        // this->skiplists[IndexType::QUARTURPLEIPv4].init(sizeof(QuarTurpleIPv4) * 8, sizeof(QuarTurpleIPv4), sizeof(u_int64_t));
-        // SkipListNode<QuarTurpleIPv4,u_int64_t>* quarTurpleIPv4Node = (SkipListNode<QuarTurpleIPv4,u_int64_t>*)(this->skiplistHeads + offset);
-        // quarTurpleIPv4Node->init(QuarTurpleIPv4{0, 0, 0, 0}, 0, sizeof(QuarTurpleIPv4) * 8);
-        // offset += QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::QUARTURPLEIPv4].addHead(quarTurpleIPv4Node);
-
-        // this->skiplists[IndexType::QUARTURPLEIPv6].init(sizeof(QuarTurpleIPv6) * 8, sizeof(QuarTurpleIPv6), sizeof(u_int64_t));
-        // SkipListNode<QuarTurpleIPv6,u_int64_t>* quarTurpleIPv6Node = (SkipListNode<QuarTurpleIPv6,u_int64_t>*)(this->skiplistHeads + offset);
-        // quarTurpleIPv6Node->init(QuarTurpleIPv6{0, 0, IPv6Address{0, 0}, IPv6Address{0, 0}}, 0, sizeof(QuarTurpleIPv6) * 8);
-        // offset += QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN;
-        // this->skiplists[IndexType::QUARTURPLEIPv6].addHead(quarTurpleIPv6Node);
+        this->index_count.store(0);
     }
 };
 
@@ -84,9 +35,10 @@ private:
     IndexBufferMeta* metas;
     // std::vector<u_int64_t> index_write_ids;
     std::vector<u_int64_t> index_check_ids;
+    std::vector<IndexMemoryPool*>* memory_pools;
 public:
-    IndexBuffer(u_int64_t total_block_num, u_int64_t disk_block_num, BitMap* bitmap, size_t k):
-        total_block_num(total_block_num), disk_block_num(disk_block_num){
+    IndexBuffer(u_int64_t total_block_num, u_int64_t disk_block_num, BitMap* bitmap, size_t k, std::vector<IndexMemoryPool*>* memory_pools):
+        total_block_num(total_block_num), disk_block_num(disk_block_num), memory_pools(memory_pools) {
         if (disk_block_num % total_block_num != 0) {
             printf("Index buffer error: disk_block_num must be a multiple of total_block_num!\n");
             throw std::runtime_error("disk_block_num must be a multiple of total_block_num");
@@ -102,10 +54,14 @@ public:
             this->metas[i].init(bitmap, k, i);
         }
         this->index_check_ids = std::vector<u_int64_t>();
+        // this->memory_pools = std::vector<IndexMemoryPool*>();
     }
     ~IndexBuffer(){
         munmap(this->metas, this->size);
     }
+    // void addMemoryPool(IndexMemoryPool* pool){
+    //     this->memory_pools.push_back(pool);
+    // }
     u_int64_t addCheckThread(){
         u_int64_t id = this->index_check_ids.size();
         if(id >= this->total_block_num){
@@ -115,7 +71,7 @@ public:
         this->index_check_ids.push_back(id);
         return id;
     }
-    bool insert(FlowMetadata& meta, u_int64_t position, u_int64_t disk_block_id, u_int64_t ts){
+    bool insert(FlowMetadata& meta, u_int64_t position, u_int64_t disk_block_id, u_int64_t ts, u_int64_t rx_id){
         u_int64_t buffer_meta_id = disk_block_id % this->total_block_num;
         if (this->metas[buffer_meta_id].disk_block_id != disk_block_id){
             return false;
@@ -128,48 +84,20 @@ public:
         if (meta.sourceAddress.size()==sizeof(u_int32_t) && meta.destinationAddress.size() == sizeof(u_int32_t)){
             // printf("a\n");
             u_int32_t* srcip = (u_int32_t*)(meta.sourceAddress.c_str());
+
             if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(*srcip, IndexType::SRCIP)){
                 printf("Insert bloom filter fail at IPv4.\n");
                 return false;
             }
-            // printf("b\n");
-            if (!this->metas[buffer_meta_id].skiplists[IndexType::SRCIP].insert(meta.sourceAddress,position)){
-                printf("Insert skiplist fail at IPv4.\n");
-                return false;
-            }
-            // printf("c\n");
             u_int32_t* dstip = (u_int32_t*)(meta.destinationAddress.c_str());
             if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(*dstip, IndexType::DSTIP)){
                 printf("Insert bloom filter fail at srcIPv4.\n");
                 return false;
             }
-            // printf("d\n");
-            if (!this->metas[buffer_meta_id].skiplists[IndexType::DSTIP].insert(meta.destinationAddress,position)){
-                printf("Insert skiplist fail at srcIPv4.\n");
-                return false;
-            }
-            // printf("e\n");
-            // QuarTurpleIPv4 turple = {
-            //     .dstport = meta.destinationPort,
-            //     .srcport = meta.sourcePort,
-            //     .dstip = *dstip,
-            //     .srcip = *srcip,
-            // };
-            // // printf("f\n");
-            // auto key = std::string((char*)(&turple),sizeof(turple));
-            // if (!this->metas[buffer_meta_id].skiplists[IndexType::QUARTURPLEIPv4].insert(key,position)){
-            //     printf("Insert skiplist fail at IPv4turple.\n");
-            //     return false;
-            // }
-            // printf("g\n");
         }else if(meta.sourceAddress.size()==sizeof(IPv6Address) && meta.destinationAddress.size() == sizeof(IPv6Address)){
             IPv6Address* srcip = (IPv6Address*)(meta.sourceAddress.c_str());
             if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv6(*srcip, IndexType::SRCIPv6)){
                 printf("Insert bloom filter fail at srcIPv6.\n");
-                return false;
-            }
-            if (!this->metas[buffer_meta_id].skiplists[IndexType::SRCIPv6].insert(meta.sourceAddress,position)){
-                printf("Insert skiplist fail at srcIPv6.\n");
                 return false;
             }
             IPv6Address* dstip = (IPv6Address*)(meta.destinationAddress.c_str());
@@ -177,45 +105,29 @@ public:
                 printf("Insert bloom filter fail at dstIPv6.\n");
                 return false;
             }
-            if (!this->metas[buffer_meta_id].skiplists[IndexType::DSTIPv6].insert(meta.destinationAddress,position)){
-                printf("Insert skiplist fail at dstIPv6.\n");
-                return false;
-            }
-            // QuarTurpleIPv6 turple = {
-            //     .dstport = meta.destinationPort,
-            //     .srcport = meta.sourcePort,
-            //     .dstip = *dstip,
-            //     .srcip = *srcip,
-            // };
-            // auto key = std::string((char*)(&turple),sizeof(turple));
-            // if (!this->metas[buffer_meta_id].skiplists[IndexType::QUARTURPLEIPv6].insert(key,position)){
-            //     printf("Insert skiplist fail at IPv4turple.\n");
-            //     return false;
-            // }
         }
-
-        // printf("insert port\n");
 
         if (!this->metas[buffer_meta_id].bloomFilterMeta.insertPort(meta.sourcePort, IndexType::SRCPORT)){
             printf("Insert bloom filter fail at sport.\n");
             return false;
         }
-        auto keysport = std::string((char*)(&meta.sourcePort),sizeof(meta.sourcePort));
-        if (!this->metas[buffer_meta_id].skiplists[IndexType::SRCPORT].insert(keysport,position)){
-            printf("Insert skiplist fail at sport.\n");
-            return false;
-        }
-
+        
         if (!this->metas[buffer_meta_id].bloomFilterMeta.insertPort(meta.destinationPort, IndexType::DSTPORT)){
             printf("Insert bloom filter fail at dport.\n");
             return false;
         }
 
-        auto keydport = std::string((char*)(&meta.destinationPort),sizeof(meta.destinationPort));
-        if (!this->metas[buffer_meta_id].skiplists[IndexType::DSTPORT].insert(keydport,position)){
-            printf("Insert skiplist fail at dport.\n");
+        if(!(*(this->memory_pools))[rx_id]->insert(meta,position, disk_block_id)){
+            printf("Insert memory pool fail.\n");
             return false;
         }
+
+        // if(this->metas[buffer_meta_id].index_count < 10){
+        //     printf("Insert index meta: sport %u, dport %u, pos %lu, disk id %lu\n",
+        //         meta.sourcePort, meta.destinationPort, position, disk_block_id);
+        // }
+
+        this->metas[buffer_meta_id].index_count ++;
 
         return true;
 
@@ -286,6 +198,14 @@ public:
     //     return this->metas[buffer_meta_id].skiplists[type].insert(node);
     // }
     // get insert node number of skiplist
+    u_int64_t checkIndexCount(u_int64_t thread_id){
+        if (thread_id >= this->index_check_ids.size()) {
+            printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
+            return std::numeric_limits<u_int64_t>::max();
+        }
+        u_int64_t block_check_id = this->index_check_ids[thread_id];
+        return this->metas[block_check_id].index_count.load();
+    }
     u_int64_t getCheckDishID(u_int64_t thread_id){
         if (thread_id >= this->index_check_ids.size()) {
             printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
@@ -293,14 +213,6 @@ public:
         }
         u_int64_t block_check_id = this->index_check_ids[thread_id];
         return this->metas[block_check_id].disk_block_id;
-    }
-    u_int64_t checkIndexCount(u_int64_t thread_id, IndexType type){
-        if (thread_id >= this->index_check_ids.size()) {
-            printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
-            return std::numeric_limits<u_int64_t>::max();
-        }
-        u_int64_t block_check_id = this->index_check_ids[thread_id];
-        return this->metas[block_check_id].skiplists[type].getNodeNum();
     }
     IndexBufferMeta* getIndexBufferMeta(u_int64_t thread_id){
         if (thread_id >= this->index_check_ids.size()) {
@@ -310,18 +222,33 @@ public:
         u_int64_t block_check_id = this->index_check_ids[thread_id];
         return &this->metas[block_check_id];
     }
+    // void persistIndex(u_int64_t thread_id, u_int64_t write_thread_id, IndexBlockBuffer* buffer, u_int64_t disk_pos){
+    //     if (thread_id >= this->index_check_ids.size()) {
+    //         printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
+    //         return;
+    //     }
+    //     u_int64_t block_check_id = this->index_check_ids[thread_id];
+    //     for (auto pool : this->memory_pools){
+    //         for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
+    //             pool->writeToBuffer(type, buffer, block_check_id, pool->getIndexLen(type,block_check_id),write_thread_id,disk_pos);
+    //         }
+    //     }
+    // }
     void updateIndexBufferMeta(u_int64_t thread_id, u_int64_t bitmap_col){
         if (thread_id >= this->index_check_ids.size()) {
             printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
             return;
         }
         u_int64_t block_check_id = this->index_check_ids[thread_id];
-        for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
-            this->metas[block_check_id].skiplists[type].clear();
-        }
+        // for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
+        //     this->metas[block_check_id].skiplists[type].clear();
+        // }
         this->metas[block_check_id].bloomFilterMeta.setWritingCol(bitmap_col);
+        for(auto pool: *(this->memory_pools)){
+            pool->recycle(this->metas[block_check_id].disk_block_id);
+        }
+        this->metas[block_check_id].index_count.store(0);
         this->metas[block_check_id].disk_block_id = (this->metas[block_check_id].disk_block_id + this->total_block_num) % this->disk_block_num;
-        
         // TODO: Check position competition?
         this->index_check_ids[thread_id] = (this->index_check_ids[thread_id] + this->index_check_ids.size()) % this->total_block_num;
 

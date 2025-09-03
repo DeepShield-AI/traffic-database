@@ -158,7 +158,7 @@ public:
         }
     }
     // set col should in the write field (cleaning - 2*backup, cleanning)
-    bool set(u_int64_t row, u_int64_t col) {
+    bool set(u_int64_t row, u_int64_t col) { 
         // if (logic_col >= this->logic_col_count){
         //     printf("Bitmap error: logic_col %lu out of range!\n", logic_col);
         //     return;

@@ -298,16 +298,16 @@ void Controller::clear(){
         this->indexRings = nullptr;
     }
 
-    // if(this->indexMemoryPools!=nullptr){
-    //     for(auto imp:(*(this->indexMemoryPools))){
-    //         if(imp!=nullptr){
-    //             delete imp;
-    //             imp = nullptr;
-    //         }
-    //     }
-    //     delete this->indexMemoryPools;
-    //     this->indexMemoryPools = nullptr;
-    // }
+    if(this->indexMemoryPools!=nullptr){
+        for(auto imp:(*(this->indexMemoryPools))){
+            if(imp!=nullptr){
+                delete imp;
+                imp = nullptr;
+            }
+        }
+        delete this->indexMemoryPools;
+        this->indexMemoryPools = nullptr;
+    }
 
     if(this->dpdk!=nullptr){
         delete this->dpdk;
@@ -405,6 +405,8 @@ void Controller::init(InitData init_data){
 
     // this->bindCore(24);
 
+    this->bitmap = new BitMap((PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2, init_data.data_disk_size / init_data.data_block_size, init_data.bitmap_backup_col_num);
+
     for(u_int32_t i=0;i<init_data.nb_rx;++i){
         PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
         this->indexRings->push_back(ir);
@@ -413,14 +415,14 @@ void Controller::init(InitData init_data){
     // PointerRingBuffer* ir =  new PointerRingBuffer(init_data.index_ring_capacity);
     // this->indexRings->push_back(ir);
 
-    // for (u_int32_t i=0; i<init_data.nb_rx; ++i){
-    //     MemoryPool* mp = new MemoryPool(init_data.memory_pool_capacity_each, init_data.memory_pool_list_len_each);
-    //     this->indexMemoryPools->push_back(mp);
-    // }
+    for (u_int32_t i=0; i<init_data.nb_rx; ++i){
+        IndexMemoryPool* mp = new IndexMemoryPool(init_data.memory_pool_capacity_each, init_data.memory_pool_list_len_each);
+        this->indexMemoryPools->push_back(mp);
+    }
 
-    this->bitmap = new BitMap((PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2, init_data.data_disk_size / init_data.data_block_size, init_data.bitmap_backup_col_num);
+    
 
-    this->indexBuffer = new IndexBuffer(init_data.index_buffer_cache_num, init_data.data_disk_size / init_data.data_block_size, this->bitmap, init_data.nb_rx);
+    this->indexBuffer = new IndexBuffer(init_data.index_buffer_cache_num, init_data.data_disk_size / init_data.data_block_size, this->bitmap, init_data.hash_num ,this->indexMemoryPools);
     
     this->indexBlockBuffer = new IndexBlockBuffer(init_data.index_block_cache_num, init_data.index_block_size, init_data.index_disk_size / init_data.index_block_size, init_data.index_persist_thread_num);
 
@@ -520,9 +522,9 @@ void Controller::init(InitData init_data){
     for(u_int32_t i=0; i<init_data.index_persist_thread_num; ++i){
         IndexPersister* ip;
         if (init_data.bind_core){
-            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexWritePos, init_data.bind_core, init_data.persisting_core_id_list[i]);
+            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexMemoryPools, this->indexWritePos, init_data.bind_core, init_data.persisting_core_id_list[i]);
         }else{
-            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexWritePos);
+            ip = new IndexPersister(init_data.data_disk_size, init_data.data_block_size, this->indexBuffer, this->indexBlockBuffer, this->diskMeta, this->indexMemoryPools, this->indexWritePos);
         }
         this->indexPersisters.push_back(ip);
     }

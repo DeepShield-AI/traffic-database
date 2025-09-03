@@ -49,27 +49,32 @@ IndexBufferMeta* IndexPersister::checkAndGetMeta(){
     }
     // printf("get block id %lu, packet_count %lu\n",disk_block_id,packet_count);
     while(true){
-        u_int64_t srcip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIPv6);
-        // printf("srcip count: %lu\n",srcip_count);
-        if (srcip_count < packet_count){
-            continue;
-        }
-        u_int64_t dstip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTIPv6);
-        if (dstip_count < packet_count){
-            continue;
-        }
-        u_int64_t srcport_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCPORT);
-        if (srcport_count < packet_count){
-            continue;
-        }
-        u_int64_t dstport_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTPORT);
-        if (dstport_count < packet_count){
-            continue;
-        }
+        // u_int64_t srcip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCIPv6);
+        // // printf("srcip count: %lu\n",srcip_count);
+        // if (srcip_count < packet_count){
+        //     continue;
+        // }
+        // u_int64_t dstip_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTIP) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTIPv6);
+        // if (dstip_count < packet_count){
+        //     continue;
+        // }
+        // u_int64_t srcport_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::SRCPORT);
+        // if (srcport_count < packet_count){
+        //     continue;
+        // }
+        // u_int64_t dstport_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::DSTPORT);
+        // if (dstport_count < packet_count){
+        //     continue;
+        // }
         // u_int64_t quartruple_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv4) + this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id, IndexType::QUARTURPLEIPv6);
         // if (quartruple_count < packet_count){
         //     continue;
         // }
+
+        u_int64_t index_count = this->indexBuffer->checkIndexCount(this->index_block_buffer_thread_id);
+        if(index_count < packet_count){
+            continue;
+        }
 
         IndexBufferMeta* meta = this->indexBuffer->getIndexBufferMeta(this->index_block_buffer_thread_id);
         return meta;
@@ -77,32 +82,78 @@ IndexBufferMeta* IndexPersister::checkAndGetMeta(){
     return nullptr;
 }
 
+// void IndexPersister::persistMeta(IndexBufferMeta* meta){
+//     u_int64_t total_node_len = 0;
+//     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
+//         total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+//     }
+//     u_int64_t disk_pos = this->diskWritePos->fetch_add(total_node_len);
+//     disk_pos = disk_pos % this->disk_size;
+
+//     u_int64_t current_offset = disk_pos;
+//     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
+//         meta->skiplists[type].writeNode(this->indexBlockBuffer, this->index_block_buffer_thread_id, current_offset);
+//         u_int64_t new_offset = current_offset + meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+//         this->diskBuffer->setIndexID(meta->disk_block_id, (IndexType)type, current_offset, new_offset);
+//         current_offset = new_offset;
+//     }
+
+//     this->diskBuffer->setBloomFilterReadingCol(meta->disk_block_id, meta->bloomFilterMeta.getWritingCol());
+// }
+
 void IndexPersister::persistMeta(IndexBufferMeta* meta){
     u_int64_t total_node_len = 0;
+    u_int64_t disk_block_id = meta->disk_block_id;
+    // for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
+    //     total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+    // }
+
+    // printf("index count: %lu\n",meta->index_count.load());
+
     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
-        total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+        for(auto pool : *(this->memoryPools)){
+            total_node_len += pool->getIndexLen(type,disk_block_id);
+        }
     }
+
     u_int64_t disk_pos = this->diskWritePos->fetch_add(total_node_len);
     disk_pos = disk_pos % this->disk_size;
 
     u_int64_t current_offset = disk_pos;
+    
     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
-        meta->skiplists[type].writeNode(this->indexBlockBuffer, this->index_block_buffer_thread_id, current_offset);
-        u_int64_t new_offset = current_offset + meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
-        this->diskBuffer->setIndexID(meta->disk_block_id, (IndexType)type, current_offset, new_offset);
-        current_offset = new_offset;
+        // meta->skiplists[type].writeNode(this->indexBlockBuffer, this->index_block_buffer_thread_id, current_offset);
+        // u_int64_t new_offset = current_offset + meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
+
+        u_int64_t index_offset = 0;
+        for(auto pool : *(this->memoryPools)){
+            u_int64_t len = pool->getIndexLen(type,disk_block_id);
+            if(len == 0){
+                continue;
+            }
+            pool->writeToBuffer(type, this->indexBlockBuffer, disk_block_id, len, this->index_block_buffer_thread_id, current_offset + index_offset);
+            // current_offset += len;
+            index_offset += len;
+        }
+        // printf("write index type %u, len %lu\n",type,index_offset);
+        this->indexBlockBuffer->sortIndex(current_offset, index_offset, this->key_lens[type]);
+        this->diskBuffer->setIndexID(meta->disk_block_id, (IndexType)type, current_offset, current_offset + index_offset);
+        current_offset += index_offset;
     }
 
+    // printf("index count: %lu\n",meta->index_count.load());
+
     this->diskBuffer->setBloomFilterReadingCol(meta->disk_block_id, meta->bloomFilterMeta.getWritingCol());
+    
 }
 void IndexPersister::clearMeta(IndexBufferMeta* meta){
     this->diskBuffer->clearPacketCount(meta->disk_block_id);
     // for(auto pool : *(this->memoryPools)){
     //     pool->recycle(meta->disk_block_id);
     // }
-    for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
-        meta->skiplists[type].clear();
-    }
+    // for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
+    //     meta->skiplists[type].clear();
+    // }
 
     BitMap* bitmap = meta->bloomFilterMeta.getBitmap();
     u_int64_t backup_col = bitmap->getBackupColCount();
