@@ -6,7 +6,7 @@ const u_int8_t pcap_head[] = {0xd4,0xc3,0xb2,0xa1,0x02,0x00,0x04,0x00,0x00,0x00,
                             0xff,0xff,0x00,0x00,0x01,0x00,0x00,0x00};
 
 
-uint64_t swap_endianness(uint64_t value) {
+static uint64_t swap_endianness(uint64_t value) {
     return ((value >> 56) & 0x00000000000000FFULL) | // byte 0
            ((value >> 40) & 0x000000000000FF00ULL) | // byte 1
            ((value >> 24) & 0x00000000FF000000ULL) | // byte 2

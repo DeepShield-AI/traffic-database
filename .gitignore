@@ -1,6 +1,7 @@
 .vscode/
 .DS_Store
 build/
+baseline/flosis/build
 dest_data/
 output_data/
 input_data/
