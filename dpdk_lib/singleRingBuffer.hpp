@@ -19,7 +19,7 @@ private:
     // std::atomic_uint_fast64_t readPos;
     alignas(CACHE_LINE_LEN) u_int64_t writePos;
     char writepadding[CACHE_LINE_LEN - sizeof(uint64_t)];
-    alignas(CACHE_LINE_LEN) u_int64_t readPos;
+    alignas(CACHE_LINE_LEN) std::atomic_uint_fast64_t readPos;
     char readpadding[CACHE_LINE_LEN - sizeof(uint64_t)];
 
     void** pointers;
@@ -99,11 +99,14 @@ public:
         u_int64_t pos = this->readPos;
         pos &= this->capacity_ - 1;
 
-        while(this->writePos == this->readPos){
-            if(this->stop){
-                return nullptr;
-            }
-        } // wait util writed
+        // while(this->writePos == this->readPos){
+        //     if(this->stop){
+        //         return nullptr;
+        //     }
+        // } // wait util writed
+        if(this->writePos == this->readPos){
+            return nullptr;
+        }
 
         u_int64_t real_pos = ((pos & ((this->capacity_ >> 3) - 1)) << 3) + pos / (this->capacity_ >> 3);
 

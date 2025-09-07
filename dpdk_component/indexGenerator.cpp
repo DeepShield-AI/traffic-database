@@ -1,7 +1,7 @@
 #include "indexGenerator.hpp"
 
-Index* IndexGenerator::readIndexFromBuffer(){
-    void* data = this->buffer->get();
+Index* IndexGenerator::readIndexFromBuffer(u_int64_t id){
+    void* data = this->buffers[id]->get();
     Index* index = (Index*)data;
     return index;
 }
@@ -81,6 +81,9 @@ void IndexGenerator::bindCore(u_int32_t cpu){
         printf("Index generator warning: %lu failed to bind to cpu %d!\n",thread,cpu);
     }
 }
+void IndexGenerator::addRingBuffer(PointerRingBuffer* buffer){
+    this->buffers.push_back(buffer);
+}
 void IndexGenerator::run(){
     printf("Index generator log: thread run.\n");
 
@@ -102,24 +105,39 @@ void IndexGenerator::run(){
         // if(this->stop){
         //     break;
         // }
-        Index* data = this->readIndexFromBuffer();
-        // printf("Index generator log: get one.\n");
-        if(data == nullptr){
+        for(u_int64_t id = 0; id<this->buffers.size();++id){
+            Index* data = this->readIndexFromBuffer(id);
+            // printf("Index generator log: get one.\n");
+            if(data == nullptr){
+                continue;
+            }
+            if(!has_start){
+                has_start = true;
+                // start = std::chrono::high_resolution_clock::now();
+            }
+
+            this->putIndexToCache(data);
+            // printf("Index generator log: put one.\n");
+            delete data;
+            // printf("Index generator log: delete one.\n");
+
+            // count++;
+            // end = std::chrono::high_resolution_clock::now();
+            // count++;// just for test
+        }
+        if(this->stop){
+            for(u_int64_t id = 0; id<this->buffers.size();++id){
+                while(true){
+                    Index* data = this->readIndexFromBuffer(id);
+                    if(data == nullptr){
+                        break;
+                    }
+                    this->putIndexToCache(data);
+                    delete data;
+                }
+            }
             break;
         }
-        if(!has_start){
-            has_start = true;
-            start = std::chrono::high_resolution_clock::now();
-        }
-
-        this->putIndexToCache(data);
-        // printf("Index generator log: put one.\n");
-        delete data;
-        // printf("Index generator log: delete one.\n");
-
-        count++;
-        end = std::chrono::high_resolution_clock::now();
-        // count++;// just for test
     }
     
     // duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

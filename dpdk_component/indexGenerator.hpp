@@ -9,7 +9,8 @@
 
 class IndexGenerator{
     // shared memory
-    PointerRingBuffer* buffer;
+    // PointerRingBuffer* buffer;
+    std::vector<PointerRingBuffer*> buffers;
     // std::vector<IndexBuffer*>* indexBuffers;
     IndexBuffer* indexBuffer;
 
@@ -25,14 +26,15 @@ class IndexGenerator{
     bool bind_core;
     u_int32_t core_id;
 
-    Index* readIndexFromBuffer();
+    Index* readIndexFromBuffer(u_int64_t id);
     void putIndexToCache(Index* index);
     void bindCore(u_int32_t cpu);
 
 public:
-    IndexGenerator(PointerRingBuffer* buffer,IndexBuffer* indexBuffer, u_int32_t threadID, bool bind_core = false, u_int32_t core_id = 0):
+    IndexGenerator(IndexBuffer* indexBuffer, u_int32_t threadID, bool bind_core = false, u_int32_t core_id = 0):
         bind_core(bind_core), core_id(core_id){
-        this->buffer = buffer;
+        // this->buffer = buffer;
+        this->buffers = std::vector<PointerRingBuffer*>();
         this->indexBuffer = indexBuffer;
         // this->indexCacheCount = indexCacheCount;
         // this->cacheID = 0;
@@ -41,6 +43,7 @@ public:
         this->duration_time = 0;
     }
     ~IndexGenerator(){}
+    void addRingBuffer(PointerRingBuffer* buffer);
     void setThreadID(u_int32_t threadID);
     void run();
     void asynchronousStop();

@@ -28,7 +28,7 @@ u_int32_t controller_core_id = 2;
 std::vector<u_int32_t> dpdk_core_id_list = std::vector<u_int32_t>({4,6,8,10});
 std::vector<u_int32_t> packet_core_id_list = std::vector<u_int32_t>({4,6,8,10});
 std::vector<u_int32_t> data_dumping_core_id_list = std::vector<u_int32_t>({20,22,24,26});
-std::vector<u_int32_t> checking_core_id_list = std::vector<u_int32_t>({28});
+std::vector<u_int32_t> checking_core_id_list = std::vector<u_int32_t>({36});
 
 int main(){
     Controller* controller = new Controller();

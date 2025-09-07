@@ -533,10 +533,13 @@ void Controller::init(InitData init_data){
         IndexGenerator* ig;
         if (init_data.bind_core){
             // ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffers,(*(this->indexBuffers))[0]->getCacheCount(),i,init_data.bind_core,init_data.indexing_core_id_list[i]);
-            ig = new IndexGenerator((*(this->indexRings))[i],this->indexBuffer, i, init_data.bind_core, init_data.indexing_core_id_list[i]);
+            ig = new IndexGenerator(this->indexBuffer, i, init_data.bind_core, init_data.indexing_core_id_list[i]);
         }else{
             // ig = new IndexGenerator((*(this->indexRings))[0],this->indexBuffers,(*(this->indexBuffers))[0]->getCacheCount(),i);
-            ig = new IndexGenerator((*(this->indexRings))[i],this->indexBuffer, i);
+            ig = new IndexGenerator(this->indexBuffer, i);
+        }
+        for(u_int64_t j = i; j<init_data.nb_rx;j+=init_data.index_construct_thread_num){
+            ig->addRingBuffer((*(this->indexRings))[j]);
         }
         this->indexGenerators.push_back(ig);
     }

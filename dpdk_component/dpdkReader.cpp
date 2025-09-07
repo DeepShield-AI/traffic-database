@@ -913,7 +913,7 @@ int DPDKReader::run(){
     auto end = std::chrono::high_resolution_clock::now();
 
     this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps.\n",this->duration_time,pkt_count,this->byteLen,index_count,((double)this->byteLen + (double)this->eth_header_len * (double)pkt_count)/(double)this->duration_time/125.0);
+    printf("DPDK Reader log: thread quit, during %lu us with %lu packets, %lu Bytes, %lu indexes, rate %f Gbps (%f Mpps).\n",this->duration_time,pkt_count,this->byteLen,index_count,((double)this->byteLen + (double)this->eth_header_len * (double)pkt_count)/(double)this->duration_time/125.0,(double)pkt_count/(double)this->duration_time);
     printf("DPDK Reader log: wait time %lu us, read time %lu us, write time %lu us,analysis time %lu us ,aggregate time %lu us, index time %lu us, delete time %lu us, total time %lu us.\n",wait_time,read_time,write_time,analysis_time,aggregate_time,index_time,delete_time,total_time);
     printf("DPDK Reader log: creat time %lu us, cal time %lu us, allocate time %lu us, init time %lu us ,put time %lu us\n",this->create_time,this->cal_time,this->allocate_time,this->init_time,this->put_time);
     return 0;
