@@ -5,7 +5,7 @@
 #include <atomic>
 #include <sys/mman.h>
 #include "header.hpp"
-#include "skipList.hpp"
+// #include "skipList.hpp"
 #include "util.hpp"
 #define CACHE_LINE_LEN 64
 
@@ -95,6 +95,7 @@ public:
         //     printf("Pointer ring buffer error: get with null pointers!\n");
         //     return nullptr;
         // }
+        
         
         u_int64_t pos = this->readPos;
         pos &= this->capacity_ - 1;

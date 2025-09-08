@@ -113,37 +113,48 @@ void IndexGenerator::run(){
             }
             if(!has_start){
                 has_start = true;
-                // start = std::chrono::high_resolution_clock::now();
+                start = std::chrono::high_resolution_clock::now();
             }
 
             this->putIndexToCache(data);
+            count ++;
             // printf("Index generator log: put one.\n");
             delete data;
             // printf("Index generator log: delete one.\n");
 
             // count++;
-            // end = std::chrono::high_resolution_clock::now();
+            end = std::chrono::high_resolution_clock::now();
             // count++;// just for test
         }
+        // if (count % 10000 == 0){
+        //     printf("count: %lu\n",count);
+        // }
         if(this->stop){
+            // printf("should stop.\n");
             for(u_int64_t id = 0; id<this->buffers.size();++id){
+                // printf("stop count: %lu\n",count);
                 while(true){
                     Index* data = this->readIndexFromBuffer(id);
                     if(data == nullptr){
                         break;
                     }
                     this->putIndexToCache(data);
+                    count ++;
                     delete data;
                 }
+                // printf("stop count: %lu\n",count);
             }
             break;
         }
     }
+
+    // end = std::chrono::high_resolution_clock::now();
     
-    // duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    this->duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     // std::cout << "Index generator log: thread " << this->threadID << " count " << count << std::endl; //just for test
     printf("Index generator log: thread quit, process %lu indexes, during %lu us.\n",count,this->duration_time);
 }
 void IndexGenerator::asynchronousStop(){
     this->stop = true;
+    // printf("asynchronous stop.\n");
 }

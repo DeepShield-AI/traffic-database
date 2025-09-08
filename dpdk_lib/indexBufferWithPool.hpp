@@ -84,11 +84,12 @@ public:
         if (meta.sourceAddress.size()==sizeof(u_int32_t) && meta.destinationAddress.size() == sizeof(u_int32_t)){
             // printf("a\n");
             u_int32_t* srcip = (u_int32_t*)(meta.sourceAddress.c_str());
-
+            // printf("srcip:%u\n",*srcip);
             if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(*srcip, IndexType::SRCIP)){
                 printf("Insert bloom filter fail at IPv4.\n");
                 return false;
             }
+            // printf("b\n");
             u_int32_t* dstip = (u_int32_t*)(meta.destinationAddress.c_str());
             if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(*dstip, IndexType::DSTIP)){
                 printf("Insert bloom filter fail at srcIPv4.\n");

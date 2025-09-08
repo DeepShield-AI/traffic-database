@@ -19,7 +19,8 @@ def read_pcap(file_path):
         endian = '<'
         count = 0
         
-        f.seek(451513936)
+        # f.seek(2147479704)
+        f.seek(24)
         
         # 逐个读取数据包
         while True:
@@ -32,7 +33,7 @@ def read_pcap(file_path):
 
             ts_sec, ts_usec, incl_len, orig_len = struct.unpack(endian + 'IIII', packet_header)
             print(orig_len)
-            packet_data = f.read(incl_len)
+            packet_data = f.read(incl_len)[14:]
 
             if len(packet_data) < 20:
                 continue  # 非法帧
