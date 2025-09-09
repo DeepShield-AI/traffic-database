@@ -109,7 +109,7 @@ private:
             return false;
         }
         // printf("check b\n");
-        for (int i = sizeof(ip) - 3; i >= 0; --i) {
+        for (int i = sizeof(ip) - 3; i >= 0; i--) {
             uint8_t byte = (ip >> (8 * i)) & 0xFF;
             u_int32_t prefix = ip >> (8 * (i + 1));
             std::string prefix_str = std::string((char*)&prefix, sizeof(ip));
@@ -159,8 +159,8 @@ private:
                 return false;
             }
         }
-        // printf("check b\n");
-        for (int i = sizeof(ip) - 3; i >= sizeof(ip) - prefix_len; --i) {
+        // printf("check b %u\n",prefix_len);
+        for (int i = sizeof(ip) - 3; i >= (int)(sizeof(ip) - prefix_len); i--) {
             uint8_t byte = (ip >> (8 * i)) & 0xFF;
             u_int32_t prefix = ip >> (8 * (i + 1));
             std::string prefix_str = std::string((char*)&prefix, sizeof(ip));
@@ -176,7 +176,7 @@ private:
         if (!this->bitmap->get(bit_pos + offset, this->reading_col)){
             return false;
         }
-        for (int i = sizeof(ip) - 3; i >= 0; --i) {
+        for (int i = sizeof(ip) - 3; i >= 0; i--) {
             uint8_t byte = ((ip >> (8 * i))).low & 0xFF;
             IPv6Address prefix = ip >> (8 * (i + 1));
             std::string prefix_str = std::string((char*)&prefix, sizeof(ip));
@@ -205,7 +205,7 @@ private:
         if(prefix_len == 2){
             return true;
         }
-        for (int i = sizeof(ip) - 3; i >= sizeof(ip)-prefix_len; --i) {
+        for (int i = sizeof(ip) - 3; i >= (int)(sizeof(ip)-prefix_len); i--) {
             uint8_t byte = ((ip >> (8 * i))).low & 0xFF;
             IPv6Address prefix = ip >> (8 * (i + 1));
             std::string prefix_str = std::string((char*)&prefix, sizeof(ip));

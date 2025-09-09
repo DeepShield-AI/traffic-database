@@ -20,7 +20,7 @@ def read_pcap(file_path):
         count = 0
         
         # f.seek(2147479704)
-        f.seek(24)
+        f.seek(24 + 1024*1024*1024*32)
         
         # 逐个读取数据包
         while True:
