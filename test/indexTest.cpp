@@ -1,933 +1,167 @@
-#include "../dpdk_lib/skipList.hpp"
-#include "../dpdk_lib/pointerRingBuffer.hpp"
-#include "../dpdk_lib/indexBlock.hpp"
-#include "../dpdk_lib/TrieTree.hpp"
+#include "../dpdk_component/indexGenerator.hpp"
+// #include "../dpdk_component/indexPersister.hpp"
+// #include "../dpdk_component/diskManager.hpp"
+// #include "../dpdk_component/memoryManager.hpp"
+#include "../dpdk_lib/diskBuffer.hpp"
 
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <arpa/inet.h> // for inet_pton
-#include <regex>
-#include <random>
 #include <thread>
-#include <map>
+#include <vector>
+#include <numa.h>
+#include <numaif.h>
+#define THREAD_NUM 8
+#define WAIT_TIME 2
 
-#define IPV4_SIZE 1631762
-#define IPV6_SIZE 93501
-#define ISCX_SIZE 28338
-
-struct TestIndexIPv4{
-    u_int32_t srcip;
-    u_int32_t dstip;
-    u_int16_t srcport;
-    u_int16_t dstport;
+struct IndexStore{
+    u_int64_t ts;
+    u_int64_t disk_block_id;
+    u_int64_t position;
+    u_int64_t rx_id;
+    char sourceAddress[16];
+    char destinationAddress[16];
+    u_int16_t sourcePort;
+    u_int16_t destinationPort;
+    u_int32_t version;
 };
 
-struct TestIndexIPv6{
-    IPv6Address srcip;
-    IPv6Address dstip;
-    u_int16_t srcport;
-    u_int16_t dstport;
-};
+#define BUFFER_SIZE 1024lu*1024lu*1024lu
+#define INDEX_ENUM_LEN sizeof(IndexStore)
+#define DATA_OFFSET BUFFER_SIZE*32
+#define INDEX_OFFSET BUFFER_SIZE*48
+#define INDEX_SIZE 131689368
 
-// 将IPv4地址转换为32位无符号整型
-uint32_t ipToUint32(const std::string& ip) {
-    uint32_t result = 0;
-    inet_pton(AF_INET, ip.c_str(), &result); // 将IP转换为无符号整型
-    return ntohl(result); // 将网络字节序转换为主机字节序
+const u_int32_t index_ring_capacity = 1024*1024*32;
+u_int64_t data_disk_size = 1024lu*1024lu*1024lu*64lu;
+u_int64_t data_block_size = 1024lu*1024lu*1024lu;
+u_int64_t index_disk_size = 256lu*1024lu*1024lu*1024lu;
+u_int64_t index_block_size = 1024lu*1024lu*1024lu;
+u_int64_t bitmap_backup_col_num = 8;
+
+u_int64_t memory_pool_capacity = 1024lu*1024lu*1024lu;
+u_int64_t memory_pool_list_len_each = 1024;
+u_int64_t index_buffer_cache_num = 64;
+u_int64_t index_block_cache_num = 4;
+const size_t hash_num = 4;
+
+// std::string index_disk_name = "/dev/sdb";
+// int index_fd = 0;
+u_int64_t index_disk_offset = 1024lu*1024lu*1024lu*1024lu;
+
+std::vector<u_int32_t> indexing_core_id_list = std::vector<u_int32_t>({4,6,8,10,12,14,16,18});
+
+std::vector<PointerRingBuffer*>* indexRings;
+BitMap* bitmap;
+IndexBuffer* indexBuffer;
+IndexBlockBuffer* indexBlockBuffer;
+std::vector<IndexMemoryPool*>* indexMemoryPools;
+
+// std::atomic_uint64_t* indexWritePos;
+DiskBuffer* diskMeta;
+// std::vector<DiskAgent*> indexAgents;
+
+std::vector<IndexGenerator*> indexGenerators;
+std::vector<std::thread*> indexGeneratorThreads;
+
+// std::vector<IndexPersister*> indexPersisters;
+// std::vector<std::thread*> indexPersisterThreads;
+// std::vector<DiskManager*> indexDiskManagers;
+// std::vector<std::thread*> indexDiskManagerThreads;
+// std::vector<MemoryManager*> indexMemoryManagers;
+// std::vector<std::thread*> indexMemoryManagerThreads;
+
+
+void init(){
+    indexRings = new std::vector<PointerRingBuffer*>();
+    for(u_int64_t i = 0; i<THREAD_NUM; ++i){
+        PointerRingBuffer* indexRing = new PointerRingBuffer(index_ring_capacity);
+        indexRings->push_back(indexRing);
+    }
+    bitmap = new BitMap((PORT_BIT_LEN + IPV4_BIT_LEN + IPV6_BIT_LEN) * 2, data_disk_size / data_block_size, bitmap_backup_col_num);
+
+    indexMemoryPools = new std::vector<IndexMemoryPool*>();
+
+    for (u_int32_t i=0; i<THREAD_NUM; ++i){
+        IndexMemoryPool* mp = new IndexMemoryPool(memory_pool_capacity/THREAD_NUM, memory_pool_list_len_each);
+        indexMemoryPools->push_back(mp);
+    }
+
+    indexBuffer = new IndexBuffer(index_buffer_cache_num, data_disk_size / data_block_size, bitmap, hash_num ,indexMemoryPools);
+    indexBlockBuffer = new IndexBlockBuffer(index_block_cache_num, index_block_size, index_disk_size / index_block_size, THREAD_NUM);
+
+    // indexWritePos = new std::atomic_uint64_t;
+    diskMeta = new DiskBuffer(data_disk_size/data_block_size,bitmap,hash_num);
+    // indexAgents = std::vector<DiskAgent*>();
+
+
+    indexGenerators = std::vector<IndexGenerator*>();
+    indexGeneratorThreads = std::vector<std::thread*>();
+
+    for(u_int64_t i=0; i<THREAD_NUM; ++i){
+        IndexGenerator* ig = new IndexGenerator(indexBuffer, i, true, indexing_core_id_list[i]);
+        ig->addRingBuffer((*(indexRings))[i]);
+        indexGenerators.push_back(ig);
+    }
 }
 
-IPv6Address ipToUint128(const std::string& ip) {
-    struct in6_addr addr;
-    
-    // 使用inet_pton将IPv6字符串转换为二进制形式
-    inet_pton(AF_INET6, ip.c_str(), &addr);
-
-    // 将前64位和后64位分离为两个64位整数
-    IPv6Address ipv6 ={
-        .high = 0,
-        .low = 0,
-    };
-    
-    // addr.s6_addr 是一个 128 字节数组，按顺序存储 IPv6 地址的每一个字节
-    for (int i = 0; i < 8; ++i) {
-        ipv6.high = (ipv6.high << 8) | (addr.s6_addr[i]);
-    }
-    for (int i = 8; i < 16; ++i) {
-        ipv6.low = (ipv6.low << 8) | (addr.s6_addr[i]);
-    }
-
-    return ipv6;
-}
-
-
-std::vector<TestIndexIPv6> readIndex(){
-    std::string filename = "./data/source/flow_ipv6.txt";
-    std::ifstream infile(filename);
-    std::string line;
-
-    std::vector<TestIndexIPv6> vec = std::vector<TestIndexIPv6>();
-
-    if (!infile.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return vec;
-    }
-
-    std::regex flowRegex(R"(\('([0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+)',\s*(\d+),\s*'([0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+)',\s*(\d+)\):\s*(\d+))");
-    std::smatch match;
-
-    u_int32_t count = 0;
-
-    while (std::getline(infile, line)) {
-        if (std::regex_search(line, match, flowRegex) && match.size() == 6) {
-            std::string srcIp = match[1];
-            uint16_t srcPort = static_cast<uint16_t>(std::stoi(match[2]));
-            std::string dstIp = match[3];
-            uint16_t dstPort = static_cast<uint16_t>(std::stoi(match[4]));
-            size_t len = static_cast<size_t>(std::stoull(match[5]));
-
-            IPv6Address srcIpInt = ipToUint128(srcIp);
-            IPv6Address dstIpInt = ipToUint128(dstIp);
-
-            TestIndexIPv6 id = {
-                .srcip = srcIpInt,
-                .dstip = dstIpInt,
-                .srcport = srcPort,
-                .dstport = dstPort,
-            };
-            vec.push_back(id);
-
-            // printf("%s\n",srcIp.c_str());
-            // printf("%lu,%lu\n",srcIpInt.high,srcIpInt.low);
-
-        }else {
-            std::cerr << "Line format error: " << line << std::endl;
-        }
-    }
-
-    infile.close();
-    return vec;
-}
-
-void writeVecIPv6(std::vector<TestIndexIPv6>& vec){
-    std::string filename = "./data/index/test_v6.vec";
-    std::ofstream outfile(filename, std::ios::binary); // 以二进制模式打开文件
-
-    if (!outfile.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
+void fill(){
+    const char* filename = "/dev/sdb";
+    int read_fd = open(filename, O_RDONLY);
+    if (read_fd < 0) {
+        perror("open for read");
         return;
     }
 
-    // 写入 vector 数据到文件
-    outfile.write(reinterpret_cast<const char*>(vec.data()), vec.size() * sizeof(TestIndexIPv6));
+    char* buffer = new char[INDEX_SIZE];
 
-    outfile.close();
-}
+    ssize_t ret = pread(read_fd, buffer, INDEX_SIZE, INDEX_OFFSET);
+    if (ret < 0) perror("pread");
 
-std::vector<TestIndexIPv4> vec_ipv4;
-std::vector<TestIndexIPv6> vec_ipv6;
-std::vector<u_int64_t> vec_bytes;
-std::vector<u_int64_t> vec_flags;
-
-std::vector<PointerRingBuffer*>* rings;
-std::vector<SkipList*>* lists;
-// std::vector<TrieTree*>* trees;
-// std::vector<std::multimap<u_int16_t,u_int64_t>*>* maps;
-
-void thread_write(u_int8_t op, u_int32_t begin, u_int32_t num){
-    Index* index;
-    if(op == 0){
-        for(u_int32_t i=begin;i<begin+num;++i){
-            // if(i >= begin + 90000){
-            //     break;
-            // }
-            auto meta = vec_ipv4[i];
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.srcip),sizeof(meta.srcip));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::SRCIP;
-            index->len = sizeof(meta.srcip);
-            if(!(*rings)[0]->put((void*)index)){
-                break;
-            }
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.dstip),sizeof(meta.dstip));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::DSTIP;
-            index->len = sizeof(meta.dstip);
-            if(!(*rings)[1]->put((void*)index)){
-                break;
-            }
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.srcport),sizeof(meta.srcport));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::SRCPORT;
-            index->len = sizeof(meta.srcport);
-            if(!(*rings)[2]->put((void*)index)){
-                break;
-            }
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.dstport),sizeof(meta.dstport));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::DSTPORT;
-            index->len = sizeof(meta.dstport);
-            if(!(*rings)[3]->put((void*)index)){
-                break;
-            }
-
-
-            QuarTurpleIPv4 id_meta = {
-                .srcip = meta.srcip,
-                .dstip = meta.dstip,
-                .srcport = meta.srcport,
-                .dstport = meta.dstport,
-            };
-            index = new Index();
-            index->key = std::string((char*)&(id_meta),sizeof(id_meta));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::QUARTURPLEIPv4;
-            index->len = sizeof(id_meta);
-            if(!(*rings)[6]->put((void*)index)){
-                break;
-            }
-
-            auto tag1 = vec_bytes[i];
-            index = new Index();
-            index->key = std::string((char*)&(tag1),sizeof(tag1));
-            index->value = i;
-            index->ts = 0;
-            index->id = 8;
-            index->len = sizeof(tag1);
-            if(!(*rings)[8]->put((void*)index)){
-                break;
-            }
-
-            auto tag2 = vec_flags[i];
-            index = new Index();
-            index->key = std::string((char*)&(tag2),sizeof(tag2));
-            index->value = i;
-            index->ts = 0;
-            index->id = 9;
-            index->len = sizeof(tag2);
-            if(!(*rings)[9]->put((void*)index)){
-                break;
-            }
-        }
-    }else if(op == 1){
-        for(u_int32_t i=begin;i<begin+num;++i){
-            auto meta = vec_ipv6[i];
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.srcip),sizeof(meta.srcip));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::SRCIPv6;
-            index->len = sizeof(meta.srcip);
-            if(!(*rings)[4]->put((void*)index)){
-                break;
-            }
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.dstip),sizeof(meta.dstip));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::DSTIPv6;
-            index->len = sizeof(meta.dstip);
-            if(!(*rings)[5]->put((void*)index)){
-                break;
-            }
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.srcport),sizeof(meta.srcport));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::SRCPORT;
-            index->len = sizeof(meta.srcport);
-            if(!(*rings)[2]->put((void*)index)){
-                break;
-            }
-
-            index = new Index();
-            index->key = std::string((char*)&(meta.dstport),sizeof(meta.dstport));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::DSTPORT;
-            index->len = sizeof(meta.dstport);
-            if(!(*rings)[3]->put((void*)index)){
-                break;
-            }
-
-            QuarTurpleIPv6 id_meta = {
-                .srcip = meta.srcip,
-                .dstip = meta.dstip,
-                .srcport = meta.srcport,
-                .dstport = meta.dstport,
-            };
-
-            index = new Index();
-            index->key = std::string((char*)&(id_meta),sizeof(id_meta));
-            index->value = i;
-            index->ts = 0;
-            index->id = IndexType::QUARTURPLEIPv6;
-            index->len = sizeof(id_meta);
-            if(!(*rings)[7]->put((void*)index)){
-                break;
-            }
-        }
-    }
-    printf("write down.\n");
-}
-
-void thread_read(u_int32_t cpu){
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(cpu, &cpuset);
-
-    pthread_t thread = pthread_self();
-
-    int set_result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-    if (set_result != 0) {
-        std::cerr << "Error setting thread affinity: " << set_result << std::endl;
-    }
-
-    // 确认设置是否成功
-    CPU_ZERO(&cpuset);
-    pthread_getaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-
-    if (CPU_ISSET(cpu, &cpuset)) {
-        printf("thread %lu bind to cpu %d.\n",thread,cpu);
-    } else {
-        printf("thread %lu failed to bind to cpu %d!\n",thread,cpu);
-    }
-
-    u_int32_t id = (cpu-10)/2;
-
-    u_int64_t duration_time = 0;
-
-    u_int64_t count = 0;
-
-    while (true){
-        void* data = (*rings)[id]->get();
-        if(data==nullptr){
-            break;
-        }
-        Index* index = (Index*)data;
-
-        auto start = std::chrono::high_resolution_clock::now();
     
 
-        (*lists)[index->id]->insert(index->key,index->value,std::numeric_limits<uint64_t>::max());
+    u_int64_t count = 4;
+    for(u_int64_t i = 0; i<INDEX_SIZE; i+=INDEX_ENUM_LEN){
+        IndexStore* index_store = (IndexStore*)(buffer + i);
 
-        // (*trees)[index->id]->insert(index->key,index->value);
+        Index* index = new Index();
+        index->disk_block_id = index_store->position / data_block_size;
+        index->position = index_store->position;
+        index->ts = index->ts;
+        index->meta.sourceAddress = std::string(index_store->sourceAddress,index_store->version);
+        index->meta.destinationAddress = std::string(index_store->destinationAddress,index_store->version);
+        index->meta.sourcePort = index_store->sourcePort;
+        index->meta.destinationPort = index_store->destinationPort;
         
-        auto end = std::chrono::high_resolution_clock::now();
-        delete (u_int32_t*)data;
-        count++;
-        duration_time += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    }
-    printf("Thread %u: thread quit, during %lu us with %lu indexes.\n",id,duration_time,count);
-}
-
-void query(u_int32_t id, IndexBlockCompact& ib){
-    std::string key = std::string();
-    u_int64_t duration_time = 0;
-    printf("ID %u.\n",id);
-    for(u_int32_t i = 0;i<10000;++i){
-        switch (id){
-        case 0:
-            key = std::string((char*)&vec_ipv4[i].srcip,sizeof(vec_ipv4[i].srcip));
-            break;
-        case 1:
-            key = std::string((char*)&vec_ipv4[i].dstip,sizeof(vec_ipv4[i].dstip));
-            break;
-        case 2:
-            key = std::string((char*)&vec_ipv4[i].srcport,sizeof(vec_ipv4[i].srcport));
-            break;
-        case 3:
-            key = std::string((char*)&vec_ipv4[i].dstport,sizeof(vec_ipv4[i].dstport));
-            break;
-        case 4:
-            key = std::string((char*)&vec_ipv6[i].srcip,sizeof(vec_ipv6[i].srcip));
-            break;
-        case 5:
-            key = std::string((char*)&vec_ipv6[i].dstip,sizeof(vec_ipv6[i].dstip));
-            break;
-        case 6:
-            key = std::string((char*)&vec_ipv4[i],sizeof(vec_ipv4[i]));
-            break;
-        case 7:
-            key = std::string((char*)&vec_ipv6[i],sizeof(vec_ipv6[i]));
-            break;
-        case 8:
-            key = std::string((char*)&vec_bytes[i],sizeof(vec_bytes[i]));
-            break;
-        case 9:
-            key = std::string((char*)&vec_flags[i],sizeof(vec_flags[i]));
-            break;
-        default:
-            break;
-        }
-
-        auto start = std::chrono::high_resolution_clock::now();
-        auto ret = ib.query(key);
-        auto end = std::chrono::high_resolution_clock::now();
-        duration_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-        printf("%lu %zu\n",duration_time,ret.size());
-    }
-    // printf("ID %u: time %lu us.\n",id,duration_time);
-}
-
-void query(u_int32_t id, IndexBlock& ib){
-    std::string key = std::string();
-    u_int64_t duration_time = 0;
-    QuarTurpleIPv4 quar_v4;
-    QuarTurpleIPv6 quar_v6;
-    printf("ID %u.\n",id);
-    for(u_int32_t i = 0;i<10000;++i){
-        switch (id){
-        case 0:
-            key = std::string((char*)&vec_ipv4[i].srcip,sizeof(vec_ipv4[i].srcip));
-            break;
-        case 1:
-            key = std::string((char*)&vec_ipv4[i].dstip,sizeof(vec_ipv4[i].dstip));
-            break;
-        case 2:
-            key = std::string((char*)&vec_ipv4[i].srcport,sizeof(vec_ipv4[i].srcport));
-            break;
-        case 3:
-            key = std::string((char*)&vec_ipv4[i].dstport,sizeof(vec_ipv4[i].dstport));
-            break;
-        case 4:
-            key = std::string((char*)&vec_ipv6[i].srcip,sizeof(vec_ipv6[i].srcip));
-            break;
-        case 5:
-            key = std::string((char*)&vec_ipv6[i].dstip,sizeof(vec_ipv6[i].dstip));
-            break;
-        case 6:
-            quar_v4 = {
-                .srcip = vec_ipv4[i].srcip,
-                .dstip = vec_ipv4[i].dstip,
-                .srcport = vec_ipv4[i].srcport,
-                .dstport = vec_ipv4[i].dstport,
-            };
-            key = std::string((char*)&quar_v4,sizeof(quar_v4));
-            break;
-        case 7:
-            quar_v6 = {
-                .srcip = vec_ipv6[i].srcip,
-                .dstip = vec_ipv6[i].dstip,
-                .srcport = vec_ipv6[i].srcport,
-                .dstport = vec_ipv6[i].dstport,
-            };
-            key = std::string((char*)&quar_v6,sizeof(quar_v6));
-            break;
-        case 8:
-            key = std::string((char*)&vec_bytes[i],sizeof(vec_bytes[i]));
-            break;
-        case 9:
-            key = std::string((char*)&vec_flags[i],sizeof(vec_flags[i]));
-            break;
-        default:
-            break;
-        }
-
-        auto start = std::chrono::high_resolution_clock::now();
-        auto ret = ib.query(key);
-        auto end = std::chrono::high_resolution_clock::now();
-        duration_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-        printf("%lu %zu\n",duration_time,ret.size());
-
-        // if(id >= 6 && ret.size()!=1){
-        //     printf("id:%u, size:%zu, keysize:%zu\n",id,ret.size(),key.size());
+        // if (count % 10000 == 0){
+        //     printf("%lu %lu\n",count,index->position);
         // }
+        count ++;
+        index->rx_id = count % THREAD_NUM;
+        (*(indexRings))[count % THREAD_NUM]->put(index);
     }
-    
 }
 
-void queryFalse(u_int32_t id, IndexBlock& ib, IndexBlockCompact& ibt){
-    std::string key = std::string();
-    u_int64_t duration_time = 0;
-    QuarTurpleIPv4 quar_v4;
-    QuarTurpleIPv6 quar_v6;
-    printf("ID %u.\n",id);
-
-    std::random_device rd;  // 用于获得种子
-    std::mt19937 gen(rd()); // 使用随机设备种子初始化Mersenne Twister生成器
-    std::uniform_int_distribution<u_int64_t> distrib(0, UINT64_MAX);
-
-    srand((unsigned int)time(NULL));
-
-    u_int32_t count = 0;
-    for(u_int32_t i = 0;i<10000000;++i){
-        IPv6Address ip ={
-            .high = distrib(gen),
-            .low = distrib(gen),
-        };
-        switch (id){
-        case 4:
-            key = std::string((char*)&ip,sizeof(vec_ipv6[i].srcip));
-            break;
-        case 5:
-            key = std::string((char*)&ip,sizeof(vec_ipv6[i].dstip));
-            break;
-        case 6:
-            quar_v4 = {
-                .srcip = (u_int32_t)distrib(gen),
-                .dstip = (u_int32_t)distrib(gen),
-                .srcport = (u_int16_t)distrib(gen),
-                .dstport = (u_int16_t)distrib(gen),
-            };
-            key = std::string((char*)&quar_v4,sizeof(quar_v4));
-            break;
-        case 7:
-            quar_v6 = {
-                .srcip = ip,
-                .dstip = ip,
-                .srcport = (u_int16_t)distrib(gen),
-                .dstport = (u_int16_t)distrib(gen),
-            };
-            key = std::string((char*)&quar_v6,sizeof(quar_v6));
-            break;
-        default:
-            break;
-        }
-
-        auto start = std::chrono::high_resolution_clock::now();
-        auto ret = ib.query(key);
-        auto end = std::chrono::high_resolution_clock::now();
-        duration_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-        auto ret_t = ibt.query(key);
-
-        if(ret.size()!=ret_t.size()){
-            count++;
-        }
-
-        // printf("%lu %zu\n",duration_time,ret.size());
-
-        // if(id >= 6 && ret.size()!=1){
-        //     printf("id:%u, size:%zu, keysize:%zu\n",id,ret.size(),key.size());
-        // }
+void run(){
+    for(auto ig:indexGenerators){
+        std::thread* t = new std::thread(&IndexGenerator::run,ig);
+        indexGeneratorThreads.push_back(t);
     }
-    printf("%u\n",count);
 }
 
-void queryRange(u_int32_t id, IndexBlockCompact& ib){
-    std::string key_left = std::string();
-    std::string key_right = std::string();
-    u_int32_t ip_left = 0;
-    u_int32_t ip_right = 0;
-    u_int16_t port_left = 0;
-    u_int16_t port_right = 0;
-    u_int64_t duration_time = 0;
-    printf("ID %u.\n",id);
-    for(u_int32_t i = 0;i<10000;++i){
-        switch (id){
-        case 0:
-            ip_left = vec_ipv4[i].srcip & (u_int32_t)0xffffff00;
-            ip_right = vec_ipv4[i].srcip | (u_int32_t)0xff;
-            // printf("left:%u,right:%u\n",ip_left,ip_right);
-            key_left = std::string((char*)&ip_left,sizeof(ip_left));
-            key_right = std::string((char*)&ip_right,sizeof(ip_right));
-            break;
-        case 1:
-            ip_left = vec_ipv4[i].dstip & (u_int32_t)0xffffff00;
-            ip_right = vec_ipv4[i].dstip | (u_int32_t)0xff;
-            key_left = std::string((char*)&ip_left,sizeof(ip_left));
-            key_right = std::string((char*)&ip_right,sizeof(ip_right));
-            break;
-        case 2:
-            port_left = (u_int16_t)min(vec_ipv4[i*2].srcport,vec_ipv4[i*2+1].srcport);
-            port_right = (u_int16_t)max(vec_ipv4[i*2].srcport,vec_ipv4[i*2+1].srcport);
-            key_left = std::string((char*)&port_left,sizeof(port_left));
-            key_right = std::string((char*)&port_right,sizeof(port_right));
-            break;
-        case 3:
-            port_left = (u_int16_t)min(vec_ipv4[i*2].dstport,vec_ipv4[i*2+1].dstport);
-            port_right = (u_int16_t)max(vec_ipv4[i*2].dstport,vec_ipv4[i*2+1].dstport);
-            key_left = std::string((char*)&port_left,sizeof(port_left));
-            key_right = std::string((char*)&port_right,sizeof(port_right));
-            break;
-        // case 4:
-        //     key = std::string((char*)&vec_ipv6[i].srcip,sizeof(vec_ipv6[i].srcip));
-        //     break;
-        // case 5:
-        //     key = std::string((char*)&vec_ipv6[i].dstip,sizeof(vec_ipv6[i].dstip));
-        //     break;
-        // case 6:
-        //     key = std::string((char*)&vec_ipv4[i],sizeof(vec_ipv4[i]));
-        //     break;
-        // case 7:
-        //     key = std::string((char*)&vec_ipv6[i],sizeof(vec_ipv6[i]));
-        //     break;
-        default:
-            break;
-        }
-
-        auto start = std::chrono::high_resolution_clock::now();
-        auto ret = ib.queryRange(key_left,key_right);
-        auto end = std::chrono::high_resolution_clock::now();
-        duration_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-        printf("%lu %zu\n",duration_time,ret.size());
+void stop(){
+    sleep(WAIT_TIME);
+    for(auto ir:*indexRings){
+        ir->asynchronousStop();
     }
-    // printf("ID %u: time %lu us.\n",id,duration_time);
-}
-
-void queryRange(u_int32_t id, IndexBlock& ib){
-    std::string key = std::string();
-    // u_int64_t bytes_left = 0;
-    // u_int64_t bytes_right = 0;
-    // u_int64_t flags_left = 0;
-    // u_int64_t flags_right = 0;
-    u_int64_t duration_time = 0;
-    QuarTurpleIPv4 quar_v4;
-    QuarTurpleIPv6 quar_v6;
-    if(id != 4 && id != 5){
-        return;
+    for(u_int32_t i=0;i<indexGenerators.size();++i){
+        indexGenerators[i]->asynchronousStop();
+        indexGeneratorThreads[i]->join();
     }
-    printf("ID %u.\n",id);
-    for(u_int32_t i = 0;i<10000;++i){
-        switch (id){
-        // case 0:
-        //     key = std::string((char*)&vec_ipv4[i].srcip,sizeof(vec_ipv4[i].srcip));
-        //     break;
-        // case 1:
-        //     key = std::string((char*)&vec_ipv4[i].dstip,sizeof(vec_ipv4[i].dstip));
-        //     break;
-        // case 2:
-        //     key = std::string((char*)&vec_ipv4[i].srcport,sizeof(vec_ipv4[i].srcport));
-        //     break;
-        // case 3:
-        //     key = std::string((char*)&vec_ipv4[i].dstport,sizeof(vec_ipv4[i].dstport));
-        //     break;
-        case 4:
-            key = std::string(((char*)&vec_ipv6[i].srcip)+sizeof(PRE_TYPE),sizeof(vec_ipv6[i].srcip)-sizeof(PRE_TYPE));
-            
-            break;
-        case 5:
-            key = std::string(((char*)&vec_ipv6[i].dstip)+sizeof(PRE_TYPE),sizeof(vec_ipv6[i].dstip)-sizeof(PRE_TYPE));
-            break;
-        // case 6:
-        //     quar_v4 = {
-        //         .srcip = vec_ipv4[i].srcip,
-        //         .dstip = vec_ipv4[i].dstip,
-        //         .srcport = vec_ipv4[i].srcport,
-        //         .dstport = vec_ipv4[i].dstport,
-        //     };
-        //     key = std::string((char*)&quar_v4,sizeof(quar_v4));
-        //     break;
-        // case 7:
-        //     quar_v6 = {
-        //         .srcip = vec_ipv6[i].srcip,
-        //         .dstip = vec_ipv6[i].dstip,
-        //         .srcport = vec_ipv6[i].srcport,
-        //         .dstport = vec_ipv6[i].dstport,
-        //     };
-        //     key = std::string((char*)&quar_v6,sizeof(quar_v6));
-        //     break;
-        // case 8:
-        //     bytes_left = min(vec_bytes[i*2],vec_bytes[i*2+1]);
-        //     bytes_right = max(vec_bytes[i*2],vec_bytes[i*2+1]);
-        //     key_left = std::string((char*)&bytes_left,sizeof(bytes_left));
-        //     key_right = std::string((char*)&bytes_right,sizeof(bytes_right));
-        //     break;
-        // case 9:
-        //     flags_left = min(vec_flags[i*2],vec_flags[i*2+1]);
-        //     flags_right = max(vec_flags[i*2],vec_flags[i*2+1]);
-        //     key_left = std::string((char*)&flags_left,sizeof(flags_left));
-        //     key_right = std::string((char*)&flags_right,sizeof(flags_right));
-        //     break;
-        default:
-            break;
-        }
-
-        auto start = std::chrono::high_resolution_clock::now();
-        auto ret = ib.queryPrefix(key);
-        auto end = std::chrono::high_resolution_clock::now();
-        duration_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-        printf("%lu %zu\n",duration_time,ret.size());
-
-        // if(id >= 6 && ret.size()!=1){
-        //     printf("id:%u, size:%zu, keysize:%zu\n",id,ret.size(),key.size());
-        // }
-    }
-    
-}
-
-void intersect(std::list<u_int64_t>& la, std::list<u_int64_t>& lb){
-    la.sort();
-    lb.sort();
-    auto ita = la.begin();
-    auto itb = lb.begin();
-    while (ita != la.end() && itb != lb.end()) {
-        if (*ita < *itb) {
-            ita = la.erase(ita);
-        } else if (*ita > *itb) {
-            ++itb;
-        } else {
-            ++ita;
-            ++itb;
-        }
-    }
-    la.erase(ita,la.end());
-}
-
-void combineTest(){
-    auto srcipv4_str = (*lists)[0]->outputToCharCompact();
-    auto dstipv4_str = (*lists)[1]->outputToCharCompact();
-    auto srcport_str = (*lists)[2]->outputToCharCompact();
-    auto dstport_str = (*lists)[3]->outputToCharCompact();
-    auto srcipv6_str = (*lists)[4]->outputToCharCompressedInt();
-    auto dstipv6_str = (*lists)[5]->outputToCharCompressedInt();
-    auto quaripv4_str = (*lists)[6]->outputToCharCompressedInt();
-    auto quaripv6_str = (*lists)[7]->outputToCharCompressedInt();
-
-    IndexBlockCompact srcipv4_ib(4,(char*)&srcipv4_str[0],srcipv4_str.size());
-    IndexBlockCompact dstipv4_ib(4,(char*)&dstipv4_str[0],dstipv4_str.size());
-    IndexBlockCompact srcport_ib(2,(char*)&srcport_str[0],srcport_str.size());
-    IndexBlockCompact dstport_ib(2,(char*)&dstport_str[0],dstport_str.size());
-    IndexBlock srcipv6_ib(16,(char*)&srcipv6_str[0],srcipv6_str.size());
-    IndexBlock dstipv6_ib(16,(char*)&dstipv6_str[0],dstipv6_str.size());
-    IndexBlock quaripv4_ib(12,(char*)&quaripv4_str[0],quaripv4_str.size());
-    IndexBlock quaripv6_ib(36,(char*)&quaripv6_str[0],quaripv6_str.size());
-
-    printf("ipv4\n");
-    for(u_int32_t i = 0; i<10000;++i){
-        auto start = std::chrono::high_resolution_clock::now();
-
-        auto srcip_ret = srcipv4_ib.query(std::string((char*)&vec_ipv4[i].srcip,sizeof(vec_ipv4[i].srcip)));
-        auto dstip_ret = dstipv4_ib.query(std::string((char*)&vec_ipv4[i].dstip,sizeof(vec_ipv4[i].dstip)));
-        auto srcport_ret = srcport_ib.query(std::string((char*)&vec_ipv4[i].srcport,sizeof(vec_ipv4[i].srcport)));
-        auto dstport_ret = srcport_ib.query(std::string((char*)&vec_ipv4[i].dstport,sizeof(vec_ipv4[i].dstport)));
-        intersect(srcip_ret,dstip_ret);
-        intersect(srcip_ret,srcport_ret);
-        intersect(srcip_ret,dstport_ret);
-        
-        auto end = std::chrono::high_resolution_clock::now();
-        // printf("ret:%u\n",srcip_ret.size());
-        auto duration_one = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-        printf("%llu\n",duration_one);
-    }
-    // printf("ipv6\n");
-    // for(u_int32_t i = 0; i<10000;++i){
-    //     auto start = std::chrono::high_resolution_clock::now();
-
-    //     auto srcip_ret = srcipv6_ib.query(std::string((char*)&vec_ipv6[i].srcip,sizeof(vec_ipv6[i].srcip)));
-    //     auto dstip_ret = dstipv6_ib.query(std::string((char*)&vec_ipv6[i].dstip,sizeof(vec_ipv6[i].dstip)));
-    //     auto srcport_ret = srcport_ib.query(std::string((char*)&vec_ipv4[i].srcport,sizeof(vec_ipv4[i].srcport)));
-    //     auto dstport_ret = srcport_ib.query(std::string((char*)&vec_ipv4[i].dstport,sizeof(vec_ipv4[i].dstport)));
-    //     intersect(srcip_ret,dstip_ret);
-    //     intersect(srcip_ret,srcport_ret);
-    //     intersect(srcip_ret,dstport_ret);
-        
-    //     auto end = std::chrono::high_resolution_clock::now();
-    //     // printf("ret:%u\n",srcip_ret.size());
-    //     auto duration_one = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    //     printf("%llu\n",duration_one);
-    // }
-}
-
-template <class KeyType>
-std::list<u_int64_t> binarySearch(char* index, u_int32_t index_len, KeyType key){
-    std::list<u_int64_t> ret = std::list<u_int64_t>();
-    u_int32_t ele_len = sizeof(KeyType) + sizeof(u_int64_t);
-    // printf("ele:%u\n",ele_len);
-    u_int32_t left = 0;
-    u_int32_t right = index_len/ele_len;
-
-    while (left < right) {
-        
-        u_int32_t mid = left + (right - left) / 2;
-        // printf("mid:%u\n",mid);
-
-        KeyType key_mid = *(KeyType*)(index + mid * ele_len);
-
-        // QuarTurpleIPv4 id = *(QuarTurpleIPv4*)(index + mid * ele_len);
-        // printf("%u,%u,%u,%u\n",id.srcip,id.dstip,id.srcport,id.dstport);
-
-        if (key_mid < key) {
-            // printf("left\n");
-            left = mid + 1;
-        } else {
-            // printf("right\n");
-            right = mid;
-        }
-    }
-    for(;left<index_len/ele_len;left++){
-        KeyType key_now = *(KeyType*)(index + left * ele_len);
-        if(key_now != key){
-            break;
-        }
-        u_int64_t value = *(u_int64_t*)(index + left * ele_len + sizeof(KeyType));
-        ret.push_back(value);
-    }
-    return ret;
 }
 
 int main(){
-    // auto vec = readIndex();
-    // printf("read done.\n");
-    // writeVecIPv6(vec);
-    vec_ipv4 = std::vector<TestIndexIPv4>();
-    vec_ipv4.resize(ISCX_SIZE);
-    std::ifstream infile_v4("./data/index/iscx.vec", std::ios::binary);
-    if (!infile_v4.is_open()) {
-        std::cerr << "Error opening file: " << "./data/index/iscx_v4.vec" << std::endl;
-    }
-    infile_v4.read(reinterpret_cast<char*>(vec_ipv4.data()), vec_ipv4.size()*sizeof(TestIndexIPv4));
-    infile_v4.close();
-
-    vec_ipv6 = std::vector<TestIndexIPv6>();
-    vec_ipv6.resize(IPV6_SIZE);
-    std::ifstream infile_v6("./data/index/test_v6.vec", std::ios::binary);
-    if (!infile_v6.is_open()) {
-        std::cerr << "Error opening file: " << "./data/index/test_v6.vec" << std::endl;
-    }
-    infile_v6.read(reinterpret_cast<char*>(vec_ipv6.data()), vec_ipv6.size()*sizeof(TestIndexIPv6));
-    infile_v6.close();
-
-    vec_bytes = std::vector<u_int64_t>();
-    vec_bytes.resize(ISCX_SIZE);
-    std::ifstream infile_bytes("./data/index/iscx_bytes.vec", std::ios::binary);
-    if (!infile_bytes.is_open()) {
-        std::cerr << "Error opening file: " << "./data/index/wide_bytes.vec" << std::endl;
-    }
-    infile_bytes.read(reinterpret_cast<char*>(vec_bytes.data()), vec_bytes.size()*sizeof(u_int64_t));
-    infile_bytes.close();
-
-    vec_flags = std::vector<u_int64_t>();
-    vec_flags.resize(ISCX_SIZE);
-    std::ifstream infile_flags("./data/index/iscx_flags.vec", std::ios::binary);
-    if (!infile_flags.is_open()) {
-        std::cerr << "Error opening file: " << "./data/index/wide_flags.vec" << std::endl;
-    }
-    infile_flags.read(reinterpret_cast<char*>(vec_flags.data()), vec_flags.size()*sizeof(u_int64_t));
-    infile_flags.close();
-
-    rings = new std::vector<PointerRingBuffer*>();
-    lists = new std::vector<SkipList*>();
-    // trees = new std::vector<TrieTree*>();
-
-    for(u_int32_t i=0;i<flowMetaEleLens.size() + 2;++i){
-        PointerRingBuffer* ir =  new PointerRingBuffer(1024*1024);
-        rings->push_back(ir);
-    }
-    
-
-    for(u_int32_t i=0;i<flowMetaEleLens.size();++i){
-        SkipList* li = new SkipList(flowMetaEleLens[i]*8,flowMetaEleLens[i],sizeof(u_int64_t));
-        lists->push_back(li);
-
-        // TrieTree* tree = new TrieTree(flowMetaEleLens[i],flowMetaEleLens[i],sizeof(u_int64_t));
-        // trees->push_back(tree);
-    }
-
-    for(u_int32_t i=0;i<2;++i){
-        SkipList* li = new SkipList(sizeof(u_int64_t)*8,sizeof(u_int64_t),sizeof(u_int64_t));
-        lists->push_back(li);
-    }
-
-
-    std::vector<std::thread*> read_threads = std::vector<std::thread*>();
-    std::vector<std::thread*> write_threads = std::vector<std::thread*>();
-
-    for(u_int32_t i=0;i<10;++i){
-        std::thread* rt = new std::thread(&thread_read,i*2+10);
-        read_threads.push_back(rt);
-    }
-
-    // for(u_int32_t i=0;i<16;++i){
-    //     std::thread* wt = new std::thread(&thread_write,0,IPV6_SIZE*i,IPV6_SIZE);
-    //     write_threads.push_back(wt);
-    // }
-
-    // for(u_int32_t i=0;i<16;++i){
-    //     std::thread* wt = new std::thread(&thread_write,true,IPV6_SIZE*i,IPV6_SIZE);
-    //     write_threads.push_back(wt);
-    // }
-
-    for(u_int32_t i=0;i<1;++i){
-        std::thread* wt = new std::thread(&thread_write,0,ISCX_SIZE*i,ISCX_SIZE);
-        write_threads.push_back(wt);
-    }
-
-    for(auto t:write_threads){
-        t->join();
-        printf("stop.\n");
-    }
-
-    for(u_int32_t i=0;i<flowMetaEleLens.size() + 2;++i){
-        (*rings)[i]->asynchronousStop();
-    }
-    
-
-    printf("should stop\n");
-
-    for(auto t:read_threads){
-        t->join();
-    }
-
-    
-
-    // std::string s1;
-    // std::string s2;
-    // std::string s3;
-    // u_int32_t id = 0;
-    // for(auto sk: *lists){
-    //     s1 = sk->outputToChar();
-    //     // printf("%u\n",sk->getNodeNum());
-    //     if(id == 4 || id == 5 || id == 7 || id == 8 || id == 9){ //ipv6
-    //         id++;
-    //         continue;
-    //     }
-    //     if(sk->getKeyLen()<=4){
-    //         auto start = std::chrono::high_resolution_clock::now();
-        
-    //         s2 = sk->outputToCharCompact();
-    //         auto end = std::chrono::high_resolution_clock::now();
-    //         auto duration_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    //         // printf("time:%lu\n",duration_time);
-
-    //         IndexBlockCompact ib(sk->getKeyLen(),(char*)&s2[0],s2.size());
-    //         // queryRange(id,ib);
-    //         queryRange(id,ib);
-            
-    //     }else{
-    //         auto start = std::chrono::high_resolution_clock::now();
-    //         // s2 = sk->outputToCharCompact();
-    //         s2 = sk->outputToCharCompressedInt();
-    //         s3 = sk->outputToCharCompact();
-    //         auto end = std::chrono::high_resolution_clock::now();
-    //         auto duration_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    //         // printf("time:%lu\n",duration_time);
-
-    //         IndexBlock ib(sk->getKeyLen(),&s2[0],s2.size());
-    //         // IndexBlockCompact ibt(sk->getKeyLen(),(char*)&s3[0],s3.size());
-    //         queryRange(id,ib);
-
-    //         // query(id,ib);
-    //         // queryFalse(id,ib,ibt);
-            
-    //     }
-    //     id++;
-    //     // printf("s1:%zu, s2:%zu\n",s1.size(),s2.size());
-    // }
-
-    combineTest();
-
+    init();
+    fill();
+    run();
+    stop();
     return 0;
 }

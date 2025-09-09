@@ -20,6 +20,9 @@ public:
     // 插入元素
     void insert(const std::string& element) {
         for (size_t i = 0; i < k; ++i) {
+            // if (element.size()== 16){
+            //     printf("%lu\n",i);
+            // }
             size_t hash = hashFunction(element, i);
             setBit(hash % (bitArray.size() * 8));
         }
