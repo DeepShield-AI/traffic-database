@@ -25,6 +25,7 @@
 #define IPV4_PREFIX_LEN 4
 #define IPV6_PREFIX_LEN 16
 #define HASH_NUM 4
+#define READ_SIZE 1024
 
 struct IndexStore{
     u_int64_t ts;
@@ -265,11 +266,14 @@ IPv6Address generateRandomIPv6() {
 
 bool checkIPv4(u_int32_t ip, IndexType type, u_int32_t prefix_len, u_int64_t block_id){
     return prefixFilters[block_id]->getIPv4(ip,type,prefix_len);
+    // return true;
 }
 bool checkIPv6(IPv6Address ip, IndexType type, u_int32_t prefix_len, u_int64_t block_id){
     return prefixFilters[block_id]->getIPv6(ip,type,prefix_len);
+    // return true;
 }
 bool checkPort(u_int16_t port, IndexType type, u_int64_t block_id){
+    // return true;
     return prefixFilters[block_id]->getPort(port,type);
 }
 
@@ -463,6 +467,7 @@ void q1(){
             u_int32_t srcip = *(u_int32_t*)index->sourceAddress;
             u_int32_t dstip = *(u_int32_t*)index->destinationAddress;
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j)){
@@ -473,7 +478,7 @@ void q1(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -490,6 +495,7 @@ void q1(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j)){
@@ -500,7 +506,7 @@ void q1(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -519,6 +525,7 @@ void q1(){
             IPv6Address srcip = *(IPv6Address*)index->sourceAddress;
             IPv6Address dstip = *(IPv6Address*)index->destinationAddress;
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j)){
@@ -529,7 +536,7 @@ void q1(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -546,6 +553,7 @@ void q1(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j)){
@@ -556,7 +564,7 @@ void q1(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -576,6 +584,7 @@ void q1(){
         u_int16_t srcport = index->sourcePort;
         u_int16_t dstport = index->destinationPort;
         std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+        for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
         for(u_int64_t j=0; j<index_metas.size();++j){
             t1 = std::chrono::high_resolution_clock::now();
             if(!checkPort(srcport,IndexType::SRCPORT,j)){
@@ -586,7 +595,7 @@ void q1(){
             // printf("j:%lu\n",j);
             t1 = std::chrono::high_resolution_clock::now();
             auto ret = getOffsetByPort(srcport,IndexType::SRCPORT,j,read_fd);
-            if(ret.size()!=0){
+            if(ret.size()!=0 && k==0){
                 offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
             }
             t2 = std::chrono::high_resolution_clock::now();
@@ -603,6 +612,7 @@ void q1(){
         byte_count += pa.second;
 
         offset_vec = std::vector<u_int64_t>();
+        for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
         for(u_int64_t j=0; j<index_metas.size();++j){
             t1 = std::chrono::high_resolution_clock::now();
             if(!checkPort(dstport,IndexType::DSTPORT,j)){
@@ -613,7 +623,7 @@ void q1(){
             // printf("j:%lu\n",j);
             t1 = std::chrono::high_resolution_clock::now();
             auto ret = getOffsetByPort(dstport,IndexType::DSTPORT,j,read_fd);
-            if(ret.size()!=0){
+            if(ret.size()!=0 && k==0){
                 offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
             }
             t2 = std::chrono::high_resolution_clock::now();
@@ -658,6 +668,7 @@ void q2(){
             u_int32_t srcip = *(u_int32_t*)index->sourceAddress;
             u_int32_t dstip = *(u_int32_t*)index->destinationAddress;
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(srcip,IndexType::SRCIP,sizeof(srcip)-1,j)){
@@ -668,7 +679,7 @@ void q2(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(srcip,IndexType::SRCIP,sizeof(srcip)-1,j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -685,6 +696,7 @@ void q2(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(dstip,IndexType::DSTIP,sizeof(dstip)-1,j)){
@@ -695,7 +707,7 @@ void q2(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(dstip,IndexType::DSTIP,sizeof(dstip)-1,j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -714,6 +726,7 @@ void q2(){
             IPv6Address srcip = *(IPv6Address*)index->sourceAddress;
             IPv6Address dstip = *(IPv6Address*)index->destinationAddress;
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip)-2,j)){
@@ -724,7 +737,7 @@ void q2(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip)-2,j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -741,6 +754,7 @@ void q2(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip)-2,j)){
@@ -751,7 +765,7 @@ void q2(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip)-2,j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -798,6 +812,7 @@ void q3(){
             u_int32_t srcip = *(u_int32_t*)index->sourceAddress;
             u_int32_t dstip = *(u_int32_t*)index->destinationAddress;
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j)){
@@ -808,7 +823,7 @@ void q3(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -823,6 +838,7 @@ void q3(){
             index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j)){
@@ -833,7 +849,7 @@ void q3(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -851,6 +867,7 @@ void q3(){
             IPv6Address srcip = *(IPv6Address*)index->sourceAddress;
             IPv6Address dstip = *(IPv6Address*)index->destinationAddress;
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j)){
@@ -861,7 +878,7 @@ void q3(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -876,6 +893,7 @@ void q3(){
             index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j)){
@@ -886,7 +904,7 @@ void q3(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -904,6 +922,7 @@ void q3(){
         u_int16_t srcport = index->sourcePort;
         u_int16_t dstport = index->destinationPort;
         std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+        for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
         for(u_int64_t j=0; j<index_metas.size();++j){
             t1 = std::chrono::high_resolution_clock::now();
             if(!checkPort(srcport,IndexType::SRCPORT,j)){
@@ -914,7 +933,7 @@ void q3(){
             // printf("j:%lu\n",j);
             t1 = std::chrono::high_resolution_clock::now();
             auto ret = getOffsetByPort(srcport,IndexType::SRCPORT,j,read_fd);
-            if(ret.size()!=0){
+            if(ret.size()!=0 && k==0){
                 offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
             }
             t2 = std::chrono::high_resolution_clock::now();
@@ -929,6 +948,7 @@ void q3(){
         index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
         offset_vec = std::vector<u_int64_t>();
+        for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
         for(u_int64_t j=0; j<index_metas.size();++j){
             t1 = std::chrono::high_resolution_clock::now();
             if(!checkPort(dstport,IndexType::DSTPORT,j)){
@@ -939,7 +959,7 @@ void q3(){
             // printf("j:%lu\n",j);
             t1 = std::chrono::high_resolution_clock::now();
             auto ret = getOffsetByPort(dstport,IndexType::DSTPORT,j,read_fd);
-            if(ret.size()!=0){
+            if(ret.size()!=0 && k==0){
                 offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
             }
             t2 = std::chrono::high_resolution_clock::now();
@@ -981,7 +1001,7 @@ void q4(){
     auto t1 = std::chrono::high_resolution_clock::now();
     auto t2 = std::chrono::high_resolution_clock::now();
 
-    for(u_int64_t i=0;i<QUERY_TIMES*10/4;++i){
+    for(u_int64_t i=0;i<QUERY_TIMES*10/2;++i){
         //printf("%lu\n",i);
         u_int32_t id = generateRandomID();
         // printf("id %u\n",id);
@@ -990,6 +1010,7 @@ void q4(){
             u_int32_t srcip = generateRandomIPv4();
             u_int32_t dstip = generateRandomIPv4();
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j)){
@@ -1000,7 +1021,7 @@ void q4(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1017,6 +1038,7 @@ void q4(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j)){
@@ -1027,7 +1049,7 @@ void q4(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1046,6 +1068,7 @@ void q4(){
             IPv6Address srcip = generateRandomIPv6();
             IPv6Address dstip = generateRandomIPv6();
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j)){
@@ -1056,7 +1079,7 @@ void q4(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1073,6 +1096,7 @@ void q4(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j)){
@@ -1083,7 +1107,7 @@ void q4(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1100,61 +1124,61 @@ void q4(){
             byte_count += pa.second;
         }
 
-        u_int16_t srcport = generateRandomPort();
-        u_int16_t dstport = generateRandomPort();
-        std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
-        for(u_int64_t j=0; j<index_metas.size();++j){
-            t1 = std::chrono::high_resolution_clock::now();
-            if(!checkPort(srcport,IndexType::SRCPORT,j)){
-                continue;
-            }
-            t2 = std::chrono::high_resolution_clock::now();
-            check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-            // printf("j:%lu\n",j);
-            t1 = std::chrono::high_resolution_clock::now();
-            auto ret = getOffsetByPort(srcport,IndexType::SRCPORT,j,read_fd);
-            if(ret.size()!=0){
-                offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
-            }
-            t2 = std::chrono::high_resolution_clock::now();
-            index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-        }
-        if(offset_vec.size()==0){
-            get_count ++;
-        }
-        t1 = std::chrono::high_resolution_clock::now();
-        auto pa = readPacket(offset_vec,read_fd);
-        t2 = std::chrono::high_resolution_clock::now();
-        read_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-        packet_count += pa.first;
-        byte_count += pa.second;
+        // u_int16_t srcport = generateRandomPort();
+        // u_int16_t dstport = generateRandomPort();
+        // std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+        // for(u_int64_t j=0; j<index_metas.size();++j){
+        //     t1 = std::chrono::high_resolution_clock::now();
+        //     if(!checkPort(srcport,IndexType::SRCPORT,j)){
+        //         continue;
+        //     }
+        //     t2 = std::chrono::high_resolution_clock::now();
+        //     check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        //     // printf("j:%lu\n",j);
+        //     t1 = std::chrono::high_resolution_clock::now();
+        //     auto ret = getOffsetByPort(srcport,IndexType::SRCPORT,j,read_fd);
+        //     if(ret.size()!=0){
+        //         offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
+        //     }
+        //     t2 = std::chrono::high_resolution_clock::now();
+        //     index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        // }
+        // if(offset_vec.size()==0){
+        //     get_count ++;
+        // }
+        // t1 = std::chrono::high_resolution_clock::now();
+        // auto pa = readPacket(offset_vec,read_fd);
+        // t2 = std::chrono::high_resolution_clock::now();
+        // read_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        // packet_count += pa.first;
+        // byte_count += pa.second;
 
-        offset_vec = std::vector<u_int64_t>();
-        for(u_int64_t j=0; j<index_metas.size();++j){
-            t1 = std::chrono::high_resolution_clock::now();
-            if(!checkPort(dstport,IndexType::DSTPORT,j)){
-                continue;
-            }
-            t2 = std::chrono::high_resolution_clock::now();
-            check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-            // printf("j:%lu\n",j);
-            t1 = std::chrono::high_resolution_clock::now();
-            auto ret = getOffsetByPort(dstport,IndexType::DSTPORT,j,read_fd);
-            if(ret.size()!=0){
-                offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
-            }
-            t2 = std::chrono::high_resolution_clock::now();
-            index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-        }
-        if(offset_vec.size()==0){
-            get_count ++;
-        }
-        t1 = std::chrono::high_resolution_clock::now();
-        pa = readPacket(offset_vec,read_fd);
-        t2 = std::chrono::high_resolution_clock::now();
-        read_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-        packet_count += pa.first;
-        byte_count += pa.second;
+        // offset_vec = std::vector<u_int64_t>();
+        // for(u_int64_t j=0; j<index_metas.size();++j){
+        //     t1 = std::chrono::high_resolution_clock::now();
+        //     if(!checkPort(dstport,IndexType::DSTPORT,j)){
+        //         continue;
+        //     }
+        //     t2 = std::chrono::high_resolution_clock::now();
+        //     check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        //     // printf("j:%lu\n",j);
+        //     t1 = std::chrono::high_resolution_clock::now();
+        //     auto ret = getOffsetByPort(dstport,IndexType::DSTPORT,j,read_fd);
+        //     if(ret.size()!=0){
+        //         offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
+        //     }
+        //     t2 = std::chrono::high_resolution_clock::now();
+        //     index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        // }
+        // if(offset_vec.size()==0){
+        //     get_count ++;
+        // }
+        // t1 = std::chrono::high_resolution_clock::now();
+        // pa = readPacket(offset_vec,read_fd);
+        // t2 = std::chrono::high_resolution_clock::now();
+        // read_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        // packet_count += pa.first;
+        // byte_count += pa.second;
 
     }
     printf("packet: %lu, byte: %lu, get: %lu\n",packet_count,byte_count,get_count);
@@ -1186,6 +1210,7 @@ void q5(){
             u_int32_t srcip = generateRandomIPv4();
             u_int32_t dstip = generateRandomIPv4();
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(srcip,IndexType::SRCIP,sizeof(srcip)-1,j)){
@@ -1196,7 +1221,7 @@ void q5(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1213,6 +1238,7 @@ void q5(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(dstip,IndexType::DSTIP,sizeof(dstip)-1,j)){
@@ -1223,7 +1249,7 @@ void q5(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1242,6 +1268,7 @@ void q5(){
             IPv6Address srcip = generateRandomIPv6();
             IPv6Address dstip = generateRandomIPv6();
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip)-2,j)){
@@ -1252,7 +1279,7 @@ void q5(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip)-2,j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1269,6 +1296,7 @@ void q5(){
             byte_count += pa.second;
 
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip)-2,j)){
@@ -1279,7 +1307,7 @@ void q5(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip)-2,j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1316,7 +1344,7 @@ void q6(){
     auto t1 = std::chrono::high_resolution_clock::now();
     auto t2 = std::chrono::high_resolution_clock::now();
 
-    for(u_int64_t i=0;i<QUERY_TIMES*10;++i){
+    for(u_int64_t i=0;i<QUERY_TIMES;++i){
         //printf("%lu\n",i);
         u_int32_t id = generateRandomID();
         // printf("id %u\n",id);
@@ -1326,6 +1354,7 @@ void q6(){
             u_int32_t srcip = generateRandomIPv4();
             u_int32_t dstip = generateRandomIPv4();
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j)){
@@ -1336,7 +1365,7 @@ void q6(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(srcip,IndexType::SRCIP,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1348,7 +1377,12 @@ void q6(){
             t2 = std::chrono::high_resolution_clock::now();
             index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
+            if(total_vec.size()==0){
+                continue;
+            }
+
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j)){
@@ -1359,7 +1393,7 @@ void q6(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv4(dstip,IndexType::DSTIP,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1370,10 +1404,15 @@ void q6(){
             t2 = std::chrono::high_resolution_clock::now();
             index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
+            if(total_vec.size()==0){
+                continue;
+            }
+
         }else{
             IPv6Address srcip = generateRandomIPv6();
             IPv6Address dstip = generateRandomIPv6();
             std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j)){
@@ -1384,7 +1423,7 @@ void q6(){
                 // printf("j:%lu\n",j);
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(srcip,IndexType::SRCIPv6,sizeof(srcip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1395,7 +1434,12 @@ void q6(){
             t2 = std::chrono::high_resolution_clock::now();
             index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
+            if(total_vec.size()==0){
+                continue;
+            }
+
             offset_vec = std::vector<u_int64_t>();
+            for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
             for(u_int64_t j=0; j<index_metas.size();++j){
                 t1 = std::chrono::high_resolution_clock::now();
                 if(!checkIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j)){
@@ -1406,7 +1450,7 @@ void q6(){
                 check_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
                 t1 = std::chrono::high_resolution_clock::now();
                 auto ret = getOffsetByIPv6(dstip,IndexType::DSTIPv6,sizeof(dstip),j,read_fd);
-                if(ret.size()!=0){
+                if(ret.size()!=0 && k==0){
                     offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
                 }
                 t2 = std::chrono::high_resolution_clock::now();
@@ -1416,11 +1460,16 @@ void q6(){
             total_vec = join(total_vec,offset_vec);
             t2 = std::chrono::high_resolution_clock::now();
             index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+
+            if(total_vec.size()==0){
+                continue;
+            }
         }
 
         u_int16_t srcport = generateRandomPort();
         u_int16_t dstport = generateRandomPort();
         std::vector<u_int64_t> offset_vec = std::vector<u_int64_t>();
+        for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
         for(u_int64_t j=0; j<index_metas.size();++j){
             t1 = std::chrono::high_resolution_clock::now();
             if(!checkPort(srcport,IndexType::SRCPORT,j)){
@@ -1431,7 +1480,7 @@ void q6(){
             // printf("j:%lu\n",j);
             t1 = std::chrono::high_resolution_clock::now();
             auto ret = getOffsetByPort(srcport,IndexType::SRCPORT,j,read_fd);
-            if(ret.size()!=0){
+            if(ret.size()!=0 && k==0){
                 offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
             }
             t2 = std::chrono::high_resolution_clock::now();
@@ -1442,7 +1491,12 @@ void q6(){
         t2 = std::chrono::high_resolution_clock::now();
         index_time += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
+        if(total_vec.size()==0){
+            continue;
+        }
+
         offset_vec = std::vector<u_int64_t>();
+        for(u_int64_t k = 0; k<READ_SIZE/index_metas.size();++k)
         for(u_int64_t j=0; j<index_metas.size();++j){
             t1 = std::chrono::high_resolution_clock::now();
             if(!checkPort(dstport,IndexType::DSTPORT,j)){
@@ -1453,7 +1507,7 @@ void q6(){
             // printf("j:%lu\n",j);
             t1 = std::chrono::high_resolution_clock::now();
             auto ret = getOffsetByPort(dstport,IndexType::DSTPORT,j,read_fd);
-            if(ret.size()!=0){
+            if(ret.size()!=0 && k==0){
                 offset_vec.insert(offset_vec.end(),ret.begin(),ret.end());
             }
             t2 = std::chrono::high_resolution_clock::now();
@@ -1487,6 +1541,11 @@ int main(){
     init();
     fill();
     printf("query begin\n");
-    q6();
-    return 0;
+    q1();
+    q2();
+    // q3();
+    // q4();
+    // q5();
+    // q6();
+    return 0; 
 }
