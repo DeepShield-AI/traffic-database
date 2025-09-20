@@ -19,12 +19,12 @@ def read_pcap(file_path):
         endian = '<'
         count = 0
         
-        f.seek(1099511627776)
+        f.seek(int(sys.argv[2])) #1099511627776
         
         # 逐个读取数据包
         while True:
             count += 1
-            if count > int(sys.argv[2]):
+            if count > int(sys.argv[3]):
                 break
             
             ip = f.read(4)

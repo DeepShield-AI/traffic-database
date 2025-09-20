@@ -60,6 +60,15 @@ int main(){
 
    InitData init_data;
 
+   std::cout << "Enter the disk file name of data:" << std::endl;
+   std::cin >> init_data.data_disk_name;
+   std::cout << "Enter the disk offset of data:" << std::endl;
+   std::cin >> init_data.data_disk_offset;
+   std::cout << "Enter the disk file name of index:" << std::endl;
+   std::cin >> init_data.index_disk_name;
+   std::cout << "Enter the disk offset of index:" << std::endl;
+   std::cin >> init_data.index_disk_offset;
+
    std::cout << "Do you want to bind to cores? (y/n)" << std::endl;
    char bind;
    std::cin >> bind;
@@ -162,10 +171,10 @@ int main(){
    init_data.agent_ring_depth = agent_ring_depth;
    init_data.agent_ring_idle_time = agent_ring_idle_time;
 
-   init_data.data_disk_name = data_disk_name;
-   init_data.data_disk_offset = data_disk_offset;
-   init_data.index_disk_name = index_disk_name;
-   init_data.index_disk_offset = index_disk_offset;
+   // init_data.data_disk_name = data_disk_name;
+   // init_data.data_disk_offset = data_disk_offset;
+   // init_data.index_disk_name = index_disk_name;
+   // init_data.index_disk_offset = index_disk_offset;
 
    // init_data.bind_core = bind_core;
    // init_data.nb_rx = nb_rx;
