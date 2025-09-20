@@ -1,7 +1,7 @@
 #include "../dpdk_lib/memoryPool.hpp"
 
 
-#define UNIT_LEN 24lu
+#define UNIT_LEN 10lu
 #define BUFFER_SIZE 1024lu*1024lu*10lu*UNIT_LEN
 
 char* pool_buffer;
@@ -32,13 +32,15 @@ void testPoolDeallocate(u_int64_t block_id_max){
 }
 
 void testBufferDeallocate(u_int64_t block_id_max){
+    u_int64_t j = 0;
     for(u_int64_t i=0; i<block_id_max; ++i){
-        for(u_int64_t j=0; j<buffer_size; ++j){
-            if(buffer_id[j]!=i){
-                continue;
+        while(true){
+            if(j >= buffer_size || buffer_id[j]!=i){
+                break;
             }
-            delete buffer[i];
-            buffer[i] = nullptr;
+            delete buffer[j];
+            buffer[j] = nullptr;
+            j++;
         }
     }
 }
