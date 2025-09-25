@@ -29,6 +29,10 @@ def read_pcap(file_path):
             
             ip = f.read(4)
             print(ip[0],ip[1],ip[2],ip[3])
+            
+            # port = f.read(2)
+            # print(struct.unpack('<H', port)[0])
+            
             offset = f.read(8)
             print(struct.unpack('<Q', offset)[0])
             

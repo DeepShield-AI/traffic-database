@@ -18,17 +18,17 @@ const size_t hash_num = 4;
 // const u_int64_t file_capacity = 1024*1024*1024;
 u_int16_t nb_rx = 8;
 u_int64_t data_disk_size = 1024lu*1024lu*1024lu*1024lu;
-u_int64_t data_block_size = 128lu*1024lu*1024lu;
+u_int64_t data_block_size = 1024lu*1024lu*1024lu;
 u_int64_t index_disk_size = 256lu*1024lu*1024lu*1024lu;
-u_int64_t index_block_size = 128lu*1024lu*1024lu;
+u_int64_t index_block_size = 64lu*1024lu*1024lu;
 u_int64_t memory_pool_capacity = 1024lu*1024lu*1024lu;
 u_int64_t memory_pool_list_len_each = 1024;
 u_int64_t disk_read_size = 1024lu*1024lu*2lu;
 
-u_int64_t data_block_cache_num = 32;
-u_int64_t index_buffer_cache_num = 64;
-u_int64_t index_block_cache_num = 4;
-u_int64_t delay_threshold = 8;
+u_int64_t data_block_cache_num = 16;
+u_int64_t index_buffer_cache_num = 128;
+u_int64_t index_block_cache_num = 32;
+u_int64_t delay_threshold = 1;
 u_int64_t bitmap_backup_col_num = 8;
 
 u_int32_t index_construct_thread_num = 2;

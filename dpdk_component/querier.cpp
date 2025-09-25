@@ -43,6 +43,7 @@ void binarySearch(char* index, u_int64_t index_len, KeyType key, std::vector<u_i
         KeyType key_mid = *(KeyType*)(index + mid * ele_len);
         // printf("mid: %lu\n",mid);
         // printf("%u.%u.%u.%u\n",(key_mid >> 24) & 0xff, (key_mid >> 16) & 0xff, (key_mid >> 8) & 0xff,key_mid & 0xff);
+        // printf("port:%u\n",key_mid);
         if (key_mid < key) {
             // printf("<\n");
             left = mid + 1;
@@ -50,6 +51,7 @@ void binarySearch(char* index, u_int64_t index_len, KeyType key, std::vector<u_i
             right = mid;
         }
     }
+    // printf("key now: %u\n",*(KeyType*)(index + left * ele_len));
     for(;left<index_len/ele_len;left++){
         KeyType key_now = *(KeyType*)(index + left * ele_len);
         if(key_now != key){
@@ -738,12 +740,13 @@ std::vector<u_int64_t> Querier::getOffsetList(std::vector<u_int64_t>& index_list
                 return offset_list;
             }
         }
-        if(key.cachePos == SRCIP || DSTIP){
+        if((IndexType)key.cachePos == SRCIP || (IndexType)key.cachePos == DSTIP){
             binarySearch(this->indexBuffer + (index_list[i] % this->readBlockSize),index_list[i+1] - index_list[i],*((u_int32_t*)(&key.key[0])),offset_list);
-        }else if(key.cachePos == SRCPORT || DSTPORT){
+        }else if((IndexType)key.cachePos == SRCPORT || (IndexType)key.cachePos == DSTPORT){
+            // printf("port\n");
             binarySearch(this->indexBuffer + (index_list[i] % this->readBlockSize),index_list[i+1] - index_list[i],*((u_int16_t*)(&key.key[0])),offset_list);
-        // }else if(key.cachePos == SRCIPv6 || DSTIPv6){
-        //     tmp = binarySearch(this->indexBuffer + (index_start % this->indexAgent->getBlockSize()),index_end - index_start,*((IPv6Address*)(&key.key[0])));
+        }else if((IndexType)key.cachePos == SRCIPv6 || (IndexType)key.cachePos == DSTIPv6){
+            binarySearch(this->indexBuffer + (index_list[i] % this->readBlockSize),index_list[i+1] - index_list[i],*((u_int16_t*)(&key.key[0])),offset_list);
         }
     }
     return offset_list;
