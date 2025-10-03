@@ -19,7 +19,7 @@
 #define IPV6_BIT_LEN (SLICE_VALUE_COUNT * SLICE_VALUE_COUNT + SLICE_VALUE_COUNT * IPV6_BLOOM_LEN * 14)
 
 
-
+#pragma pack(push, 1)
 class PrefixBloomFilter {
 private:
     BitMap* bitmap;
@@ -389,5 +389,6 @@ public:
         return false;
     }
 };
+#pragma pack(pop)
 
 #endif

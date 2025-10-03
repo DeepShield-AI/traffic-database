@@ -17,7 +17,9 @@ void DiskManager::addBlock(void* block){
         u_int32_t agent_id = data_block->block_id % this->agents.size();
 
         // printf("before write.\n");
-        this->agents[agent_id]->asyncWrite(data_block->buffer, data_block->block_id, data_block->write_pos);
+        if (!this->agents[agent_id]->asyncWrite(data_block->buffer, data_block->block_id, data_block->write_pos)){
+            ((DataBlockBuffer*)(this->block_buffer))->recycleBlock(data_block->block_id);
+        }
         // printf("after write.\n");
     }else if (this->agent_type == AgentType::INDEX_AGENT){
         IndexBlock* index_block = (IndexBlock*)block;
@@ -28,7 +30,9 @@ void DiskManager::addBlock(void* block){
         //     printf("%lu\n",*(u_int64_t*)(index_block->buffer + 4 + i*12));
         // }
 
-        this->agents[agent_id]->asyncWrite(index_block->buffer, index_block->block_id, index_block->write_pos);
+        if(!this->agents[agent_id]->asyncWrite(index_block->buffer, index_block->block_id, index_block->write_pos)){
+            ((IndexBlockBuffer*)(this->block_buffer))->recycleBlock(index_block->block_id);
+        }
     }
 }
 

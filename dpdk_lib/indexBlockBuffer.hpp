@@ -160,9 +160,12 @@ public:
         }
 
         if (block_pos + len > this->buffer_size){
-            u_int64_t tmp = this->block_size - block_pos;
+            // printf("write block a: len %lu, block pos %lu, buffer size %lu\n",len,block_pos,this->buffer_size);
+            u_int64_t tmp = this->buffer_size - block_pos;
             memcpy(this->buffer_blocks + block_pos, data, tmp);
+            // printf("write block a continue.\n");
             memcpy(this->buffer_blocks, data + tmp, len - tmp);
+            // printf("write block a done.\n");
             this->disk_write_ids[thread_id] = disk_id;
             return true;
         }
@@ -170,8 +173,9 @@ public:
         // if(len == 4 && thread_id == 0){
         //     printf("%u.%u.%u.%u\n",(u_int8_t)data[0],(u_int8_t)data[1],(u_int8_t)data[2],(u_int8_t)data[3]);
         // }
-
+        // printf("write block b: len %lu, block pos %lu, buffer size %lu\n",len,block_pos,this->buffer_size);
         memcpy(this->buffer_blocks + block_pos, data, len);
+        // printf("write block b done.\n");
         this->disk_write_ids[thread_id] = disk_id;
         return true;
     }

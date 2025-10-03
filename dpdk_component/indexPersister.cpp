@@ -108,7 +108,7 @@ void IndexPersister::persistMeta(IndexBufferMeta* meta){
     //     total_node_len += meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
     // }
 
-    // printf("index count: %lu\n",meta->index_count.load());
+    // printf("index count: %lu\n",meta->index_count);
 
     for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
         for(auto pool : *(this->memoryPools)){
@@ -126,8 +126,10 @@ void IndexPersister::persistMeta(IndexBufferMeta* meta){
         // u_int64_t new_offset = current_offset + meta->skiplists[type].getNodeNum()*(meta->skiplists[type].getKeyLen() + meta->skiplists[type].getValueLen());
 
         u_int64_t index_offset = 0;
+        // printf("write index type %u, current offset %lu\n",type, current_offset);
         for(auto pool : *(this->memoryPools)){
             u_int64_t len = pool->getIndexLen(type,disk_block_id);
+            // printf("len: %lu\n",len);
             if(len == 0){
                 continue;
             }
@@ -136,12 +138,15 @@ void IndexPersister::persistMeta(IndexBufferMeta* meta){
             index_offset += len;
         }
         // printf("write index type %u, len %lu\n",type,index_offset);
+        // printf("begin sort of index type %u, current offset %lu, index offset %lu, key len %lu\n",type, current_offset, index_offset, this->key_lens[type]);
         this->indexBlockBuffer->sortIndex(current_offset, index_offset, this->key_lens[type]);
+        // printf("end sort of index type %u, current offset %lu, index offset %lu, key len %lu\n",type, current_offset, index_offset, this->key_lens[type]);
         this->diskBuffer->setIndexID(meta->disk_block_id, (IndexType)type, current_offset, current_offset + index_offset);
+        // printf("end set id of %lu\n",meta->disk_block_id);
         current_offset += index_offset;
     }
 
-    // printf("index count: %lu\n",meta->index_count.load());
+    // printf("index count: %lu\n",meta->index_count);
 
     this->diskBuffer->setBloomFilterReadingCol(meta->disk_block_id, meta->bloomFilterMeta.getWritingCol());
     
@@ -182,12 +187,15 @@ int IndexPersister::run(){
 
     while(true){
         IndexBufferMeta* meta = this->checkAndGetMeta();
+        // printf("check meta of block %lu\n", meta->disk_block_id);
         if(meta == nullptr){
             break;
         }
         this->persistMeta(meta);
-        printf("Index Persister log: persist index of block %lu.\n",meta->disk_block_id);
+        // printf("Index Persister log: persist index of block %lu.\n",meta->disk_block_id);
         this->clearMeta(meta);
+        // printf("Index Persister log: clear index.\n");
+        // delete meta;
     }
 
     std::cout << "Index Persister log: thread quit." << std::endl;

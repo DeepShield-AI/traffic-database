@@ -13,18 +13,22 @@
 #define QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN (sizeof(SkipListNode<QuarTurpleIPv6, u_int64_t>) + sizeof(void*) * (sizeof(QuarTurpleIPv6) * 8 - 1))
 #define SKIPLISTNODE_HEAD_LEN (IPV4_SKIPLISTNODE_HEAD_LEN * 2 + PORT_SKIPLISTNODE_HEAD_LEN * 2 + IPV6_SKIPLISTNODE_HEAD_LEN * 2 + QUARTURPLEIPV4_SKIPLISTNODE_HEAD_LEN + QUARTURPLEIPV6_SKIPLISTNODE_HEAD_LEN)
 
+#pragma pack(push,1)
 struct IndexBufferMeta{
     PrefixBloomFilter bloomFilterMeta;
-    // char skiplistHeads[SKIPLISTNODE_HEAD_LEN];
     u_int64_t disk_block_id;
-    std::atomic_uint64_t index_count;
+    // u_int64_t index_count;
+    std::atomic_uint_fast64_t index_count;
+    // char skiplistHeads[SKIPLISTNODE_HEAD_LEN];
     void init(BitMap* bitmap, size_t k, u_int64_t disk_block_num){
         this->bloomFilterMeta.init(bitmap, k);
         this->bloomFilterMeta.setWritingCol(disk_block_num);
         this->disk_block_id = disk_block_num;
         this->index_count.store(0);
+        // this->index_count = 0;
     }
 };
+#pragma pack(pop)
 
 class IndexBuffer {
 private:
@@ -33,6 +37,8 @@ private:
     u_int64_t size;
 
     IndexBufferMeta* metas;
+    // u_int64_t* block_ids;
+    // std::atomic_uint_fast64_t* index_counts;
     // std::vector<u_int64_t> index_write_ids;
     std::vector<u_int64_t> index_check_ids;
     std::vector<IndexMemoryPool*>* memory_pools;
@@ -50,8 +56,12 @@ public:
             throw std::runtime_error("memory manager mmap failed");
         }
         // printf("meta address %lu\n", (u_int64_t)this->metas);
+        // this->block_ids = new u_int64_t[this->total_block_num];
+        // this->index_counts = new std::atomic_uint_fast64_t[this->total_block_num];
         for (u_int64_t i = 0; i < this->total_block_num; ++i){
             this->metas[i].init(bitmap, k, i);
+            // this->block_ids[i] = i;
+            // this->index_counts[i].store(0);
         }
         this->index_check_ids = std::vector<u_int64_t>();
         // this->memory_pools = std::vector<IndexMemoryPool*>();
@@ -74,6 +84,9 @@ public:
     bool insert(FlowMetadata& meta, u_int64_t position, u_int64_t disk_block_id, u_int64_t ts, u_int64_t rx_id){
         u_int64_t buffer_meta_id = disk_block_id % this->total_block_num;
         if (this->metas[buffer_meta_id].disk_block_id != disk_block_id){
+        // if (this->block_ids[buffer_meta_id] != disk_block_id){
+            printf("Disk block id %lu not match buffer meta id %lu with disk block id %lu!\n", disk_block_id, buffer_meta_id, this->metas[buffer_meta_id].disk_block_id);
+            // printf("Disk block id %lu not match buffer meta id %lu with disk block id %lu!\n", disk_block_id, buffer_meta_id, this->block_ids[buffer_meta_id]);
             return false;
         }
 
@@ -129,75 +142,11 @@ public:
         // }
 
         this->metas[buffer_meta_id].index_count ++;
+        // this->index_counts[buffer_meta_id].fetch_add(1);
 
         return true;
-
-        // if (type == IndexType::SRCIP || type == IndexType::DSTIP){
-        //     SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)node;
-        //     u_int32_t ip = ipNode->key;
-        //     // printf("node value: %lu\n",ipNode->value);
-        //     if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(ip, type)){
-        //         printf("Insert bloom filter fail at IPv4.\n");
-        //         return false;
-        //     }
-        // }else if (type == IndexType::SRCPORT || type == IndexType::DSTPORT){
-        //     SkipListNode<u_int16_t,u_int64_t>* portNode = (SkipListNode<u_int16_t,u_int64_t>*)node;
-        //     u_int16_t port = portNode->key;
-        //     // printf("node value: %lu\n",portNode->value);
-        //     if (!this->metas[buffer_meta_id].bloomFilterMeta.insertPort(port, type)){
-        //         printf("Insert bloom filter fail at port.\n");
-        //         return false;
-        //     }
-        // }else if (type == IndexType::SRCIPv6 || type == IndexType::DSTIPv6){
-        //     SkipListNode<IPv6Address,u_int64_t>* ipNode = (SkipListNode<IPv6Address,u_int64_t>*)node;
-        //     IPv6Address ip = ipNode->key;
-        //     // printf("node value: %lu\n",ipNode->value);
-        //     if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv6(ip, type)){
-        //         printf("Insert bloom filter fail at IPv6.\n");
-        //         return false;
-        //     }
-        // }
-
-        // printf("bitmap finish\n");
-        // return this->metas[buffer_meta_id].skiplists[type].insert(node);
     }
-    // bool insert(void* node, u_int64_t disk_block_id, IndexType type, u_int64_t ts){
-    //     u_int64_t buffer_meta_id = disk_block_id % this->total_block_num;
-    //     if (this->metas[buffer_meta_id].disk_block_id != disk_block_id){
-    //         return false;
-    //     }
-
-    //     // printf("Insert type %u\n",type);
-
-    //     if (type == IndexType::SRCIP || type == IndexType::DSTIP){
-    //         SkipListNode<u_int32_t,u_int64_t>* ipNode = (SkipListNode<u_int32_t,u_int64_t>*)node;
-    //         u_int32_t ip = ipNode->key;
-    //         // printf("node value: %lu\n",ipNode->value);
-    //         if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv4(ip, type)){
-    //             printf("Insert bloom filter fail at IPv4.\n");
-    //             return false;
-    //         }
-    //     }else if (type == IndexType::SRCPORT || type == IndexType::DSTPORT){
-    //         SkipListNode<u_int16_t,u_int64_t>* portNode = (SkipListNode<u_int16_t,u_int64_t>*)node;
-    //         u_int16_t port = portNode->key;
-    //         // printf("node value: %lu\n",portNode->value);
-    //         if (!this->metas[buffer_meta_id].bloomFilterMeta.insertPort(port, type)){
-    //             printf("Insert bloom filter fail at port.\n");
-    //             return false;
-    //         }
-    //     }else if (type == IndexType::SRCIPv6 || type == IndexType::DSTIPv6){
-    //         SkipListNode<IPv6Address,u_int64_t>* ipNode = (SkipListNode<IPv6Address,u_int64_t>*)node;
-    //         IPv6Address ip = ipNode->key;
-    //         // printf("node value: %lu\n",ipNode->value);
-    //         if (!this->metas[buffer_meta_id].bloomFilterMeta.insertIPv6(ip, type)){
-    //             printf("Insert bloom filter fail at IPv6.\n");
-    //             return false;
-    //         }
-    //     }
-
-    //     // printf("bitmap finish\n");
-    //     return this->metas[buffer_meta_id].skiplists[type].insert(node);
-    // }
+    
     // get insert node number of skiplist
     u_int64_t checkIndexCount(u_int64_t thread_id){
         if (thread_id >= this->index_check_ids.size()) {
@@ -206,6 +155,7 @@ public:
         }
         u_int64_t block_check_id = this->index_check_ids[thread_id];
         return this->metas[block_check_id].index_count.load();
+        // return this->index_counts[block_check_id].load();
     }
     u_int64_t getCheckDishID(u_int64_t thread_id){
         if (thread_id >= this->index_check_ids.size()) {
@@ -214,6 +164,7 @@ public:
         }
         u_int64_t block_check_id = this->index_check_ids[thread_id];
         return this->metas[block_check_id].disk_block_id;
+        // return this->block_ids[block_check_id];
     }
     IndexBufferMeta* getIndexBufferMeta(u_int64_t thread_id){
         if (thread_id >= this->index_check_ids.size()) {
@@ -221,20 +172,16 @@ public:
             return nullptr;
         }
         u_int64_t block_check_id = this->index_check_ids[thread_id];
+        // IndexBufferMeta* meta = new IndexBufferMeta();
+        // meta->bloomFilterMeta = this->metas[block_check_id].bloomFilterMeta;
+        // meta->disk_block_id = this->metas[block_check_id].disk_block_id;
+        // printf("Get index buffer meta with disk block id %lu.\n", meta->disk_block_id);
+        // meta->index_count.store(this->metas[block_check_id].index_count.load());
+        // return meta;
+        // this->metas[block_check_id].disk_block_id = this->block_ids[block_check_id];
+        // this->metas[block_check_id].index_count = this->index_counts[block_check_id].load();
         return &this->metas[block_check_id];
     }
-    // void persistIndex(u_int64_t thread_id, u_int64_t write_thread_id, IndexBlockBuffer* buffer, u_int64_t disk_pos){
-    //     if (thread_id >= this->index_check_ids.size()) {
-    //         printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
-    //         return;
-    //     }
-    //     u_int64_t block_check_id = this->index_check_ids[thread_id];
-    //     for (auto pool : this->memory_pools){
-    //         for (u_int32_t type = IndexType::SRCIP; type < IndexType::TOTAL_INDEX; ++type){
-    //             pool->writeToBuffer(type, buffer, block_check_id, pool->getIndexLen(type,block_check_id),write_thread_id,disk_pos);
-    //         }
-    //     }
-    // }
     void updateIndexBufferMeta(u_int64_t thread_id, u_int64_t bitmap_col){
         if (thread_id >= this->index_check_ids.size()) {
             printf("Index buffer error: thread_id %lu out of range!\n", thread_id);
@@ -247,12 +194,20 @@ public:
         this->metas[block_check_id].bloomFilterMeta.setWritingCol(bitmap_col);
         for(auto pool: *(this->memory_pools)){
             pool->recycle(this->metas[block_check_id].disk_block_id);
+            // pool->recycle(this->block_ids[block_check_id]);
         }
         this->metas[block_check_id].index_count.store(0);
+        // this->index_counts[block_check_id].store(0);
         this->metas[block_check_id].disk_block_id = (this->metas[block_check_id].disk_block_id + this->total_block_num) % this->disk_block_num;
-        // TODO: Check position competition?
+        // this->block_ids[block_check_id] = (this->block_ids[block_check_id] + this->total_block_num) % this->disk_block_num;
+        // printf("Disk block id of buffer meta id %lu updated to %lu.\n", block_check_id, this->metas[block_check_id].disk_block_id);
+        // printf("Disk block id of buffer meta id %lu updated to %lu.\n", block_check_id, this->block_ids[block_check_id]);
         this->index_check_ids[thread_id] = (this->index_check_ids[thread_id] + this->index_check_ids.size()) % this->total_block_num;
-
+        // for(u_int64_t i=0;i<this->total_block_num;++i){
+        //     if(this->metas[i].disk_block_id % this->total_block_num != i){
+        //         printf("Warning: disk block id %lu not match buffer meta id %lu with disk block id %lu!\n", this->metas[i].disk_block_id, i, this->metas[i].disk_block_id);
+        //     }
+        // }
     }
 };
 

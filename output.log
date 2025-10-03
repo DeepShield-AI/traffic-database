@@ -1,0 +1,2439 @@
+Controller log: 140209038428416 bind to cpu 2.
+DPDK log: work cores is 0,4,6.
+DPDK log: There're 1 ports.
+DPDK log: port 0 mac is 6C:B3:11:21:80:54
+Detected logical cores: 3
+Controller log: run.
+Disk Agent log: run on kernel 20.
+Disk Agent log: run on kernel 32.
+Disk Agent log: run on kernel 22.
+Disk Agent log: run on kernel 34.
+Worker core ID: 0
+Memory manager log: thread run.
+DPDK reader log: 140208986556160 bind to cpu 4.
+DPDK reader log: thread run.
+Worker core ID: 1
+Memory manager log: thread run.
+Index Persister log: 140208687257344 bind to cpu 12.
+Index Persister log: thread run.
+Disk manager log: 140208729220864 bind to cpu 38.
+wait.
+Disk manager log: 140208737613568 bind to cpu 26.
+DPDK reader log: 140208978163456 bind to cpu 6.
+DPDK reader log: thread run.
+Memory manager log: thread run.
+Disk manager log: thread run.
+Disk manager log: thread run.
+Disk manager log: 140208818439936 bind to cpu 36.
+Disk manager log: thread run.
+Disk manager log: 140208704042752 bind to cpu 18.
+Index Persister log: 140208678864640 bind to cpu 14.
+Disk manager log: 140208720828160 bind to cpu 16.
+Index Persister log: thread run.
+Index generator log: thread run.
+Disk manager log: 140208695650048 bind to cpu 30.
+Disk manager log: thread run.
+Index generator log: thread run.
+Index generator log: 140208662079232 bind to cpu 10.
+Memory manager log: thread run.
+Disk manager log: 140208712435456 bind to cpu 28.
+Index generator log: 140208670471936 bind to cpu 8.
+Disk manager log: 140208826832640 bind to cpu 24.
+Disk agent log: writing block 0 to position 0 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 1 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 2 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 3 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 4 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 5 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 6 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 7 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 8 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 9 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 10 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 11 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 12 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 13 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 14 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 15 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 16 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 17 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 18 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 19 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 20 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 21 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 22 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 23 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 24 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 25 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 26 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 27 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 28 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 29 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 30 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 31 with basic offset 0.
+Disk agent log: writing block 0 to position 0 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 32 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 33 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 34 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 35 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 36 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 37 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 38 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 39 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 40 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 41 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 42 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 43 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 44 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 45 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 46 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 47 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 48 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 49 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 50 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 51 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 52 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 53 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 54 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 55 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 56 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 57 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 58 with basic offset 0.
+Disk agent log: writing block 1 to position 1 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 1.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 59 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 60 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 61 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 62 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 63 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 64 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 65 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 66 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 67 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 68 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 69 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 70 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 71 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 72 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 73 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 74 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 75 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 76 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 77 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 78 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 79 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 80 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 81 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 82 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 83 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 84 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 85 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 86 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 87 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 88 with basic offset 0.
+Disk agent log: writing block 2 to position 2 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 2.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 89 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 90 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 91 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 92 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 93 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 94 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 95 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 96 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 97 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 98 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 99 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 100 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 101 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 102 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 103 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 104 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 105 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 106 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 107 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 108 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 109 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 110 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 111 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 112 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 113 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 114 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 115 with basic offset 0.
+Disk agent log: writing block 3 to position 3 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 3.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 116 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 117 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 118 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 119 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 120 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 121 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 122 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 123 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 124 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 125 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 126 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 127 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 128 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 129 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 130 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 131 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 132 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 133 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 134 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 135 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 136 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 137 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 138 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 139 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 140 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 141 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 142 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 143 with basic offset 0.
+Disk agent log: writing block 4 to position 4 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 4.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 144 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 145 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 146 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 147 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 148 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 149 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 150 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 151 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 152 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 153 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 154 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 155 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 156 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 157 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 158 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 159 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 160 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 161 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 162 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 163 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 164 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 165 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 166 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 167 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 168 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 169 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 170 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 171 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 172 with basic offset 0.
+Disk agent log: writing block 5 to position 5 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 5.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 173 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 174 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 175 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 176 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 177 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 178 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 179 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 180 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 181 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 182 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 183 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 184 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 185 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 186 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 187 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 188 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 189 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 190 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 191 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 192 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 193 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 194 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 195 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 196 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 197 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 198 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 199 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 200 with basic offset 0.
+Disk agent log: writing block 6 to position 6 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 6.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 201 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 202 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 203 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 204 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 205 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 206 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 207 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 208 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 209 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 210 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 211 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 212 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 213 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 214 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 215 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 216 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 217 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 218 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 219 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 220 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 221 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 222 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 223 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 224 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 225 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 226 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 227 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 228 with basic offset 0.
+Disk agent log: writing block 7 to position 7 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 7.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 229 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 230 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 231 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 232 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 233 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 234 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 235 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 236 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 237 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 238 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 239 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 240 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 241 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 242 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 243 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 244 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 245 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 246 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 247 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 248 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 249 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 250 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 251 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 252 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 253 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 254 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 255 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 256 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 257 with basic offset 0.
+Disk agent log: writing block 8 to position 8 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 8.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 258 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 259 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 260 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 261 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 262 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 263 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 264 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 265 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 266 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 267 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 268 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 269 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 270 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 271 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 272 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 273 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 274 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 275 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 276 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 277 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 278 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 279 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 280 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 281 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 282 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 283 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 284 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 285 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 286 with basic offset 0.
+Disk agent log: writing block 9 to position 9 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 9.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 287 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 288 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 289 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 290 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 291 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 292 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 293 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 294 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 295 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 296 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 297 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 298 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 299 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 300 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 301 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 302 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 303 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 304 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 305 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 306 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 307 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 308 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 309 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 310 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 311 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 312 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 313 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 314 with basic offset 0.
+Disk agent log: writing block 10 to position 10 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 10.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 315 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 316 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 317 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 318 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 319 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 320 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 321 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 322 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 323 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 324 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 325 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 326 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 327 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 328 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 329 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 330 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 331 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 332 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 333 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 334 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 335 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 336 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 337 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 338 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 339 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 340 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 341 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 342 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 343 with basic offset 0.
+Disk agent log: writing block 11 to position 11 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 11.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 344 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 345 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 346 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 347 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 348 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 349 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 350 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 351 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 352 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 353 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 354 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 355 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 356 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 357 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 358 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 359 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 360 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 361 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 362 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 363 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 364 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 365 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 366 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 367 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 368 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 369 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 370 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 371 with basic offset 0.
+Disk agent log: writing block 12 to position 12 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 12.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 372 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 373 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 374 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 375 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 376 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 377 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 378 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 379 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 380 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 381 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 382 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 383 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 384 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 385 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 386 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 387 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 388 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 389 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 390 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 391 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 392 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 393 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 394 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 395 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 396 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 397 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 398 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 399 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 400 with basic offset 0.
+Disk agent log: writing block 13 to position 13 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 13.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 401 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 402 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 403 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 404 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 405 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 406 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 407 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 408 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 409 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 410 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 411 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 412 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 413 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 414 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 415 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 416 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 417 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 418 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 419 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 420 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 421 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 422 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 423 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 424 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 425 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 426 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 427 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 428 with basic offset 0.
+Disk agent log: writing block 14 to position 14 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 14.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 429 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 430 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 431 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 432 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 433 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 434 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 435 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 436 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 437 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 438 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 439 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 440 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 441 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 442 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 443 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 444 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 445 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 446 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 447 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 448 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 449 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 450 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 451 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 452 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 453 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 454 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 455 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 456 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 457 with basic offset 0.
+Disk agent log: writing block 15 to position 15 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 15.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 458 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 459 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 460 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 461 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 462 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 463 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 464 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 465 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 466 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 467 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 468 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 469 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 470 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 471 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 472 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 473 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 474 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 475 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 476 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 477 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 478 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 479 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 480 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 481 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 482 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 483 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 484 with basic offset 0.
+Disk agent log: writing block 16 to position 16 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 16.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 485 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 486 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 487 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 488 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 489 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 490 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 491 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 492 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 493 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 494 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 495 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 496 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 497 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 498 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 499 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 500 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 501 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 502 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 503 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 504 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 505 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 506 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 507 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 508 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 509 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 510 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 511 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 512 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 513 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 514 with basic offset 0.
+Disk agent log: writing block 17 to position 17 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 17.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 515 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 516 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 517 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 518 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 519 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 520 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 521 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 522 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 523 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 524 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 525 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 526 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 527 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 528 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 529 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 530 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 531 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 532 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 533 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 534 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 535 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 536 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 537 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 538 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 539 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 540 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 541 with basic offset 0.
+Disk agent log: writing block 18 to position 18 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 18.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 542 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 543 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 544 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 545 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 546 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 547 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 548 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 549 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 550 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 551 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 552 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 553 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 554 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 555 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 556 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 557 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 558 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 559 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 560 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 561 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 562 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 563 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 564 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 565 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 566 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 567 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 568 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 569 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 570 with basic offset 0.
+Disk agent log: writing block 19 to position 19 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 19.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 571 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 572 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 573 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 574 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 575 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 576 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 577 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 578 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 579 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 580 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 581 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 582 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 583 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 584 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 585 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 586 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 587 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 588 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 589 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 590 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 591 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 592 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 593 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 594 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 595 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 596 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 597 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 598 with basic offset 0.
+Disk agent log: writing block 20 to position 20 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 20.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 599 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 600 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 601 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 602 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 603 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 604 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 605 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 606 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 607 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 608 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 609 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 610 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 611 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 612 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 613 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 614 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 615 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 616 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 617 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 618 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 619 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 620 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 621 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 622 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 623 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 624 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 625 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 626 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 627 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 628 with basic offset 0.
+Disk agent log: writing block 21 to position 21 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 21.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 629 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 630 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 631 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 632 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 633 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 634 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 635 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 636 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 637 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 638 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 639 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 640 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 641 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 642 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 643 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 644 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 645 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 646 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 647 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 648 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 649 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 650 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 651 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 652 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 653 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 654 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 655 with basic offset 0.
+Disk agent log: writing block 22 to position 22 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 22.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 656 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 657 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 658 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 659 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 660 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 661 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 662 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 663 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 664 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 665 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 666 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 667 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 668 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 669 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 670 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 671 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 672 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 673 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 674 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 675 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 676 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 677 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 678 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 679 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 680 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 681 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 682 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 683 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 684 with basic offset 0.
+Disk agent log: writing block 23 to position 23 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 23.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 685 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 686 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 687 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 688 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 689 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 690 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 691 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 692 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 693 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 694 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 695 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 696 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 697 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 698 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 699 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 700 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 701 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 702 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 703 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 704 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 705 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 706 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 707 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 708 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 709 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 710 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 711 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 712 with basic offset 0.
+Disk agent log: writing block 24 to position 24 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 24.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 713 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 714 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 715 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 716 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 717 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 718 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 719 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 720 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 721 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 722 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 723 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 724 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 725 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 726 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 727 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 728 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 729 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 730 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 731 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 732 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 733 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 734 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 735 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 736 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 737 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 738 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 739 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 740 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 741 with basic offset 0.
+Disk agent log: writing block 25 to position 25 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 25.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 742 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 743 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 744 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 745 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 746 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 747 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 748 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 749 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 750 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 751 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 752 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 753 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 754 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 755 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 756 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 757 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 758 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 759 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 760 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 761 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 762 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 763 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 764 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 765 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 766 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 767 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 768 with basic offset 0.
+Disk agent log: writing block 26 to position 26 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 26.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 769 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 770 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 771 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 772 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 773 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 774 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 775 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 776 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 777 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 778 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 779 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 780 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 781 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 782 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 783 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 784 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 785 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 786 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 787 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 788 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 789 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 790 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 791 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 792 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 793 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 794 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 795 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 796 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 797 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 798 with basic offset 0.
+Disk agent log: writing block 27 to position 27 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 27.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 799 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 800 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 801 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 802 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 803 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 804 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 805 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 806 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 807 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 808 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 809 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 810 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 811 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 812 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 813 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 814 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 815 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 816 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 817 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 818 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 819 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 820 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 821 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 822 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 823 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 824 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 825 with basic offset 0.
+Disk agent log: writing block 28 to position 28 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 28.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 826 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 827 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 828 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 829 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 830 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 831 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 832 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 833 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 834 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 835 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 836 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 837 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 838 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 839 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 840 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 841 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 842 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 843 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 844 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 845 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 846 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 847 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 848 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 849 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 850 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 851 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 852 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 853 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 854 with basic offset 0.
+Disk agent log: writing block 29 to position 29 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 29.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 855 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 856 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 857 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 858 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 859 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 860 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 861 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 862 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 863 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 864 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 865 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 866 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 867 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 868 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 869 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 870 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 871 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 872 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 873 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 874 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 875 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 876 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 877 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 878 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 879 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 880 with basic offset 0.
+Disk agent log: writing block 30 to position 30 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 30.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 881 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 882 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 883 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 884 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 885 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 886 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 887 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 888 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 889 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 890 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 891 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 892 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 893 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 894 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 895 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 896 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 897 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 898 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 899 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 900 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 901 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 902 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 903 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 904 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 905 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 906 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 907 with basic offset 0.
+Disk agent log: writing block 31 to position 31 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 31.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 908 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 909 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 910 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 911 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 912 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 913 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 914 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 915 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 916 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 917 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 918 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 919 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 920 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 921 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 922 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 923 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 924 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 925 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 926 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 927 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 928 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 929 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 930 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 931 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 932 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 933 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 934 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 935 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 936 with basic offset 0.
+Disk agent log: writing block 0 to position 32 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 937 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 938 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 939 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 940 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 941 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 942 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 943 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 944 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 945 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 946 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 947 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 948 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 949 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 950 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 951 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 952 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 953 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 954 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 955 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 956 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 957 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 958 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 959 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 960 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 961 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 962 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 963 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 964 with basic offset 0.
+Disk agent log: writing block 1 to position 33 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 1.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 965 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 966 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 967 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 968 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 969 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 970 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 971 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 972 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 973 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 974 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 975 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 976 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 977 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 978 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 979 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 980 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 981 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 982 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 983 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 984 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 985 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 986 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 987 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 988 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 989 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 990 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 991 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 992 with basic offset 0.
+Disk agent log: writing block 2 to position 34 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 2.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 993 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 994 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 995 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 996 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 997 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 998 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 999 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 1000 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 1001 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 1002 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 1003 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 1004 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 1005 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 1006 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 1007 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 1008 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 1009 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 1010 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 1011 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 1012 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 1013 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 1014 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 1015 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 1016 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 1017 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 1018 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 1019 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 1020 with basic offset 0.
+Disk agent log: writing block 3 to position 35 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 3.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 1021 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 1022 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 1023 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 0 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 1 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 2 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 3 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 4 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 5 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 6 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 7 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 8 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 9 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 10 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 11 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 12 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 13 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 14 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 15 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 16 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 17 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 18 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 19 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 20 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 21 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 22 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 23 with basic offset 0.
+Disk agent log: writing block 4 to position 36 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 4.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 24 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 25 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 26 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 27 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 28 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 29 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 30 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 31 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 32 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 33 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 34 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 35 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 36 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 37 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 38 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 39 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 40 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 41 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 42 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 43 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 44 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 45 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 46 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 47 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 48 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 49 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 50 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 51 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 52 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 53 with basic offset 0.
+Disk agent log: writing block 5 to position 37 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 5.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 54 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 55 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 56 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 57 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 58 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 59 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 60 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 61 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 62 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 63 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 64 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 65 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 66 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 67 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 68 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 69 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 70 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 71 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 72 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 73 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 74 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 75 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 76 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 77 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 78 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 79 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 80 with basic offset 0.
+Disk agent log: writing block 6 to position 38 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 6.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 81 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 82 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 83 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 84 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 85 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 86 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 87 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 88 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 89 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 90 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 91 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 92 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 93 with basic offset 0.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 94 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 95 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 96 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 97 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 98 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 99 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 100 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 101 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+Disk agent log: writing block 6 to position 102 with basic offset 0.
+Memory manager log: type 0 finish block 6.
+Disk agent log: writing block 7 to position 103 with basic offset 0.
+Memory manager log: type 0 finish block 7.
+Disk agent log: writing block 8 to position 104 with basic offset 0.
+Memory manager log: type 0 finish block 8.
+Disk agent log: writing block 9 to position 105 with basic offset 0.
+Memory manager log: type 0 finish block 9.
+Disk agent log: writing block 10 to position 106 with basic offset 0.
+Memory manager log: type 0 finish block 10.
+Disk agent log: writing block 11 to position 107 with basic offset 0.
+Memory manager log: type 0 finish block 11.
+Disk agent log: writing block 12 to position 108 with basic offset 0.
+Memory manager log: type 0 finish block 12.
+Disk agent log: writing block 13 to position 109 with basic offset 0.
+Disk agent log: writing block 7 to position 39 with basic offset 1099511627776.
+Memory manager log: type 1 finish block 7.
+Memory manager log: type 0 finish block 13.
+Disk agent log: writing block 14 to position 110 with basic offset 0.
+Memory manager log: type 0 finish block 14.
+Disk agent log: writing block 15 to position 111 with basic offset 0.
+Memory manager log: type 0 finish block 15.
+Disk agent log: writing block 0 to position 112 with basic offset 0.
+Memory manager log: type 0 finish block 0.
+Disk agent log: writing block 1 to position 113 with basic offset 0.
+Memory manager log: type 0 finish block 1.
+Disk agent log: writing block 2 to position 114 with basic offset 0.
+Memory manager log: type 0 finish block 2.
+Disk agent log: writing block 3 to position 115 with basic offset 0.
+Memory manager log: type 0 finish block 3.
+Disk agent log: writing block 4 to position 116 with basic offset 0.
+Memory manager log: type 0 finish block 4.
+Disk agent log: writing block 5 to position 117 with basic offset 0.
+Memory manager log: type 0 finish block 5.
+DPDK Reader log: asynchronous stop.DPDK Reader log: asynchronous stop.
+
+DPDK Reader log: thread quit, during 670547161 us with 1381632864 packets, 522148347592 Bytes, 28764168 indexes, rate 6.460291 Gbps (2.060456 Mpps).
+DPDK Reader log: wait time 0 us, read time 0 us, write time 0 us,analysis time 0 us ,aggregate time 0 us, index time 0 us, delete time 0 us, total time 0 us.
+DPDK Reader log: creat time 0 us, cal time 0 us, allocate time 0 us, init time 0 us ,put time 0 us
+DPDK Reader log: thread quit, during 670547215 us with 1156592352 packets, 665859738091 Bytes, 31147798 indexes, rate 8.137259 Gbps (1.724848 Mpps).
+DPDK Reader log: wait time 0 us, read time 0 us, write time 0 us,analysis time 0 us ,aggregate time 0 us, index time 0 us, delete time 0 us, total time 0 us.
+DPDK Reader log: creat time 0 us, cal time 0 us, allocate time 0 us, init time 0 us ,put time 0 us
+lcore 4 stop.
+lcore 6 stop.
+Index generator log: thread quit, process 31147798 indexes, during 670343390 us.
+Index generator log: thread quit, process 28764168 indexes, during 670343049 us.
+Disk agent log: writing block 6 to position 118 with basic offset 0.
+Disk agent log: writing block 8 to position 120 with basic offset 0.
+Disk manager log: thread quit.
+Disk agent log: writing block 7 to position 119 with basic offset 0.
+Disk manager log: thread quit.
+Index Persister log: thread quit.
+Index Persister log: thread quit.
+Disk agent log: writing block 8 to position 40 with basic offset 1099511627776.
+Disk manager log: thread quit.
+Disk manager log: thread quit.
+Memory manager log: type 1 finish block 8.
+Memory manager log: type 0 finish block 7.
+Memory manager log: thread quit.
+Memory manager log: thread quit.
+Memory manager log: thread quit.
+Memory manager log: thread quit.
+Disk Agent log: run on kernel 90.
+Disk Agent log: run on kernel 92.
+Querier log: query begin, enter your request below (q for QUIT).
+
+q
+Querier log: query end.

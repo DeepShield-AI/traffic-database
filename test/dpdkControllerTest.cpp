@@ -26,7 +26,7 @@ u_int64_t memory_pool_list_len_each = 1024;
 u_int64_t disk_read_size = 1024lu*1024lu*2lu;
 
 u_int64_t data_block_cache_num = 16;
-u_int64_t index_buffer_cache_num = 128;
+u_int64_t index_buffer_cache_num = 64;
 u_int64_t index_block_cache_num = 32;
 u_int64_t delay_threshold = 1;
 u_int64_t bitmap_backup_col_num = 8;
@@ -60,67 +60,90 @@ int main(){
 
    InitData init_data;
 
-   std::cout << "Enter the disk file name of data:" << std::endl;
-   std::cin >> init_data.data_disk_name;
-   std::cout << "Enter the disk offset of data:" << std::endl;
-   std::cin >> init_data.data_disk_offset;
-   std::cout << "Enter the disk file name of index:" << std::endl;
-   std::cin >> init_data.index_disk_name;
-   std::cout << "Enter the disk offset of index:" << std::endl;
-   std::cin >> init_data.index_disk_offset;
+   // std::cout << "Enter the disk file name of data:" << std::endl;
+   // std::cin >> init_data.data_disk_name;
+   // std::cout << "Enter the disk offset of data:" << std::endl;
+   // std::cin >> init_data.data_disk_offset;
+   // std::cout << "Enter the disk file name of index:" << std::endl;
+   // std::cin >> init_data.index_disk_name;
+   // std::cout << "Enter the disk offset of index:" << std::endl;
+   // std::cin >> init_data.index_disk_offset;
 
-   std::cout << "Do you want to bind to cores? (y/n)" << std::endl;
-   char bind;
-   std::cin >> bind;
-   if(bind == 'y'){
-      init_data.bind_core = true;
-      std::cout << "Enter the controller core number (0 is remained)" << std::endl;
-      std::cin >> init_data.controller_core_id;
-   }else{
-      init_data.bind_core = false;
-      init_data.controller_core_id = 0;
-   }
+   init_data.data_disk_name = "/dev/sdb";
+   init_data.data_disk_offset = 0;
+   init_data.index_disk_name = "/dev/sdb";
+   init_data.index_disk_offset = 1099511627776;
 
-   std::cout << "Enter number of DPDK packet capture threads" << std::endl;
-   std::cin >> nb_rx;
-   init_data.nb_rx = nb_rx;
+   // std::cout << "Do you want to bind to cores? (y/n)" << std::endl;
+   // char bind;
+   // std::cin >> bind;
+   // if(bind == 'y'){
+   //    init_data.bind_core = true;
+   //    std::cout << "Enter the controller core number (0 is remained)" << std::endl;
+   //    std::cin >> init_data.controller_core_id;
+   // }else{
+   //    init_data.bind_core = false;
+   //    init_data.controller_core_id = 0;
+   // }
 
-   if(init_data.bind_core){
-      std::cout << "Enter the core number for each packet processing threads (0 is remained)" << std::endl;
-      for(int i=0;i<nb_rx;++i){
-         u_int32_t core_id;
-         std::cin >> core_id;
-         init_data.dpdk_core_id_list.push_back(core_id);
-         init_data.packet_core_id_list.push_back(core_id);
-      }
-   }
+   init_data.bind_core = true;
+   init_data.controller_core_id = 2;
 
-   std::cout << "Enter number of index constructing thread" << std::endl;
-   std::cin >> init_data.index_construct_thread_num;
+   // std::cout << "Enter number of DPDK packet capture threads" << std::endl;
+   // std::cin >> nb_rx;
+   // init_data.nb_rx = nb_rx;
 
-   if(init_data.bind_core){
-      std::cout << "Enter the core number for each index constructing threads (0 is remained)" << std::endl;
-      for(int i=0;i<init_data.index_construct_thread_num;++i){
-         u_int32_t core_id;
-         std::cin >> core_id;
-         init_data.indexing_core_id_list.push_back(core_id);
-      }
-   }
+   init_data.nb_rx = 2;
 
-   std::cout << "Enter number of index persisting thread" << std::endl;
-   std::cin >> init_data.index_persist_thread_num;
+   // if(init_data.bind_core){
+   //    std::cout << "Enter the core number for each packet processing threads (0 is remained)" << std::endl;
+   //    for(int i=0;i<nb_rx;++i){
+   //       u_int32_t core_id;
+   //       std::cin >> core_id;
+   //       init_data.dpdk_core_id_list.push_back(core_id);
+   //       init_data.packet_core_id_list.push_back(core_id);
+   //    }
+   // }
 
-   if(init_data.bind_core){
-      std::cout << "Enter the core number for each index persisting threads (0 is remained)" << std::endl;
-      for(int i=0;i<init_data.index_persist_thread_num;++i){
-         u_int32_t core_id;
-         std::cin >> core_id;
-         init_data.persisting_core_id_list.push_back(core_id);
-      }
-   }
+   init_data.dpdk_core_id_list = std::vector<u_int32_t>({4,6});
+   init_data.packet_core_id_list = std::vector<u_int32_t>({4,6});
 
-   std::cout << "Enter number of dumper thread group (1 group has 6 threads)" << std::endl;
-   std::cin >> init_data.data_disk_manager_thread_num;
+   // std::cout << "Enter number of index constructing thread" << std::endl;
+   // std::cin >> init_data.index_construct_thread_num;
+
+   init_data.index_construct_thread_num = 2;
+
+   // if(init_data.bind_core){
+   //    std::cout << "Enter the core number for each index constructing threads (0 is remained)" << std::endl;
+   //    for(int i=0;i<init_data.index_construct_thread_num;++i){
+   //       u_int32_t core_id;
+   //       std::cin >> core_id;
+   //       init_data.indexing_core_id_list.push_back(core_id);
+   //    }
+   // }
+
+   init_data.indexing_core_id_list = std::vector<u_int32_t>({8,10});
+
+   // std::cout << "Enter number of index persisting thread" << std::endl;
+   // std::cin >> init_data.index_persist_thread_num;
+
+   init_data.index_persist_thread_num = 2;
+
+   // if(init_data.bind_core){
+   //    std::cout << "Enter the core number for each index persisting threads (0 is remained)" << std::endl;
+   //    for(int i=0;i<init_data.index_persist_thread_num;++i){
+   //       u_int32_t core_id;
+   //       std::cin >> core_id;
+   //       init_data.persisting_core_id_list.push_back(core_id);
+   //    }
+   // }
+
+   init_data.persisting_core_id_list = std::vector<u_int32_t>({12,14});
+
+   // std::cout << "Enter number of dumper thread group (1 group has 6 threads)" << std::endl;
+   // std::cin >> init_data.data_disk_manager_thread_num;
+
+   init_data.data_disk_manager_thread_num = 2;
 
    init_data.index_disk_manager_thread_num = init_data.data_disk_manager_thread_num;
    init_data.data_memory_manager_thread_num = init_data.data_disk_manager_thread_num;
@@ -128,24 +151,31 @@ int main(){
    init_data.data_agent_num_each = data_agent_num_each;
    init_data.index_agent_num_each = index_agent_num_each;
 
-   if(init_data.bind_core){
-      for(u_int32_t i = 0; i<init_data.data_disk_manager_thread_num; ++i){
-         std::cout << "Enter the core number for dumper thread group" << i << "(6 threads total, 0 is remained)" << std::endl;
-         u_int32_t core_id;
-         std::cin >> core_id;
-         init_data.data_dumping_core_id_list.push_back(core_id);
-         std::cin >> core_id;
-         init_data.index_dumping_core_id_list.push_back(core_id);
-         std::cin >> core_id;
-         init_data.data_kernel_core_id_list.push_back(core_id);
-         std::cin >> core_id;
-         init_data.index_kernel_core_id_list.push_back(core_id);
-         std::cin >> core_id;
-         init_data.data_recycling_core_id_list.push_back(core_id);
-         std::cin >> core_id;
-         init_data.index_recycling_core_id_list.push_back(core_id);
-      }
-   }
+   // if(init_data.bind_core){
+   //    for(u_int32_t i = 0; i<init_data.data_disk_manager_thread_num; ++i){
+   //       std::cout << "Enter the core number for dumper thread group" << i << "(6 threads total, 0 is remained)" << std::endl;
+   //       u_int32_t core_id;
+   //       std::cin >> core_id;
+   //       init_data.data_dumping_core_id_list.push_back(core_id);
+   //       std::cin >> core_id;
+   //       init_data.index_dumping_core_id_list.push_back(core_id);
+   //       std::cin >> core_id;
+   //       init_data.data_kernel_core_id_list.push_back(core_id);
+   //       std::cin >> core_id;
+   //       init_data.index_kernel_core_id_list.push_back(core_id);
+   //       std::cin >> core_id;
+   //       init_data.data_recycling_core_id_list.push_back(core_id);
+   //       std::cin >> core_id;
+   //       init_data.index_recycling_core_id_list.push_back(core_id);
+   //    }
+   // }
+
+   init_data.data_dumping_core_id_list = std::vector<u_int32_t>({16,28});
+   init_data.index_dumping_core_id_list = std::vector<u_int32_t>({18,30});
+   init_data.data_kernel_core_id_list = std::vector<u_int32_t>({20,32});
+   init_data.index_kernel_core_id_list = std::vector<u_int32_t>({22,34});
+   init_data.data_recycling_core_id_list = std::vector<u_int32_t>({24,36});
+   init_data.index_recycling_core_id_list = std::vector<u_int32_t>({26,38});
 
    init_data.index_ring_capacity = index_ring_capacity;
    // init_data.pcap_header_len = pcap_header_len;

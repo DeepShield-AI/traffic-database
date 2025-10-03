@@ -1,0 +1,10 @@
+index count: 117887
+Disk agent log: writing block 1 to position 913 with basic offset 0.
+write index type 0, current offset 2146532472
+len: 323928
+write block b: len 323928, block pos 2146532472, buffer size 2147483648
+write block b done.
+len: 1017600
+write block a: len 1017600, block pos 2146856400, buffer size 2147483648
+Memory manager log: type 0 finish block 1.
+Segmentation fault

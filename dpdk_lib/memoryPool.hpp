@@ -162,11 +162,16 @@ public:
                 u_int64_t start_offset = this->allocated_list[tmp_head].start_offset;
                 
                 if (start_offset + len < this->capacity){
+                    // printf("write a\n");
                     buffer->writeBlock(this->buffer + start_offset, len, disk_pos, thread_id);
+                    // printf("write a done\n");
                 }else{
+                    // printf("write b\n");
                     buffer->writeBlock(this->buffer + start_offset, this->capacity - start_offset, disk_pos, thread_id);
                     disk_pos += this->capacity - start_offset;
+                    // printf("write b continue\n");
                     buffer->writeBlock(this->buffer, len + start_offset - this->capacity, disk_pos, thread_id);
+                    // printf("write b done\n");
                 }
                 break;
             }    
